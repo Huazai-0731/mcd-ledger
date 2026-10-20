@@ -14,7 +14,13 @@
     "demo": "node src/cli.ts demo",
     "doctor": "node src/cli.ts doctor",
     "bench": "node src/cli.ts bench",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:ui": "node scripts/verify-ui.mjs docs/prototype-v2.html out/verify-ui --profile prototype",
+    "verify:ledger": "node scripts/verify-ui.mjs docs/demo-report.html out/verify-ledger --profile ledger",
+    "audit:ui": "node scripts/audit-contrast.mjs --url docs/prototype-v2.html --out out/contrast",
+    "audit:contrast-ledger": "node scripts/audit-ledger.mjs --url docs/demo-report.html --out out/contrast-ledger --full-page",
+    "shot": "node scripts/cdp-shot.mjs",
+    "sheet": "node scripts/sheet.mjs"
   },
   "files": [
     "src",

@@ -8,10 +8,13 @@
 [![dependencies](https://img.shields.io/badge/runtime%20dependencies-0-ffc72c)](./package.json)
 [![tests](https://img.shields.io/badge/tests-23%2F23-3fb950)](./bench/cases.ts)
 [![MCP](https://img.shields.io/badge/MCP-mcp.mcd.cn-da291c)](https://open.mcd.cn/mcp)
+[![contest](https://img.shields.io/badge/麦当劳程序员创意开发大赛-参赛作品-da291c)](https://github.com/M-China/mcd-developer-innovation-challenge)
 
 ---
 
 ## 它解决什么问题
+
+**目标用户**：每周至少点一两次麦当劳、想弄清自己真实消费明细的人——尤其是卡包里囤了券却总也用不上、想弄清"到底省没省"的人；也适合想研究麦当劳 MCP 数据管线的开发者直接取用。
 
 你每周都在点麦当劳，但你大概率答不出这三个问题：
 
@@ -326,6 +329,22 @@ node src/cli.ts bench                    # 跑回归用例
 ```
 
 环境变量：`MCD_MCP_TOKEN`（必需）、`MCD_MCP_URL`（可选）、`NO_COLOR`（可选）。
+
+### UI 回归工具（零依赖，Chrome CDP）
+
+`scripts/` 下有一套直连 Chrome DevTools Protocol 的页面巡检工具（Node ≥ 22 内置 WebSocket，无 npm 依赖）：
+
+```bash
+node scripts/verify-ui.mjs docs/prototype-v2.html out/verify-ui --profile prototype  # 结构断言 + 场景/主题切换巡检
+node scripts/verify-ui.mjs docs/demo-report.html out/verify-ledger --profile ledger  # 账本页（含切区间）
+node scripts/audit-contrast.mjs                     # 决策页 WCAG AA：双主题 × 3 场景
+node scripts/audit-ledger.mjs                       # 账本页 WCAG AA（深色单主题，--full-page 滚到底）
+node scripts/cdp-shot.mjs docs/prototype-v2.html out/shot.png 900 640 "document.documentElement.dataset.theme='dark'"  # 截图
+node scripts/sheet.mjs out/review.png 2 --tile "账本页=out/shot.png" --cols 2        # 评审拼版图
+npm run verify:ui && npm run audit:ui                # 一键跑决策页全套
+```
+
+Chrome 路径用 `CHROME_PATH` 环境变量指定（缺省按平台自动探测），调试端口用 `CDP_PORT`（默认 9444）。对比度审计内置三处防误报：渐变文字按色停逐一比对、只合成元素矩形真正压住的祖先背景、审计前禁用 CSS 过渡（避免读到动画中间色）。当前基线：决策页 6 组合 0 处低于 AA，账本页 373 处文本 0 处低于 AA。
 
 ---
 

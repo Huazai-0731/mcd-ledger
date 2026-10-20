@@ -129,7 +129,7 @@
 | U1 | **提交并推送本次改动** | ✅ 已完成（追加会话 `5e4d334` 已推送，本地与 `origin/main` 同步） | — | 0 |
 | U2 | **真实下单接线**（`calculate-price` → `create-order` → 支付 → `cancel-order`） | 0% | 产品边界未放开；代码中完全没有 `McpClient` 调用写操作 | 大。需 L2 授权确认 + 幂等/撤销设计 + 15 分钟过期处理 |
 | U3 | **唤起麦当劳 App / 小程序** | 结论：**不可行，已判定不做** | `wx-open-launch-weapp` 需认证服务号 + 已关联小程序；URL Scheme / Link 需小程序 AppSecret（只有麦当劳能生成）；Universal Link 需在麦当劳自有域部署 AASA —— 第三方无法可靠唤起 | 0（结论已写入 `docs/PRODUCT-V2.md` 与记忆）。替代方案：`payH5Url` 是麦当劳自有域 H5 收银台，浏览器直开即可 |
-| U4 | **`out/` 校验脚本纳入版本控制** | 0%（追加会话只收编了打包脚本到 `scripts/`，`verify-l2` / `audit-contrast` / `audit-ledger` / `cdp-shot` / `sheet` 五个仍在 `out/`） | `.gitignore` 忽略 `out/` | 小（搬到 `scripts/` 并把 CHROME 路径、端口参数化），但换设备前必须做。参考追加会话 `dist/*` + `!dist/mcd-ledger.zip` 的白名单写法 |
+| U4 | **`out/` 校验脚本纳入版本控制** | ✅ 已完成（追加会话 2）：5 个脚本已重写进 `scripts/`，CHROME 路径改为 `CHROME_PATH` 环境变量 + 平台自动探测，端口 `CDP_PORT` 可配（默认 9444）；package.json 增加 `verify:ui` / `audit:ui` / `audit:contrast-ledger` / `shot` / `sheet` 命令 | — | 0 |
 | U5 | **确认 `docs/*.html` 不含真实数据** | 已确认当前为 demo 数据 | 但如果下次用 `--out docs` 跑 `audit`，真实订单会写进被跟踪文件 | 小（加一条约定或改 .gitignore） |
 | U6 | **真机验证 `payH5Url`** | 0% | 需要手机 + 真实下单 | 中。唯一未验证的真实链路环节 |
 | U7 | **`buildPlan` 在真实账号数据上的表现** | 0% | 目前只用 demo 数据（99 行）验证过 | 中。真实菜单/券的命名、`worth` 为空的情况未覆盖 |
@@ -362,3 +362,40 @@ mcd-ledger/
 | 原型**不联网、不调 `calculate-price`** | 原型是离线评审物；真实价格必须执行前重算（S4 降级态就是在讲这件事） |
 | 账本页层级回流到 `#17171B` / `#202026` | 原型的层级结论（tokens.css 注释里那句"#111113 与底只差 2 级，整片糊成一团黑"） |
 | 不做 App / 小程序唤起 | 无官方合作时第三方无法可靠唤起；`payH5Url` 已是麦当劳自有域收银台，够用 |
+
+### 1.8 大赛材料审核与报名（追加会话 2：2026-10-20 21:00–21:40，提交 `a1`）
+
+对照官方仓库 M-China/mcd-developer-innovation-challenge 的参赛要求逐项核查（报名截止 2026-10-25 23:59，定榜 10-26 00:00）：
+
+| 官方要求 | 本仓库状态 |
+| --- | --- |
+| `README.md`（介绍/安装/示例/目标用户，文件名不可改） | ✅ 本次显式补「目标用户」段 + 大赛徽章 |
+| `CONTEST_DECLARATION.md`（**内容不可改动**） | ✅ 与官方 raw 文件 1522 字节 diff 完全一致 |
+| `MCP_INTEGRATION.md（Server/Tool/流程/业务价值） | ✅ 8 节齐全（含业务价值专节） |
+| 源代码 | ✅ |
+| `workbuddy.md`（WorkBuddy 专项奖励必需） | ✅ 144 行导出 |
+| 仓库 Public、创建时间 2025-12-25 之后 | ✅ 2026-10-20 创建，Public，MIT |
+| 报名 Issue（官方格式） | ✅ **已提交 #927**（`【参赛申请】mcd-ledger 麦麦账本——麦当劳消费审计官`），系统自动校验回复待监控 |
+| 不含真实 Token/个人信息 | ✅ 全仓扫描干净，`mcp-config.example.json` 仅 `${MCD_MCP_TOKEN}` 占位 |
+
+**报名 Issue 格式纪律**（官方明确警告，重新提交时必须遵守）：标题与正文间不加换行；`项目名称`/`项目地址`/`项目简介` 各占一行且标签与内容同行；项目地址不用 Markdown 链接。
+
+### 1.9 UI 校验工具重建（追加会话 2，U4 闭环）
+
+`out/` 下 5 个脚本随换设备实际丢失（`D:/PROJECTS/mcd-skill/...` 旧路径不存在、本机无备份），已在 `scripts/` 重建为参数化版本：
+
+| 文件 | 作用 |
+| --- | --- |
+| `ui-cdp.mjs` | 共享 CDP 助手（零依赖，Node 内置 WebSocket）：`CHROME_PATH` 环境变量 + 平台自动探测、`CDP_PORT` 可配、控制台异常/请求失败收集、截图自动建目录 |
+| `verify-ui.mjs` | 结构断言 + 场景/主题切换巡检 + 控制台零异常（profile: prototype / ledger / generic） |
+| `audit-contrast.mjs` + `contrast-fn.mjs` | WCAG AA 审计（决策页双主题 × 3 场景）；审计函数抽离共享 |
+| `audit-ledger.mjs` | 账本页 AA 审计（深色单主题，`--full-page`） |
+| `cdp-shot.mjs` | 无头截图（视口 + 前置 eval） |
+| `sheet.mjs` | 评审拼版图（base64 内联 HTML 网格 + Chrome 整页截图，无图像库依赖） |
+
+**重建时实测发现并修复的三类审计误报**（写进 `contrast-fn.mjs` 头注释，改算法前先读）：
+1. `background-clip:text` 渐变文字（`.grad`/`.card-n`/`h1 em`）：字形色是渐变色停而非 `color`，改为色停逐一比对底层背景；
+2. 绝对定位元素（`.wk-bar i` 渲染在柱体上方）：只合成元素矩形**真正压住**的祖先背景；
+3. CSS 过渡中间色（`.nav a` 0.2s color 过渡）：审计前注入 `transition:none!important`。
+
+**复现基线**：决策页 6 组合 ×0 违规；账本页 373 处文本 ×0 违规；原型结构断言 15/15、0 控制台异常、0 外部请求（离线）。
