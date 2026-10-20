@@ -1,6 +1,6 @@
 # 方案卡 · 待支付确认页 · 设计方案（v1 · 可开发）
 
-> 交付物：本文档 + `docs/prototype-v2.html`（可点击原型）+ `docs/tokens-v2.css`（design tokens）
+> 交付物：本文档 + `docs/prototype-v2.html`（可点击原型）+ `docs/tokens.css`（design tokens）
 > 静态评审图：`docs/shots/sheet-light.png` / `docs/shots/sheet-dark.png`（9 态拼版）
 > 状态：可用于开发评审。文中所有数字（价格、约束、接口字段）来自真实账号与门店 `1420670` 的实测，不是推算。
 > 更新：2026-10-20
@@ -230,7 +230,7 @@
 
 ## 8. Design tokens（摘要）
 
-完整定义见 `docs/tokens-v2.css`（浅/深两套 + 圆角/阴影/间距/字号/动效/布局变量）。关键项：
+完整定义见 `docs/tokens.css`（浅/深两套 + 圆角/阴影/间距/字号/动效/布局变量）。关键项：
 
 | 用途 | 浅色 | 深色 | 说明 |
 |---|---|---|---|

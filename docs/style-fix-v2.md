@@ -1,6 +1,6 @@
 # 原型样式修复 v2.1 · 上边距与深色卡片辨识度
 
-> 范围：`docs/prototype-v2.html` + `docs/tokens-v2.css`
+> 范围：`docs/prototype-v2.html` + `docs/tokens.css`
 > 覆盖：8 个界面状态（S1–S8）× 浅色 / 深色 = 16 个页面面
 > 结果：自动核查 **116/116 通过**，对比度审计 **0 处低于 AA**，控制台无异常
 

@@ -15,6 +15,7 @@ import { McpClient } from "./mcp/client.ts";
 import { TraceRecorder } from "./runtime/trace.ts";
 import { renderConsole } from "./render/console.ts";
 import { renderHtml } from "./render/html.ts";
+import { renderPlan } from "./render/plan.ts";
 import { renderOrdersCsv } from "./render/csv.ts";
 import { toDateKey } from "./audit/windows.ts";
 import { DEFAULT_RANGE } from "./engine/range.mjs";
@@ -180,9 +181,15 @@ async function main(): Promise<void> {
   writeFileSync(htmlPath, renderHtml(report, result.view, result.ledger), "utf8");
   writeFileSync(csvPath, renderOrdersCsv(result.priced), "utf8");
 
+  // V2 决策页与账本页同源：同一份事实表、同一份引擎，所以它是产物而不是手工原型
+  const planPath = resolve(outDir, "prototype-v2.html");
+  const topStrat = result.view.strats[0] ?? null;
+  writeFileSync(planPath, renderPlan(result.view, result.ledger, { strat: topStrat }), "utf8");
+
   if (!args.json) {
     process.stdout.write(`  报告  ${htmlPath}\n`);
     process.stdout.write(`  明细  ${csvPath}\n`);
+    process.stdout.write(`  决策页 ${planPath}\n`);
     process.stdout.write(`  轨迹  ${tracePath}\n\n`);
     process.stdout.write(`  ${summaryLine(report)}\n\n`);
   }

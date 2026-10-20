@@ -34,6 +34,15 @@ const NAV: ReadonlyArray<readonly [string, string]> = [
 const ARCH_D =
   "M10 150C10 62 34 14 60 14C86 14 108 62 108 150C108 62 130 14 156 14C182 14 206 62 206 150";
 
+/**
+ * 账本页 → 决策页原型的相对入口。
+ * 两者同目录（docs/）时可直接跳转；报告被单独拷走后该链接为软链（不会报错，只是 404）。
+ *
+ * 第二档之后这条链带上参数：range（当前区间）+ strat（策略类型），
+ * 决策页据此用同一份引擎算出对应的买法，所以它是"带着结论跳过去"，不是换个页面。
+ */
+const PLAN_HREF = "prototype-v2.html";
+
 /* ============================ 页面骨架 ============================ */
 
 export function renderHtml(report: AuditReport, view: View, ledger: LedgerData): string {
@@ -44,6 +53,7 @@ export function renderHtml(report: AuditReport, view: View, ledger: LedgerData):
     report.range.key === "custom" ? `${report.period.from}..${report.period.to}` : report.range.key;
   // 把"首屏用的是哪个区间"一起下发，页面的初始状态才和 SSR 对齐
   const dataJson = JSON.stringify({ ...ledger, defaultRange: spec }).replace(/</g, "\\u003c");
+  const planHref = `${PLAN_HREF}?from=ledger&range=${encodeURIComponent(spec)}`;
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -85,6 +95,7 @@ export function renderHtml(report: AuditReport, view: View, ledger: LedgerData):
     </nav>
     <div class="bar-r">
       <span class="bar-sum"><i data-bar-k>${escText(report.range.label)} · 省下</i><b data-bar-v>${view.summary.saved === null ? "—" : yuan(view.summary.saved)}</b></span>
+      <a class="btn btn-plan" data-plan-link="1" href="${planHref}">方案卡 →</a>
       <button class="btn btn-gold" type="button" data-copy="${escText(shareText(view.summary, view.range))}" data-ok="分享文案已复制">复制分享文案</button>
     </div>
   </div>
@@ -365,9 +376,14 @@ function esc(s: string): string {
 
 const STYLE = `
 *,*::before,*::after{box-sizing:border-box}
+/* 口径源：docs/tokens.css。本块与其中「原型·深色」同值，打印块与「原型·浅色」同值。
+   账本页要保持单文件自包含，所以内联而不外链 —— 改色时两处一起改。 */
 :root{
-  --bg:#09090A;--bg2:#0C0C0E;--panel:#111113;--panel2:#151518;
-  --line:rgba(255,255,255,.075);--line2:rgba(255,255,255,.14);
+  /* 卡片层级：#09090A 底 → #17171B 卡面 → #202026 内嵌块（与 docs/tokens.css 的 --surface/--surface-2 同值）。
+     原来 --panel 是 #111113，与底色只差 2 级，叠在 0.075 白描边上整片糊成一团黑——
+     这个结论先在原型里验证过，现在回流到账本页。 */
+  --bg:#09090A;--bg2:#0C0C0E;--panel:#17171B;--panel2:#202026;
+  --line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.2);
   --gold:#FFC72C;--gold-d:#D9A200;--bone:#DCD6C8;
   /* 红：#E23B2E 只用于 18px 以上的大号数字；小字用 --red-t，否则深色底上达不到 4.5:1 */
   --red:#E23B2E;--red-t:#F4685B;--red-d:#9C2318;
@@ -546,6 +562,11 @@ h1 em{
 h2{font-size:20px;letter-spacing:-.02em;font-weight:700}
 .lead{font-size:12.5px;color:var(--ink2);max-width:74ch;margin:0 0 24px}
 .note{font-size:12px;color:var(--ink2);max-width:70ch;margin-top:14px;padding-left:12px;border-left:1px solid rgba(255,199,44,.28)}
+/* 策略区 → 决策页原型：一条出口链接，说明"这些数字下一步会变成什么" */
+.plan-link{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:18px;padding-top:15px;border-top:1px solid var(--line)}
+.plan-link a{font-size:12.5px;font-weight:600;color:var(--gold);border-bottom:1px solid rgba(255,199,44,.34)}
+.plan-link a:hover{border-bottom-color:var(--gold)}
+.plan-link span{font-size:11.5px;color:var(--ink3)}
 .note strong{color:var(--bone);font-weight:600}
 .muted{color:var(--ink3)}
 .empty{padding:26px 0;display:flex;flex-direction:column;gap:5px}
@@ -663,6 +684,13 @@ h2{font-size:20px;letter-spacing:-.02em;font-weight:700}
 .strat-e li{position:relative;padding-left:15px;font-size:12.5px;color:var(--ink2)}
 .strat-e li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:1px;background:var(--ink3)}
 .strat-a{margin-top:11px;font-size:12.5px;color:var(--bone);display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.strat-go{
+  display:inline-flex;align-items:center;gap:5px;margin-top:10px;
+  font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;
+  border-bottom:1px solid rgba(255,199,44,.34);padding-bottom:2px;
+}
+.strat-go:hover{border-bottom-color:var(--gold)}
+.strat-go::after{content:"→";font-weight:400}
 .strat-a b{
   font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--gold);text-transform:uppercase;
   flex:0 0 auto;padding:3px 5px;border:1px solid rgba(255,199,44,.32);border-radius:3px;
@@ -856,6 +884,12 @@ h2{font-size:20px;letter-spacing:-.02em;font-weight:700}
   .wrap,.bar-in{padding:0 18px}
   .nav{display:none}
   .bar-sum{display:none}
+  /* 窄屏顶栏三要素（字标 + 方案卡 + 复制）要挤进 360px：收紧间距、去字标英文名 */
+  .bar-in{gap:10px}
+  .bar-r{gap:8px}
+  .mark-t em{display:none}
+  .btn-plan{padding:0 9px;font-size:11px}
+  .bar-r .btn{padding:0 11px;font-size:11.5px}
   .cover{padding:44px 0 34px}
   h1{font-size:25px;line-height:1.24;letter-spacing:-.03em;max-width:none}
   .arches{width:280px;right:-110px;top:-16px;opacity:.3}
@@ -910,7 +944,9 @@ h2{font-size:20px;letter-spacing:-.02em;font-weight:700}
   .btn-gold,.nav a.on{border:1px solid ButtonText}
 }
 @media print{
-  :root{--bg:#fff;--ink:#111;--ink2:#444;--ink3:#666;--line:rgba(0,0,0,.14);--line2:rgba(0,0,0,.22);--bone:#222;--gold:#9A6C00;--red:#B32418;--red-t:#B32418}
+  /* 打印 = 浅色口径 + 纯白底（省墨）。品牌红已统一到 docs/tokens.css 的浅色值
+     （#DA291C / 小字 #B0231A），不再保留第三个红。 */
+  :root{--bg:#fff;--ink:#111;--ink2:#444;--ink3:#666;--line:rgba(0,0,0,.14);--line2:rgba(0,0,0,.22);--bone:#222;--gold:#9A6C00;--red:#DA291C;--red-t:#B0231A}
   body{background:#fff;color:#111}
   body::before,.gridfade,.arches,.bar,.toast,.flt{display:none!important}
   .tilt{perspective:none}
@@ -930,7 +966,7 @@ h2{font-size:20px;letter-spacing:-.02em;font-weight:700}
   .card-l,.card-row span{color:#555!important}
   .card-row{border-top:1px solid #DDD!important}
   .card-row b{color:#111!important}
-  .card-row b.red{color:#B32418!important}
+  .card-row b.red{color:#B0231A!important}
   .card-n{background:none!important;-webkit-text-fill-color:#9A6C00!important;color:#9A6C00!important}
   .stamp-mark{color:#9A6C00!important;border-color:#C6A64E!important;box-shadow:none!important}
   .share-pre{background:#f7f7f5}
@@ -1174,7 +1210,18 @@ const SCRIPT = `
     paintChips(view.range);
     paintMeta(view);
     current = spec;
+    syncPlanLinks(spec);
     if (remember) writeStore(spec);
+  }
+
+  /* 切区间后，账本页通往决策页的每个入口都要换参数：
+     对面拿到的 range 与这里一致，才能算出同一批常点商品和同一批券 */
+  function syncPlanLinks(spec){
+    var base = '${PLAN_HREF}' + '?from=ledger&range=' + encodeURIComponent(spec);
+    [].slice.call(doc.querySelectorAll('[data-plan-link]')).forEach(function(a){
+      var st = a.getAttribute('data-strat');
+      a.setAttribute('href', st ? base + '&strat=' + encodeURIComponent(st) : base);
+    });
   }
 
   if (chips) {

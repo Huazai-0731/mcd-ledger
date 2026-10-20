@@ -122,6 +122,25 @@ export const PRESETS = [
 export const DEFAULT_RANGE = "30d";
 
 /**
+ * 决策页原型的相对入口（第一档：两页互通）。
+ * 引擎是双端同构的，不能 import 渲染层，所以这里与 src/render/html.ts 的
+ * PLAN_HREF 各存一份；两者同目录时可直接跳转，报告被单独拷走后为软链。
+ */
+const PLAN_HREF = "prototype-v2.html";
+
+/** 跳到决策页时带的区间参数：自定义区间要原样带上起止日期 */
+function planSpec(range) {
+  return range.key === "custom" ? range.from + ".." + range.to : range.key;
+}
+
+/** 决策页链接：区间 + 策略类型一起带过去，对面才知道该先选哪个买法 */
+function planHref(range, kind) {
+  const q = ["from=ledger", "range=" + encodeURIComponent(planSpec(range))];
+  if (kind) q.push("strat=" + encodeURIComponent(kind));
+  return PLAN_HREF + "?" + q.join("&");
+}
+
+/**
  * 解析命令行 / URL 传入的区间描述。
  *   "7d" | "30d" | "90d" | "all" | "2026-09-01..2026-10-01"
  * 解析不出来时退回默认区间，而不是报错——一个筛选器不该让整份报告打不开。
@@ -1054,6 +1073,7 @@ export function renderStrategy(strats, s, range) {
           <h3>${esc(x.title)}<span class="strat-k">${esc(x.kindLabel)}</span></h3>
           <ul class="strat-e">${x.basis.map((b) => "<li>" + esc(b) + "</li>").join("")}</ul>
           <p class="strat-a"><b>怎么做</b>${esc(x.action)}</p>
+          <a class="strat-go" data-plan-link="1" data-strat="${esc(x.kind)}" href="${planHref(range, x.kind)}">按这个方案点 →</a>
         </div>
         <div class="strat-r">
           ${amount}
@@ -1076,6 +1096,8 @@ export function renderStrategy(strats, s, range) {
     <div class="strats">${cards}</div>
 
     <p class="note">不同策略可能指向同一笔订单的不同环节（例如既没用券、单价也偏高），合计是<strong>上限估计</strong>；标注“一次性”的是券类机会，不做月化。</p>
+
+    <p class="plan-link"><a data-plan-link="1" href="${planHref(range, null)}">这些方案落成订单是什么样 → 打开方案卡原型</a><span>原型用的是同一份账本数据：区间与策略一并带过去，价格按当前菜单现价估算，真实下单前须重新结算。</span></p>
   </section>`;
 }
 
@@ -1244,6 +1266,418 @@ function moneyCell(value, dec) {
 function countAttrs(value) {
   if (value === null) return "";
   return 'data-count="' + value.toFixed(2) + '" data-dec="2" data-pre="¥"';
+}
+
+/* ============================ 5. 方案求解 ============================ */
+/**
+ * 把"过去常点什么"变成"下一单怎么买最省"。
+ *
+ * 为什么放在引擎里而不是渲染层：
+ *   方案的每一个数字都随区间变——换区间就是换一批常点商品、换一批可用券、
+ *   换一张回本线。如果这份逻辑只跑在服务端，原型页就只能展示固定数字；
+ *   放在引擎里，浏览器切区间时调用的是同一段代码，不可能对不上。
+ *
+ * 口径声明（重要，别在别处重复解释）：
+ *   — 所有价格来自账本事实表里的菜单现价（menu.p）与划线价（menu.o），
+ *     原型**不联网、不调用 calculate-price**，所以它是"按当前菜单的估算"，
+ *     真实下单前必须重算（界面上 S4 降级态讲的就是这件事）。
+ *   — 券的抵扣额取 TS 侧算好的 worth（券名 × 菜单现价匹配只做一次，不留第二份）。
+ */
+
+/** 券名 → 商品关键词：去掉"11.9元"这类前缀和"券"字 */
+function couponKeyword(name) {
+  const s = String(name || "").replace(/^\s*\d+(\.\d+)?\s*元\s*/, "").replace(/券$/, "").trim();
+  return s.length >= 2 ? s : null;
+}
+
+/** 关键词是否命中商品名：按顺序的覆盖度（"麦辣鸡腿堡" 能命中 "麦辣鸡腿汉堡"） */
+function covers(key, name) {
+  const k = String(key || "");
+  const n = String(name || "");
+  if (!k || !n) return 0;
+  if (n.indexOf(k) >= 0) return 1;
+  let i = 0;
+  let hit = 0;
+  for (const ch of k) {
+    const at = n.indexOf(ch, i);
+    if (at >= 0) {
+      hit += 1;
+      i = at + 1;
+    }
+  }
+  return hit / k.length;
+}
+
+/** 券是否已过期（validTo 为空视为长期有效） */
+function couponAlive(c, nowMs) {
+  if (!c || !c.validTo) return true;
+  const t = Date.parse(String(c.validTo).replace(" ", "T"));
+  if (Number.isNaN(t)) return true;
+  return t >= nowMs;
+}
+
+/** 单张券在这件商品上能省多少：优先用审计层算好的 worth，兜底用券面价差 */
+function couponOff(c, unit) {
+  if (unit === null || unit === undefined) return 0;
+  const price = c && c.price !== null && c.price !== undefined ? c.price : null;
+  const byPrice = price === null ? null : money(unit - price);
+  const raw = c && c.worth !== null && c.worth !== undefined ? c.worth : byPrice;
+  if (raw === null || raw === undefined) return 0;
+  return Math.max(0, Math.min(money(raw), money(unit)));
+}
+
+/** 常点商品：区间内出现次数最多的前 n 个 SKU */
+function topSkus(rows, menu, n) {
+  const freq = new Map();
+  for (const r of rows) {
+    for (const it of r.items || []) {
+      const code = it[0];
+      const qty = it[2] || 1;
+      const unit = it[3];
+      const cur = freq.get(code) || { code, name: it[1], count: 0, qty: 0, unit: null };
+      cur.count += 1;
+      cur.qty += qty;
+      if (cur.unit === null && unit !== null && unit !== undefined) cur.unit = unit;
+      freq.set(code, cur);
+    }
+  }
+  return [...freq.values()]
+    .map((x) => {
+      const m = menu[x.code] || {};
+      const unit = x.unit !== null && x.unit !== undefined ? x.unit : m.p;
+      const list = m.o !== null && m.o !== undefined ? m.o : unit;
+      return { code: x.code, name: x.name, count: x.count, qty: x.qty, unit, list };
+    })
+    .filter((x) => x.unit !== null && x.unit !== undefined)
+    .sort((a, b) => b.count - a.count || b.qty - a.qty || b.unit - a.unit)
+    .slice(0, n);
+}
+
+/** 找更便宜的同类买法：订单里出现过的、名字互相包含且更便宜的 SKU */
+function cheaperAlt(item, seen) {
+  let best = null;
+  for (const s of seen) {
+    if (s.code === item.code) continue;
+    const rel =
+      s.name.indexOf(item.name) >= 0 || item.name.indexOf(s.name) >= 0 ? 1 : covers(item.name, s.name);
+    if (rel < 0.7) continue;
+    if (s.unit >= item.unit) continue;
+    const save = money(item.unit - s.unit);
+    if (!best || save > best.save) best = { code: s.code, name: s.name, unit: s.unit, save };
+  }
+  return best;
+}
+
+/**
+ * 求解一篮子方案。
+ * @returns 见 range.d.mts 的 PlanData
+ */
+export function buildPlan(data, spec) {
+  const range = resolveRange(typeof spec === "string" && spec ? spec : DEFAULT_RANGE, data.now, data.rows);
+  const rows = completed(filterRows(data.rows || [], range));
+  const menu = data.menu || {};
+  const coupons = data.coupons || [];
+  const nowMs = data.now;
+  const days = Math.max(1, range.days || 1);
+
+  const out = {
+    ok: false,
+    reason: null,
+    spec: range.key === "custom" ? range.key : range.key,
+    rangeKey: range.key,
+    label: range.label,
+    from: dateKey(range.fromMs),
+    to: dateKey(range.toMs),
+    days,
+    orders: rows.length,
+    basket: [],
+    seen: [],
+    store: null,
+    methods: [],
+    best: null,
+    split: null,
+    card: null,
+    degrade: null,
+    provenance: [],
+  };
+
+  if (rows.length === 0) {
+    out.reason = "这个区间还没有已完成订单，换一个区间再试";
+    return out;
+  }
+
+  // ① 常点商品（方案的主语）
+  const basket = topSkus(rows, menu, 3);
+  if (basket.length === 0) {
+    out.reason = "这个区间的订单里没有可定价的商品，换一个区间再试";
+    return out;
+  }
+
+  // ② 见过的全部 SKU（用于找"更便宜的买法"和售罄替代）
+  const seen = topSkus(rows, menu, 40);
+
+  const listTotal = money(sum(basket.map((b) => b.list)));
+  const curTotal = money(sum(basket.map((b) => b.unit)));
+  const promoSave = money(listTotal - curTotal);
+
+  // ③ 可用券 × 常点商品的命中
+  const hits = [];
+  for (const c of coupons) {
+    if (!couponAlive(c, nowMs)) continue;
+    const kw = couponKeyword(c.name);
+    if (!kw) continue;
+    let best = null;
+    let bestScore = 0;
+    for (const b of basket) {
+      const s = covers(kw, b.name);
+      if (s > bestScore) {
+        bestScore = s;
+        best = b;
+      }
+    }
+    if (!best || bestScore < 0.7) continue;
+    const off = couponOff(c, best.unit);
+    if (off <= 0) continue;
+    hits.push({ coupon: c, item: best, off });
+  }
+  hits.sort((a, b) => b.off - a.off);
+
+  const topCount = basket[0] ? basket[0].count : 0;
+  out.confidence = topCount >= 4 ? "high" : topCount >= 2 ? "medium" : "low";
+  out.confidenceNote =
+    out.confidence === "high"
+      ? "这个组合在区间内出现了 " + topCount + " 次，是稳定的老样子"
+      : out.confidence === "medium"
+        ? "这个组合在区间内只出现 " + topCount + " 次，参考为主"
+        : "区间内订单太少，每件都只出现过 1 次 —— 这是「最近点过」，还算不上老样子";
+
+  out.ok = true;
+  out.basket = basket.map((b) => ({
+    code: b.code,
+    name: b.name,
+    count: b.count,
+    unit: money(b.unit),
+    list: money(b.list),
+  }));
+  out.seen = seen.map((s) => ({ code: s.code, name: s.name, unit: money(s.unit) }));
+
+  // 常去门店：区间内订单数最多的那家
+  const storeCount = new Map();
+  for (const r of rows) {
+    if (!r.st) continue;
+    storeCount.set(r.st, (storeCount.get(r.st) || 0) + 1);
+  }
+  const storeTop = [...storeCount.entries()].sort((a, b) => b[1] - a[1])[0];
+  out.store = storeTop ? { name: storeTop[0], orders: storeTop[1] } : null;
+
+  const itemsOf = (list) => list.map((b) => ({ n: b.name + " ×1", p: money(b.unit) }));
+  const meta = "外带 · 门店自取 · 约 10 分钟";
+
+  // ④ 买法一：单点现价（不用券）
+  out.methods.push({
+    id: "plain",
+    name: "常点组合 · 单点",
+    meta,
+    items: itemsOf(basket),
+    coupon: null,
+    original: listTotal,
+    total: curTotal,
+    saved: promoSave,
+    badge: null,
+    tip:
+      promoSave > 0
+        ? "菜单现价已含促销，这部分不需要你做任何操作"
+        : "这几件商品当前没有促销价，省钱的唯一入口是券",
+    points: [],
+  });
+
+  // ⑤ 买法二：合单用券（一单只能用一张券，取抵扣最大的那张）
+  if (hits.length > 0) {
+    const h = hits[0];
+    const total = money(curTotal - h.off);
+    out.methods.push({
+      id: "coupon",
+      name: "常点组合 · 用券",
+      meta,
+      items: itemsOf(basket),
+      coupon: { name: "券 · " + h.coupon.name, off: h.off },
+      original: listTotal,
+      total,
+      saved: money(listTotal - total),
+      badge: null,
+      tip: "券与商品绑定，替换这件商品后优惠失效",
+      points: [
+        "券「" + h.coupon.name + "」绑定在" + h.item.name + "上，券价 ¥" + h.coupon.price + "、现价 ¥" + money(h.item.unit),
+        "一单只能用一张券；剩下的券要靠拆单才能用上",
+      ],
+    });
+
+    /*
+     * ⑥ 拆单：一单只能用一张券，所以"第二张券"只能靠第二单用掉。
+     *   注意这里**不要求第二张券一定命中**——算出来不省也是结论，
+     *   界面要能回答"我拆开到底图什么"，答案是"图不到，别拆"。
+     */
+    const second = hits.find((x) => x.item.code !== h.item.code) || null;
+    const rest = basket.filter((b) => b.code !== h.item.code);
+    if (rest.length > 0 && h.item.code !== null) {
+      const o1Total = money(h.item.unit - h.off);
+      const o2List = money(sum(rest.map((b) => b.unit)));
+      const o2Total = money(o2List - (second ? second.off : 0));
+      const total = money(o1Total + o2Total);
+      const singleTotal = out.methods[out.methods.length - 1].total;
+      const delta = money(singleTotal - total);
+      out.split = {
+        orders: [
+          {
+            label: "单 1 · " + h.item.name,
+            items: [{ n: h.item.name + " ×1", p: money(h.item.unit) }],
+            coupon: { name: "券 · " + h.coupon.name, off: h.off },
+            total: o1Total,
+          },
+          {
+            label: "单 2 · " + rest.map((b) => b.name).join(" + "),
+            items: rest.map((b) => ({ n: b.name + " ×1", p: money(b.unit) })),
+            coupon: second ? { name: "券 · " + second.coupon.name, off: second.off } : null,
+            total: o2Total,
+          },
+        ],
+        total,
+        delta,
+        worthy: delta >= 5,
+        secondCoupon: !!second,
+        note: !second
+          ? "第二张券用不上这些商品，拆开不省，还多一个取餐码"
+          : delta >= 5
+            ? "多省 ¥" + delta.toFixed(2) + " · 代价是多 1 个取餐码"
+            : delta > 0
+              ? "只多省 ¥" + delta.toFixed(2) + "，不足 ¥5，不值得多跑一趟"
+              : "拆开并不更省，还会多一个取餐码，建议合单",
+      };
+    }
+  }
+
+  // ⑦ 买法三：更便宜的同类买法（组合/套餐替代单品）
+  for (const b of basket) {
+    const alt = cheaperAlt(b, seen);
+    if (!alt || alt.save < 0.5) continue;
+    const items = basket.map((x) =>
+      x.code === b.code
+        ? { n: alt.name + " ×1 · 替代" + b.name, p: money(alt.unit), swapped: true }
+        : { n: x.name + " ×1", p: money(x.unit) },
+    );
+    const total = money(curTotal - alt.save);
+    out.methods.push({
+      id: "alt:" + b.code,
+      name: "换成" + alt.name,
+      meta,
+      items,
+      coupon: null,
+      original: listTotal,
+      total,
+      saved: money(listTotal - total),
+      badge: "更便宜",
+      tip: "同类商品里更低的买法，餐品会变，介意口感就别换",
+      points: [alt.name + " ¥" + money(alt.unit) + " vs " + b.name + " ¥" + money(b.unit) + "，每件省 ¥" + alt.save.toFixed(2)],
+    });
+    break; // 只推最划算的一处替换，多了就变成菜单浏览
+  }
+
+  // ⑧ 买卡：只有"随单购权益价"的商品才谈得上买卡（否则是帮商家卖卡）
+  const cardItem = basket.find((b) => {
+    const d = (menu[b.code] || {}).d;
+    return typeof d === "string" && d.indexOf("随单购") >= 0 && b.list > b.unit;
+  });
+  if (cardItem) {
+    const perSave = money(cardItem.list - cardItem.unit);
+    const cardFee = 19; // 麦金卡月卡 ¥19（2026-10 实测）
+    const breakEven = Math.ceil(cardFee / perSave);
+    const perMonth = (cardItem.count * 30) / days;
+    const netMonth = money(perSave * perMonth - cardFee);
+    const single = money(cardItem.list - (cardItem.unit + cardFee)); // >0 = 这一单买卡就更省
+    out.card = {
+      item: { n: cardItem.name + " ×1", p: money(cardItem.unit) },
+      cardFee: { n: "麦金卡月卡（30 天）×1", p: cardFee },
+      withCard: money(cardItem.unit + cardFee),
+      noCard: money(cardItem.list),
+      single,
+      perSave,
+      breakEven,
+      perMonth: Math.round(perMonth * 10) / 10,
+      netMonth,
+      verdict: netMonth > 0 ? "值" : "不值",
+      text:
+        "单笔：买卡 ¥" + money(cardItem.unit + cardFee) + " vs 不买卡 ¥" + money(cardItem.list) +
+        (single > 0 ? "（这一单就省 ¥" + single.toFixed(2) + "）" : "（这一单贵 ¥" + (-single).toFixed(2) + "）") +
+        "；按月：回本线 " + breakEven + " 次，你月化 " + (Math.round(perMonth * 10) / 10) + " 次，净省 ¥" + netMonth.toFixed(2),
+    };
+  }
+
+  // ⑨ 售罄降级（S4）：最贵的那件换成同类替代，价差超阈值会要求重新确认
+  const priciest = basket.slice().sort((a, b) => b.unit - a.unit)[0];
+  const alt = priciest ? cheaperAlt(priciest, seen) : null;
+  if (priciest && alt) {
+    const delta = money(alt.unit - priciest.unit);
+    const prevTotal =
+      (out.methods.find((m) => m.id === "coupon") || out.methods[0]).total;
+    out.degrade = {
+      from: priciest.name,
+      to: alt.name,
+      delta,
+      items: basket.map((x) =>
+        x.code === priciest.code
+          ? { n: alt.name + " ×1 · 替代" + priciest.name, p: money(alt.unit), swapped: true }
+          : { n: x.name + " ×1", p: money(x.unit) },
+      ),
+      prevTotal,
+      total: money(prevTotal + delta),
+      threshold: 0.5,
+    };
+  }
+
+  // ⑩ 最省方案
+  const ranked = out.methods.slice().sort((a, b) => a.total - b.total);
+  out.best = ranked[0] ? ranked[0].id : null;
+  if (ranked[0]) ranked[0].badge = "最省";
+  out.methods = ranked;
+
+  // ⑪ 数字从哪来（评审时最常被问的一栏）
+  out.provenance = [
+    "常点商品：区间内 " + rows.length + " 笔已完成订单里出现次数最多的 " + basket.length + " 个 SKU",
+    "价格：账本事实表里的菜单现价 / 划线价，原型不联网，真实下单前须重算",
+    hits.length > 0
+      ? "券：" +
+        hits
+          .slice(0, 2)
+          .map((h) => "「" + h.coupon.name + "」最多省 ¥" + h.off.toFixed(2))
+          .join("、")
+      : "券：当前没有券能命中这几件商品",
+    out.card ? "买卡：卡价 ¥19（实测），回本线按「单笔省额」反推" : "买卡：常点商品里没有随单购权益价，不做推荐",
+  ];
+
+  return out;
+}
+
+/**
+ * 账本里的某条策略 → 原型里应该默认选中哪个买法。
+ * 这是"从诊断跳到决策"要带的那个参数：点「时段 × 券」进来，就该先看到用券的方案。
+ */
+export function planFocus(plan, kind) {
+  if (!plan || !plan.ok) return null;
+  const best = plan.best || (plan.methods[0] ? plan.methods[0].id : null);
+  const alt = plan.methods.find((m) => String(m.id).indexOf("alt:") === 0);
+  const has = (id) => plan.methods.some((m) => m.id === id);
+  switch (kind) {
+    case "window":
+    case "expiry":
+    case "timing":
+      return has("coupon") ? "coupon" : best;
+    case "price":
+      return alt ? alt.id : best;
+    case "delivery":
+      return best;
+    default:
+      return best;
+  }
 }
 
 /**

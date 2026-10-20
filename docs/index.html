@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>麦麦账本 · 演示入口</title>
+<meta name="description" content="麦麦账本的两个交付物入口：账本页（诊断过去）与方案卡原型（决定现在）。">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh;background:var(--app-bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:14px;line-height:var(--lh-body);-webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;
+  }
+  a{color:inherit;text-decoration:none}
+  h1,h2,p{margin:0}
+
+  .wrap{width:100%;max-width:940px;margin:0 auto;padding:0 24px}
+
+  /* ---------- 页头 ---------- */
+  header{padding:52px 0 8px}
+  .mark{display:flex;align-items:center;gap:12px}
+  .mark svg{width:26px;height:26px;color:var(--gold)}
+  .mark b{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .mark b em{font-style:normal;font-weight:500;color:var(--text-3);letter-spacing:.04em;margin-left:7px;font-size:12px}
+
+  h1{font-size:26px;line-height:1.28;letter-spacing:-.025em;margin-top:26px;font-weight:700}
+  h1 span{color:var(--gold)}
+  .sub{margin-top:10px;font-size:13px;color:var(--text-2);max-width:56ch}
+
+  /* ---------- 两张入口卡 ---------- */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:32px 0 0}
+  .card{
+    display:flex;flex-direction:column;gap:12px;
+    padding:20px;border-radius:var(--r-2xl);
+    background:var(--surface);border:1px solid var(--border);
+    box-shadow:var(--shadow-card);
+    transition:border-color var(--dur) var(--ease),transform var(--dur) var(--ease);
+  }
+  .card:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+  .card:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+  .card-h{display:flex;align-items:baseline;gap:9px}
+  .n{font-size:10.5px;font-weight:600;letter-spacing:.16em;color:var(--gold)}
+  .card-h b{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .q{font-size:13px;color:var(--text-2);line-height:1.5}
+  .q i{font-style:normal;color:var(--text);font-weight:600}
+
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .tag{
+    font-size:10.5px;padding:3px 8px;border-radius:var(--r-pill);
+    background:var(--surface-2);color:var(--text-2);border:1px solid var(--border-2);
+  }
+  .tag.warn{color:var(--warn-text);border-color:var(--warn-border);background:var(--warn-bg)}
+  .go{
+    margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-size:12.5px;font-weight:600;color:var(--text);
+    padding-top:12px;border-top:1px solid var(--border-2);
+  }
+  .go u{text-decoration:none;color:var(--gold)}
+
+  /* ---------- 说明 ---------- */
+  .note{
+    margin-top:26px;padding:16px 18px;border-radius:var(--r-lg);
+    background:var(--surface-2);border:1px solid var(--border-2);
+    font-size:12.5px;color:var(--text-2);line-height:1.62;
+  }
+  .note b{color:var(--text);font-weight:600}
+  .note ol{margin:8px 0 0;padding-left:18px}
+  .note li{margin-top:4px}
+
+  footer{
+    margin-top:auto;padding:28px 0 34px;
+    font-size:11.5px;color:var(--text-3);
+    display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;
+  }
+  footer span{display:flex;align-items:center;gap:6px}
+  footer .dot{width:3px;height:3px;border-radius:50%;background:var(--text-4)}
+
+  @media (max-width:720px){
+    header{padding:36px 0 4px}
+    h1{font-size:22px;margin-top:20px}
+    .cards{grid-template-columns:1fr;margin-top:24px}
+    .wrap{padding:0 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="mark">
+      <svg viewBox="0 0 216 164" fill="none" aria-hidden="true">
+        <path d="M10 150C10 62 34 14 60 14C86 14 108 62 108 150C108 62 130 14 156 14C182 14 206 62 206 150"
+              stroke="currentColor" stroke-width="24" stroke-linecap="butt"/>
+      </svg>
+      <b>麦麦账本<em>McLedger</em></b>
+    </div>
+
+    <h1>先看你花得对不对，<br>再看<span>下一单怎么点</span>。</h1>
+    <p class="sub">两份交付物，一条线：账本页给出诊断，方案卡页把诊断变成一张可执行的订单。下面两个入口都能直接双击离线打开。</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="cards">
+
+    <a class="card" href="demo-report.html">
+      <div class="card-h"><span class="n">01</span><b>账本</b></div>
+      <p class="q">回答「我过去<i>花得对不对</i>」：省了多少、漏了多少、下次什么时候买最划算。</p>
+      <div class="tags">
+        <span class="tag">真实数据结构</span>
+        <span class="tag">可切区间</span>
+        <span class="tag">可打印</span>
+      </div>
+      <div class="go">打开账本 <u>→</u></div>
+    </a>
+
+    <a class="card" href="prototype-v2.html">
+      <div class="card-h"><span class="n">02</span><b>方案卡</b></div>
+      <p class="q">回答「<i>现在该怎么点</i>」：几种买法用账本同款引擎算出来，生成可撤销的待支付订单。</p>
+      <div class="tags">
+        <span class="tag">9 个界面状态</span>
+        <span class="tag">同一份引擎 · 可切区间</span>
+      </div>
+      <div class="go">打开原型 <u>→</u></div>
+    </a>
+
+  </div>
+
+  <div class="note">
+    <b>两页现在的关系与边界</b>
+    <ol>
+      <li>入口互通且<b>带参数</b>：账本页顶栏「方案卡 →」与每条策略的「按这个方案点 →」会把当前区间、策略类型一并带过去；原型左上角「← 账本」可跳回。</li>
+      <li>同一份数据、同一份引擎：决策页内嵌账本的事实表与 <b>range.mjs</b>，页内可切 7 天 / 30 天 / 90 天 / 全部，常点商品、券、价格即时重算——与账本页切区间用的是同一段代码。</li>
+      <li>色彩口径统一在 <b>tokens.css</b>（唯一口径），决策页构建时内联同一份变量；账本页为单文件自包含，按同值内联。</li>
+      <li>下单仍是<b>模拟</b>：价格按菜单现价估算（原型不联网），真实下单前必须重新结算；支付在麦当劳自有 H5 收银台完成，本工具不收集支付信息，也不代付。</li>
+    </ol>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">
+    <span>mcd-ledger v0.2.0</span>
+    <span class="dot"></span>
+    <span>数据来源：麦当劳 MCP</span>
+    <span class="dot"></span>
+    <span>离线可用 · 无外部依赖</span>
+  </div>
+</footer>
+
+</body>
+</html>

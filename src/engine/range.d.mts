@@ -146,6 +146,87 @@ export interface StrategyTotals {
   withAmount: number;
 }
 
+/** 方案卡里的一种"买法" */
+export interface PlanMethod {
+  id: string;
+  name: string;
+  meta: string;
+  items: Array<{ n: string; p: number; sub?: string; swapped?: boolean }>;
+  coupon: { name: string; off: number } | null;
+  /** 划线价合计（不用券、不吃促销时的价） */
+  original: number;
+  /** 实付 */
+  total: number;
+  saved: number;
+  badge: string | null;
+  tip: string;
+  points: string[];
+}
+
+export interface PlanSplitOrder {
+  label: string;
+  items: Array<{ n: string; p: number }>;
+  coupon: { name: string; off: number } | null;
+  total: number;
+}
+
+/** 由 buildPlan() 求解出的"下一单怎么买" */
+export interface PlanData {
+  ok: boolean;
+  reason: string | null;
+  rangeKey: string;
+  label: string;
+  from: string;
+  to: string;
+  days: number;
+  orders: number;
+  confidence: "high" | "medium" | "low";
+  confidenceNote: string;
+  basket: Array<{ code: string; name: string; count: number; unit: number; list: number }>;
+  seen: Array<{ code: string; name: string; unit: number }>;
+  /** 区间内订单最多的门店 */
+  store: { name: string; orders: number } | null;
+  methods: PlanMethod[];
+  best: string | null;
+  split: {
+    orders: PlanSplitOrder[];
+    total: number;
+    /** 相对合单的差额，>0 表示拆单更省 */
+    delta: number;
+    /** 差额 ≥ ¥5 才值得推荐（否则只是多一个取餐码） */
+    worthy: boolean;
+    /** 第二单是否真的用上了第二张券 */
+    secondCoupon: boolean;
+    note: string;
+  } | null;
+  card: {
+    item: { n: string; p: number };
+    cardFee: { n: string; p: number };
+    withCard: number;
+    noCard: number;
+    single: number;
+    perSave: number;
+    breakEven: number;
+    perMonth: number;
+    netMonth: number;
+    verdict: string;
+    text: string;
+  } | null;
+  degrade: {
+    from: string;
+    to: string;
+    delta: number;
+    items: Array<{ n: string; p: number; swapped?: boolean }>;
+    prevTotal: number;
+    total: number;
+    threshold: number;
+  } | null;
+  provenance: string[];
+}
+
+export declare function buildPlan(data: LedgerData, spec: string): PlanData;
+export declare function planFocus(plan: PlanData, kind: string): string | null;
+
 export interface View {
   spec: string;
   range: RangeInfo;
