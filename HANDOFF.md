@@ -2,6 +2,7 @@
 
 > 生成时间：2026-10-20 17:30（GMT+8）　|　仓库：`git@github.com:Huazai-0731/mcd-ledger.git`
 > 本地路径：`D:/PROJECTS/mcd-skill/mcd-ledger`　|　版本：v0.2.0
+> 追加会话：2026-10-20 20:00 —— 新增「WorkBuddy Skill 打包」（见 §1.7），改动已提交并推送（`5e4d334`）
 
 ---
 
@@ -11,7 +12,7 @@
 | --- | --- |
 | 本次会话完成 | **第一档整合**（两页互链 + tokens 单一口径 + 门厅页）+ **第二档整合**（决策页从静态稿变成构建产物、引擎新增方案求解器、账本页层级回流、区间级联动） |
 | 代码健康度 | `tsc --noEmit` 0 错误；`bench` 23/23；原型 9 态回归全绿、0 控制台异常；决策页与账本页对比度均 **0 处低于 AA** |
-| 版本控制 | ⚠️ **全部改动未提交、未推送**。工作区 10 改 + 3 新增；本地 `main` 领先 `origin/main` **1 个提交**（`f7ce33a` 未推送，远端停在 `030fc57`） |
+| 版本控制 | 追加会话（Skill 打包，`5e4d334`）已提交并推送，本地与 `origin/main` 同步 |
 | 最大风险 | ① `out/` 下的校验/截图脚本被 `.gitignore` 忽略，换设备即丢失；② 若用 `--out docs` 跑真实 `audit`，真实订单数据会被写进**被 git 跟踪**的 `docs/*.html` |
 | 未接线 | 真实的 `calculate-price` / `create-order` / `cancel-order` **一行代码都没写**（仅存在于原型的日志文案与注释里）。这是产品边界，不是遗漏 |
 
@@ -94,16 +95,41 @@
 | 决策页对比度 | `node out/audit-contrast.mjs` | 9 屏 + 弹层 + toast × 2 主题，**0 处低于 AA** |
 | 账本页对比度 | `node out/audit-ledger.mjs` | **0 处低于 AA** |
 
+### 1.7 WorkBuddy Skill 打包（追加会话：2026-10-20 20:00–20:30，提交 `5e4d334`）
+
+把整个项目打包成可安装的 WorkBuddy Skill，让任何 WorkBuddy 用户说一句「审计我的麦当劳消费」即可跑通。
+
+| 文件 | 作用 |
+| --- | --- |
+| `skill/mcd-ledger/SKILL.md` | 技能正典：触发词（麦当劳账单/消费复盘/券是不是浪费了）、前置检查（Node ≥ 22.18）、四模式决策树（demo / audit / doctor / bench）、输出目录防污染约定、产物呈现规则、只读硬约束 |
+| `skill/mcd-ledger/references/mcp-constraints.md` | MCP 十条实测硬约束 + 字段坑位（双层 data、beType、恒等式、Mouth 拼写） |
+| `skill/mcd-ledger/references/output-guide.md` | 三层价格 / 五类漏损 / 五类策略 / 区间口径的汇报解读规范 |
+| `skill/mcd-ledger/scripts/` | **主源码副本**（src + bench + viewer + `docs/tokens.css` + package.json 等），装在 `~/.workbuddy/skills/mcd-ledger/` 后直接 `node scripts/src/cli.ts <cmd>` |
+| `dist/mcd-ledger.zip` | 分发件（150 KB，`.gitignore` 用 `dist/*` + `!dist/mcd-ledger.zip` 白名单放行） |
+| `scripts/package_skill.py`、`scripts/quick_validate.py` | 收编自 skill-creator 插件，仓库内可独立重新打包 |
+| `skill/README.md` | 维护者说明：改完 `src/` 后如何同步副本、重跑回归、重打包、重安装 |
+
+**关键坑（已写进 `skill/README.md`）**：`src/render/plan.ts:1800` 按相对路径读 `../../docs/tokens.css`，副本里缺这个文件 demo/audit 直接崩——同步源码时必须连它一起拷贝。
+
+**副本验证（追加会话实测）**：
+
+| 校验 | 命令 | 结果 |
+| --- | --- | --- |
+| 副本回归 | `node skill/mcd-ledger/scripts/src/cli.ts bench` | 23/23 通过 |
+| 副本 demo | `node skill/mcd-ledger/scripts/src/cli.ts demo --out /tmp/mcd-skill-test` | 四产物齐全（HTML/CSV/决策页/trace），合成数据标记在位 |
+| 安装态冒烟 | 装到 `~/.workbuddy/skills/mcd-ledger/` 后跑 bench | 23/23 通过 |
+| Skill 结构校验 | `python scripts/quick_validate.py skill/mcd-ledger` | valid |
+
 ---
 
 ## 二、未完成的工作
 
 | # | 事项 | 当前进度 | 卡在何处 | 剩余工作量 |
 | --- | --- | --- | --- | --- |
-| U1 | **提交并推送本次改动** | 0% | 未执行。工作区 10 改 + 3 新增；`f7ce33a` 也未推送 | 小（一次提交 + push），但**必须先做 U5 的数据检查** |
+| U1 | **提交并推送本次改动** | ✅ 已完成（追加会话 `5e4d334` 已推送，本地与 `origin/main` 同步） | — | 0 |
 | U2 | **真实下单接线**（`calculate-price` → `create-order` → 支付 → `cancel-order`） | 0% | 产品边界未放开；代码中完全没有 `McpClient` 调用写操作 | 大。需 L2 授权确认 + 幂等/撤销设计 + 15 分钟过期处理 |
 | U3 | **唤起麦当劳 App / 小程序** | 结论：**不可行，已判定不做** | `wx-open-launch-weapp` 需认证服务号 + 已关联小程序；URL Scheme / Link 需小程序 AppSecret（只有麦当劳能生成）；Universal Link 需在麦当劳自有域部署 AASA —— 第三方无法可靠唤起 | 0（结论已写入 `docs/PRODUCT-V2.md` 与记忆）。替代方案：`payH5Url` 是麦当劳自有域 H5 收银台，浏览器直开即可 |
-| U4 | **`out/` 校验脚本纳入版本控制** | 0% | 脚本都在 `out/`，而 `.gitignore` 忽略 `out/` | 小（搬到 `scripts/` 或改 `.gitignore` 白名单），但换设备前必须做 |
+| U4 | **`out/` 校验脚本纳入版本控制** | 0%（追加会话只收编了打包脚本到 `scripts/`，`verify-l2` / `audit-contrast` / `audit-ledger` / `cdp-shot` / `sheet` 五个仍在 `out/`） | `.gitignore` 忽略 `out/` | 小（搬到 `scripts/` 并把 CHROME 路径、端口参数化），但换设备前必须做。参考追加会话 `dist/*` + `!dist/mcd-ledger.zip` 的白名单写法 |
 | U5 | **确认 `docs/*.html` 不含真实数据** | 已确认当前为 demo 数据 | 但如果下次用 `--out docs` 跑 `audit`，真实订单会写进被跟踪文件 | 小（加一条约定或改 .gitignore） |
 | U6 | **真机验证 `payH5Url`** | 0% | 需要手机 + 真实下单 | 中。唯一未验证的真实链路环节 |
 | U7 | **`buildPlan` 在真实账号数据上的表现** | 0% | 目前只用 demo 数据（99 行）验证过 | 中。真实菜单/券的命名、`worth` 为空的情况未覆盖 |
@@ -229,6 +255,11 @@ node out/audit-contrast.mjs                # 决策页：9 屏 + 弹层 + toast 
 node out/audit-ledger.mjs                  # 账本页
 node out/cdp-shot.mjs <url> <out.png> [w] [h] [evalScript]   # 无头 Chrome 截图（CDP 直连）
 node out/sheet.mjs light|dark <out.png> <scale>              # 评审拼版图
+
+# —— Skill 打包 / 安装（追加会话新增）
+python scripts/quick_validate.py skill/mcd-ledger            # 结构校验
+python scripts/package_skill.py skill/mcd-ledger dist        # 产出 dist/mcd-ledger.zip
+rm -rf ~/.workbuddy/skills/mcd-ledger && cp -r skill/mcd-ledger ~/.workbuddy/skills/   # 安装生效
 ```
 
 > `verify-l2.mjs` **必须带两个参数**（url + 输出目录），不带参数会在 CDP `Page.navigate` 处报 `Invalid parameters`。
@@ -268,6 +299,11 @@ mcd-ledger/
 │   ├── prototype-v2.html      # 生成物（勿手改）
 │   ├── demo-report.html       # 生成物（勿手改）
 │   ├── DESIGN-L2.md / PRODUCT-V2.md / style-fix-v2.md
+├── skill/                     # ★ WorkBuddy Skill 打包（追加会话新增）
+│   ├── README.md              #   维护者说明：源码副本同步 + 重打包流程
+│   └── mcd-ledger/            #   SKILL.md + references/ + scripts/（主源码副本）
+├── scripts/                   # package_skill.py / quick_validate.py（重新打包用）
+├── dist/mcd-ledger.zip        # Skill 分发件（白名单进仓库）
 ├── out/                       # 运行产物 + 临时脚本（被 .gitignore 忽略）
 └── viewer/trace-viewer.html   # trace 可视化
 ```
