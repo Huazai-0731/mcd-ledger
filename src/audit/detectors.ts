@@ -99,6 +99,10 @@ function detectExpiringCoupons(
 /**
  * 定义：券生效的日期 + 星期 + 时段内，用户下过单，但券仍在卡包里。
  * 这说明"有券、有时间、有需求"三者同时成立却没被用上，是最可惜的一类漏损。
+ *
+ * 金额口径：**一张券只能用一次**，所以损失按「券的张数 × 单张可省」算，
+ * 不乘窗口内的订单数。乘订单数会把 3 张券说成 40 次机会，
+ * 那是把"库存不足"算成"损失"，在账本里属于典型的虚增。
  */
 function detectWindowMismatch(
   coupons: Coupon[],
@@ -128,12 +132,12 @@ function detectWindowMismatch(
   const evidence: string[] = [];
   for (const h of hits) {
     if (h.save !== null) {
-      amount += h.save * h.orders;
+      amount += h.save;
       priced += 1;
     }
     evidence.push(
       `${h.coupon.name}：窗口内有 ${h.orders} 笔订单，券未使用` +
-        `${h.save !== null ? `，每笔最多可省 ¥${h.save.toFixed(2)}` : ""}`,
+        `${h.save !== null ? `，这张券最多可省 ¥${h.save.toFixed(2)}` : ""}`,
     );
   }
 

@@ -3,341 +3,2651 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>麦麦账本 · 2026-07-17 至 2026-10-18</title>
+<meta name="color-scheme" content="dark">
+<meta name="description" content="麦麦账本：麦当劳消费审计报告，2026-09-21 至 2026-10-20（近 30 天），33 笔订单，省下 ¥247.45。">
+<title>麦麦账本 · 2026-09-21 至 2026-10-20</title>
 <style>
+*,*::before,*::after{box-sizing:border-box}
 :root{
-  --ink:#17181a; --ink2:#5b6068; --ink3:#8b9099;
-  --line:#e6e2d9; --paper:#fbfaf6; --card:#ffffff;
-  --yellow:#ffc72c; --red:#da291c; --green:#1f7a45;
+  --bg:#09090A;--bg2:#0C0C0E;--panel:#111113;--panel2:#151518;
+  --line:rgba(255,255,255,.075);--line2:rgba(255,255,255,.14);
+  --gold:#FFC72C;--gold-d:#D9A200;--bone:#DCD6C8;
+  /* 红：#E23B2E 只用于 18px 以上的大号数字；小字用 --red-t，否则深色底上达不到 4.5:1 */
+  --red:#E23B2E;--red-t:#F4685B;--red-d:#9C2318;
+  /* 灰阶三档按实测对比度定：ink 17.3:1 / ink2 8.3:1 / ink3 6.0:1（最暗处 #221F19 上） */
+  --ink:#F3EFE6;--ink2:#C2BDB2;--ink3:#A29C90;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r:16px;--maxw:1000px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#efece4;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased;padding:28px 16px}
-.sheet{max-width:900px;margin:0 auto;background:var(--paper);border-radius:14px;padding:44px 48px 36px;border:1px solid var(--line)}
-h1{font-size:30px;line-height:1.25;letter-spacing:-.02em;font-weight:700;margin:10px 0 8px}
-h2{font-size:15px;font-weight:700;letter-spacing:.02em;margin-bottom:6px}
-.brand{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
-.brand .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin:0 4px 2px}
-.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:22px;border-bottom:2px solid var(--ink)}
-.sub{color:var(--ink2);font-size:13.5px}
-.stamp{text-align:center;border:1px solid var(--line);border-radius:10px;padding:10px 16px;background:#fff}
-.stamp-n{display:block;font-size:22px;font-weight:700;line-height:1.2}
-.stamp-l{font-size:11px;color:var(--ink3);letter-spacing:.08em}
-.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0 8px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px}
-.kpi.accent{background:#fffbee;border-color:#f0dfa8}
-.kpi-l{font-size:12px;color:var(--ink3);letter-spacing:.06em}
-.kpi-v{font-size:31px;font-weight:700;letter-spacing:-.02em;line-height:1.25;margin:4px 0 2px}
-.kpi-v.warn{color:var(--red)}
-.kpi-s{font-size:12px;color:var(--ink2)}
-.block{padding:26px 0;border-bottom:1px solid var(--line)}
-.note{font-size:12.5px;color:var(--ink2);margin-bottom:14px;max-width:660px}
-.empty{font-size:13px;color:var(--ink3);padding:14px 0}
-.wf-row{display:grid;grid-template-columns:150px 1fr 92px;gap:14px;align-items:center;margin-bottom:10px}
-.wf-l{font-size:13px;color:var(--ink2)}
-.wf-l span{display:block;font-size:11px;color:var(--ink3)}
-.wf-bar{height:14px;background:#f0ede5;border-radius:3px;overflow:hidden}
-.wf-bar i{display:block;height:100%;background:#c9c4b6;border-radius:3px}
-.wf-row.paid .wf-bar i{background:var(--ink)}
-.wf-row.paid .wf-l{color:var(--ink);font-weight:600}
-.wf-v{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
-.attr{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
-.attr-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
-.attr-item.attr-na{background:#faf8f3;border-style:dashed}
-.attr-item.attr-na .attr-hint{line-height:1.55}
-.attr-top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);margin-bottom:8px}
-.attr-top b{font-size:16px;color:var(--ink)}
-.attr-bar{height:6px;background:#f0ede5;border-radius:3px;overflow:hidden;margin-bottom:7px}
-.attr-bar i{display:block;height:100%;background:var(--yellow);border-radius:3px}
-.attr-item:nth-child(2) .attr-bar i{background:#f0a03c}
-.attr-item:nth-child(3) .attr-bar i{background:#e0703c}
-.attr-hint{font-size:11px;color:var(--ink3)}
-.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
-.tbl th{text-align:left;font-weight:600;color:var(--ink3);font-size:11px;letter-spacing:.06em;padding:8px 4px;border-bottom:1px solid var(--line)}
-.tbl td{padding:8px 4px;border-bottom:1px solid #f2efe8;color:var(--ink2)}
-.tbl .r{text-align:right;font-variant-numeric:tabular-nums}
-.leak{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;padding:14px 16px;margin-bottom:10px}
-.leak-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.leak-h b{font-size:14px}
-.leak-amt{font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
-.leak-amt i{font-style:normal;font-size:10px;color:var(--ink3);margin-left:5px;border:1px solid var(--line);padding:0 4px;border-radius:3px;vertical-align:middle}
-.leak-na{font-size:12px;color:var(--ink3);white-space:nowrap}
-.leak ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;color:var(--ink2)}
-.leak li{margin-bottom:3px}
-.leak-a{margin-top:9px;font-size:12.5px;color:var(--green);background:#f4faf6;border-radius:6px;padding:7px 10px}
-.win-row{display:grid;grid-template-columns:82px 96px 1fr 76px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #f2efe8}
-.win-d b{display:block;font-size:13.5px}
-.win-d span{font-size:11px;color:var(--ink3)}
-.win-t{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
-.win-o{display:flex;flex-wrap:wrap;gap:5px}
-.tag{font-size:11px;background:#fffbee;border:1px solid #f0dfa8;color:#7a5a12;padding:1px 7px;border-radius:4px}
-.tag.more{background:#f4f2ec;border-color:var(--line);color:var(--ink3)}
-.win-s{text-align:right;font-size:12px;font-weight:600;color:var(--green);white-space:nowrap}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.mini-t{font-size:12px;color:var(--ink3);letter-spacing:.04em;margin-bottom:10px}
-.bar-row{display:grid;grid-template-columns:72px 1fr 76px;gap:10px;align-items:center;margin-bottom:6px}
-.bar-k{font-size:12px;color:var(--ink2)}
-.bar-t{height:8px;background:#f0ede5;border-radius:4px;overflow:hidden}
-.bar-t i{display:block;height:100%;background:var(--ink);border-radius:4px;opacity:.75}
-.bar-v{font-size:11.5px;color:var(--ink3);text-align:right;font-variant-numeric:tabular-nums}
-.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.heat-c{text-align:center}
-.heat-b{display:block;border-radius:5px;padding:9px 0;font-size:12px;font-weight:600;color:#fff}
-.heat-l{font-size:11px;color:var(--ink3);display:block;margin-top:3px}
-.tops{list-style:none;counter-reset:i}
-.tops li{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);padding:6px 0;border-bottom:1px solid #f2efe8;counter-increment:i}
-.tops li::before{content:counter(i);color:var(--ink3);font-size:11px;margin-right:8px}
-.tops li span{flex:1}
-.tops li b{font-weight:600;color:var(--ink)}
-.quality{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 22px 18px;margin-top:26px;border-bottom:1px solid var(--line)}
-.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 14px}
-.qgrid>div{text-align:center;border-right:1px solid var(--line)}
-.qgrid>div:last-child{border-right:none}
-.qn{display:block;font-size:22px;font-weight:700;letter-spacing:-.02em}
-.ql{display:block;font-size:11px;color:var(--ink3);margin-top:2px}
-.deg{margin:10px 0 0;padding-left:16px;font-size:12px;color:var(--ink2)}
-.deg li{margin-bottom:4px}
-.trace{font-size:11.5px;color:var(--ink3);margin-top:10px}
-.trace code{background:#f4f2ec;padding:1px 6px;border-radius:4px;font-size:11px}
-.share-wrap{border-bottom:none;padding-bottom:8px}
-.share{width:320px;background:linear-gradient(160deg,#1d1f22 0%,#2b2e33 100%);color:#fff;border-radius:16px;padding:26px 24px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
-.share-b{font-size:11px;letter-spacing:.18em;color:var(--yellow);text-transform:uppercase}
-.share-per{font-size:11px;color:#9aa0a8;margin-top:4px}
-.share-main{margin:26px 0 20px}
-.share-n{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
-.share-l{font-size:12px;color:#b9bfc7;margin-top:4px}
-.share-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid rgba(255,255,255,.14);padding-top:14px}
-.share-row b{display:block;font-size:14px}
-.share-row span{font-size:10.5px;color:#9aa0a8}
-.share-f{margin-top:18px;font-size:10px;color:#71767d;letter-spacing:.04em}
-.ft{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.72 var(--sans);-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(860px 540px at 80% -14%,rgba(255,199,44,.13),transparent 62%),
+    radial-gradient(680px 460px at 4% 2%,rgba(218,41,28,.10),transparent 58%),
+    radial-gradient(900px 700px at 50% 118%,rgba(255,199,44,.05),transparent 60%);
+}
+::selection{background:rgba(255,199,44,.28);color:#fff}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{margin:0;font-weight:700}
+p{margin:0}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 30px;position:relative;z-index:1}
+
+/* ---------- 顶栏 ---------- */
+.bar{
+  position:sticky;top:0;z-index:40;transition:background .35s,border-color .35s;border-bottom:1px solid transparent;
+  background:linear-gradient(to bottom,rgba(9,9,10,.94),rgba(9,9,10,.55) 70%,transparent);
+}
+.bar.on{background:rgba(9,9,10,.86);border-bottom-color:var(--line);backdrop-filter:blur(16px) saturate(1.2)}
+.bar-in{max-width:var(--maxw);margin:0 auto;padding:0 30px;height:60px;display:flex;align-items:center;gap:22px}
+.mark{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.mark-arch{width:19px;height:15px;color:var(--gold)}
+.mark-t{font-size:13px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.mark-t em{font-style:normal;font:600 10.5px/1 var(--mono);letter-spacing:.16em;color:var(--ink3);margin-left:7px;text-transform:uppercase}
+.nav{display:flex;align-items:center;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  position:relative;flex:0 0 auto;padding:6px 11px;border-radius:999px;
+  font-size:12.5px;color:var(--ink3);transition:color .2s,background .2s;white-space:nowrap;
+}
+.nav a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+.nav a.on{color:#1A1200;background-color:#FFC72C;background-image:linear-gradient(180deg,#FFD453,#FFB300);font-weight:600}
+.bar-r{display:flex;align-items:center;gap:14px;flex:0 0 auto}
+.bar-sum{display:flex;flex-direction:column;line-height:1.25;text-align:right}
+.bar-sum i{font:600 10px/1 var(--mono);letter-spacing:.18em;color:var(--ink3);font-style:normal;text-transform:uppercase;white-space:nowrap}
+.bar-sum b{font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* ---------- 按钮 ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:34px;padding:0 15px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--line2);background:rgba(255,255,255,.04);color:var(--ink);
+  font:600 12.5px/1 var(--sans);transition:transform .18s,background .2s,border-color .2s,box-shadow .2s;
+}
+.btn:hover{background:rgba(255,199,44,.13);border-color:rgba(255,199,44,.45);transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.985)}
+.btn-gold{background-color:#FFC72C;background-image:linear-gradient(180deg,#FFD453,#FFB300);color:#1A1200;border-color:transparent;box-shadow:0 6px 18px -8px rgba(255,199,44,.75)}
+.btn-gold:hover{background:linear-gradient(180deg,#FFDE77,#FFBE22);box-shadow:0 10px 24px -10px rgba(255,199,44,.9)}
+:focus-visible{outline:2px solid rgba(255,199,44,.75);outline-offset:3px;border-radius:4px}
+.nav a:focus-visible,.btn:focus-visible{outline-offset:2px}
+
+/* ---------- 区间筛选 ---------- */
+.flt{
+  position:sticky;top:60px;z-index:35;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin:0 -30px;padding:9px 30px;
+  background:rgba(9,9,10,.9);
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);
+  backdrop-filter:blur(16px) saturate(1.15);
+  border-bottom:1px solid var(--line);
+}
+.flt-k{font:600 10px/1 var(--mono);letter-spacing:.18em;color:var(--ink3);text-transform:uppercase;flex:0 0 auto}
+.flt-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  appearance:none;-webkit-appearance:none;cursor:pointer;height:28px;padding:0 12px;border-radius:999px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--ink2);
+  font:600 12px/1 var(--sans);
+  transition:color .18s,background .18s,border-color .18s,box-shadow .18s;
+}
+.chip:hover{color:var(--ink);border-color:rgba(255,199,44,.45);background:rgba(255,199,44,.1)}
+.chip[aria-pressed="true"]{
+  color:#1A1200;background-color:#FFC72C;background-image:linear-gradient(180deg,#FFD453,#FFB300);
+  border-color:transparent;box-shadow:0 6px 16px -8px rgba(255,199,44,.8);
+}
+.flt-custom{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.flt-custom[hidden]{display:none}
+.flt-custom input[type="date"]{
+  height:28px;padding:0 8px;border-radius:7px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--ink);
+  font:500 12px/1 var(--mono);color-scheme:dark;
+}
+.flt-custom input[type="date"]:focus-visible{outline:2px solid rgba(255,199,44,.7);outline-offset:1px}
+.flt-arrow{color:var(--ink3);font-family:var(--mono);font-size:11px}
+.btn-mini{height:28px;padding:0 12px;font-size:12px}
+.flt-span{margin-left:auto;font:400 11px/1.5 var(--mono);color:var(--ink3);white-space:nowrap}
+.flt-span b{color:var(--gold);font-weight:600}
+.flt-warn{color:var(--red-t);font:500 11.5px/1.4 var(--mono)}
+
+/* ---------- 封面 ---------- */
+.cover{position:relative;padding:66px 0 44px;overflow:hidden;isolation:isolate}
+.arches{
+  position:absolute;right:-42px;top:-52px;width:392px;opacity:.42;z-index:-1;pointer-events:none;
+  -webkit-mask-image:linear-gradient(to bottom,#000 34%,rgba(0,0,0,.35) 62%,transparent 88%);
+  mask-image:linear-gradient(to bottom,#000 34%,rgba(0,0,0,.35) 62%,transparent 88%);
+}
+.arches svg{width:100%;height:auto;display:block}
+.gridfade{
+  position:absolute;left:-10%;right:-10%;bottom:-70px;height:250px;z-index:-1;pointer-events:none;
+  background-image:
+    linear-gradient(to right,rgba(255,199,44,.13) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(255,199,44,.1) 1px,transparent 1px);
+  background-size:46px 46px;
+  transform:perspective(340px) rotateX(72deg);transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to bottom,#000,transparent 78%);
+  mask-image:linear-gradient(to bottom,#000,transparent 78%);
+  opacity:.55;
+}
+.cover-in{position:relative}
+.eyebrow{display:flex;align-items:center;gap:10px;font:600 10.5px/1 var(--mono);letter-spacing:.24em;color:var(--gold);text-transform:uppercase}
+.eyebrow i{width:30px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+h1{
+  font-size:clamp(29px,4.3vw,50px);line-height:1.14;letter-spacing:-.038em;
+  margin:18px 0 16px;max-width:15em;font-weight:800;
+}
+h1 em{
+  font-style:normal;color:#FFC72C;
+  background:linear-gradient(100deg,#FFE7A8,#FFC72C 52%,#E8A200);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.cover-sub{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+.cover-sub .arw{color:var(--gold);font-family:var(--mono)}
+.cover-sub .sep{width:1px;height:11px;background:var(--line2)}
+
+.kpis{display:grid;grid-template-columns:1.1fr 1fr 1fr;margin-top:40px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.kpi{padding:22px 24px;border-left:1px solid var(--line);position:relative}
+.kpi:first-child{border-left:none;padding-left:0}
+.kpi-hl::before{
+  content:"";position:absolute;left:0;right:0;top:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,199,44,.65),transparent);
+}
+.kpi-k{font:600 10px/1 var(--mono);letter-spacing:.18em;color:var(--ink3);text-transform:uppercase}
+.kpi-v{font-size:clamp(25px,3vw,37px);font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin-top:11px;line-height:1.1}
+.kpi-v.red{color:var(--red)}
+.kpi-v.gold,.gold{color:var(--gold)}
+.kpi-s{font-size:12px;color:var(--ink2);margin-top:9px;text-wrap:pretty;line-height:1.5}
+.kpi-s .tagline{
+  display:inline-block;font:600 10px/1 var(--mono);letter-spacing:.1em;color:var(--gold);
+  border:1px solid rgba(255,199,44,.4);border-radius:3px;padding:2px 4px;margin-left:4px;vertical-align:1px;
+}
+.grad{
+  color:#FFC72C;
+  background:linear-gradient(100deg,#FFE7A8,#FFC72C 48%,#E8A200);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:26px 0 0;padding:0;list-style:none;border-top:1px dashed rgba(255,255,255,.1)}
+.steps3 li{display:flex;flex-direction:column;gap:3px;padding:14px 18px 0 0}
+.steps3 b{font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--gold)}
+.steps3 span{font-size:13px;font-weight:600;color:var(--ink)}
+.steps3 i{font-style:normal;font-size:11.5px;color:var(--ink3)}
+
+/* ---------- 分节 ---------- */
+.sec{padding:48px 0;border-top:1px solid var(--line);position:relative;scroll-margin-top:116px}
+.cover{scroll-margin-top:116px}
+.sec-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:7px}
+.sec-r{
+  margin-left:auto;font:600 10px/1 var(--mono);letter-spacing:.12em;color:var(--ink3);
+  text-transform:uppercase;flex:0 0 auto;
+}
+.sec-n{font:600 10.5px/1 var(--mono);letter-spacing:.16em;color:var(--gold);flex:0 0 auto}
+h2{font-size:20px;letter-spacing:-.02em;font-weight:700}
+.lead{font-size:12.5px;color:var(--ink2);max-width:74ch;margin:0 0 24px}
+.note{font-size:12px;color:var(--ink2);max-width:70ch;margin-top:14px;padding-left:12px;border-left:1px solid rgba(255,199,44,.28)}
+.note strong{color:var(--bone);font-weight:600}
+.muted{color:var(--ink3)}
+.empty{padding:26px 0;display:flex;flex-direction:column;gap:5px}
+.empty b{font-size:14px;font-weight:600}
+.empty span{font-size:12.5px;color:var(--ink3)}
+
+/* ---------- 图表容器 ---------- */
+.chart{position:relative;padding:8px 4px 0}
+.brackets{position:relative}
+.brackets::after{
+  content:"";position:absolute;inset:2px;pointer-events:none;opacity:.45;
+  background:
+    linear-gradient(var(--gold),var(--gold)) left top/11px 1px no-repeat,
+    linear-gradient(var(--gold),var(--gold)) left top/1px 11px no-repeat,
+    linear-gradient(var(--gold),var(--gold)) right top/11px 1px no-repeat,
+    linear-gradient(var(--gold),var(--gold)) right top/1px 11px no-repeat,
+    linear-gradient(var(--gold),var(--gold)) left bottom/11px 1px no-repeat,
+    linear-gradient(var(--gold),var(--gold)) left bottom/1px 11px no-repeat,
+    linear-gradient(var(--gold),var(--gold)) right bottom/11px 1px no-repeat,
+    linear-gradient(var(--gold),var(--gold)) right bottom/1px 11px no-repeat;
+}
+.flowsvg{width:100%;height:auto;display:block;overflow:visible}
+.svg-base{stroke:rgba(255,255,255,.16);stroke-width:1}
+.svg-guide{stroke:rgba(255,255,255,.09);stroke-dasharray:2 5}
+.svg-tick{stroke:rgba(255,255,255,.2);stroke-width:1}
+.svg-line{fill:none;stroke:url(#fg);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.svg-halo{fill:none;stroke:rgba(255,199,44,.28);stroke-width:1}
+.svg-dot{fill:#FFC72C}
+.svg-val{fill:var(--bone);font:600 13px/1 var(--mono)}
+.svg-val-hl{fill:#FFC72C}
+/* 文字描一圈底色作为"挖空"，避免折线从数字中间穿过 */
+.svg-val,.svg-save{paint-order:stroke;stroke:#0A0A0B;stroke-width:4px;stroke-linejoin:round}
+.svg-save{stroke-width:2.4px}
+.svg-lb{fill:var(--ink);font:600 13px/1 var(--sans)}
+.svg-hint{fill:var(--ink3);font:400 10.5px/1 var(--sans)}
+.svg-save{fill:#FFD046;font:600 12px/1 var(--mono)}
+.svg-drop-line{stroke:rgba(255,199,44,.22);stroke-width:1;stroke-dasharray:3 4}
+.svg-node{opacity:0}
+.in .svg-node{animation:nodeIn .5s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:var(--d)}
+
+/* ---------- 归因 ---------- */
+.spec{display:flex;gap:3px;height:16px;margin:4px 0 8px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,.03)}
+.spec-seg{transform-origin:left;transform:scaleX(0);transition:transform .9s cubic-bezier(.2,.8,.2,1);animation:segIn .9s cubic-bezier(.2,.8,.2,1) forwards}
+.sA{background:linear-gradient(180deg,#FFD453,#E8A200)}
+.sB{background:linear-gradient(180deg,#B9822A,#7E5510)}
+.sC{background:linear-gradient(180deg,#8B8578,#5D5950)}
+.legend{display:flex;flex-direction:column}
+.lg-row{display:flex;align-items:flex-start;gap:13px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.055);transition:background .25s}
+.lg-row:hover{background:linear-gradient(90deg,rgba(255,255,255,.025),transparent)}
+.lg-dot{width:9px;height:9px;border-radius:2px;margin-top:5px;flex:0 0 auto}
+.lg-dot.sA{background:#FFC72C}
+.lg-dot.sB{background:#A9761F}
+.lg-dot.sC{background:#807B6E}
+.lg-dot.dashed{background:none;border:1px dashed rgba(255,255,255,.32)}
+.lg-l{flex:0 1 auto;font-size:13px;font-weight:600;line-height:1.45}
+.lg-l i{display:block;font-style:normal;font-size:11.5px;color:var(--ink3);font-weight:400;margin-top:2px}
+.lg-lead{
+  flex:1 1 40px;height:1px;margin-top:11px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.17) 0 1px,transparent 1px 6px);
+}
+.lg-v{font:600 14px/1.4 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em;flex:0 0 auto;text-align:right}
+.lg-p{font:400 11px/1.4 var(--mono);color:var(--ink3);flex:0 0 52px;text-align:right}
+.lg-ghost .lg-l{color:var(--ink3);font-weight:400}
+.lg-ghost .lg-v,.lg-ghost .lg-p{color:var(--ink3)}
+
+.disc{margin-top:18px;border-top:1px solid rgba(255,255,255,.07)}
+.disc summary{
+  cursor:pointer;list-style:none;padding:12px 0;font-size:12.5px;color:var(--ink2);
+  display:flex;align-items:center;gap:8px;transition:color .2s;
+}
+.disc summary::-webkit-details-marker{display:none}
+.disc summary::before{content:"+";font:600 13px/1 var(--mono);color:var(--gold);width:12px}
+.disc[open] summary::before{content:"−"}
+.disc summary:hover{color:var(--ink)}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:2px 0 4px}
+.tbl th{text-align:left;font:600 10px/1 var(--mono);letter-spacing:.1em;color:var(--ink3);padding:9px 4px;border-bottom:1px solid var(--line);text-transform:uppercase}
+.tbl td{padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.045);color:var(--ink2)}
+.tbl .r{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12px}
+
+/* ---------- 漏损 ---------- */
+.leaks{border-top:1px solid var(--line)}
+.leak{display:grid;grid-template-columns:46px 1fr auto;gap:20px;padding:22px 0;border-bottom:1px solid var(--line);transition:background .25s}
+.leak:hover{background:linear-gradient(90deg,rgba(226,59,46,.045),transparent 70%)}
+.leak-n{font:600 11px/1 var(--mono);letter-spacing:.1em;color:var(--red-t);padding-top:4px}
+.leak-b h3{font-size:14.5px;letter-spacing:-.01em;font-weight:650;line-height:1.5}
+.leak-e{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.leak-e li{position:relative;padding-left:15px;font-size:12.5px;color:var(--ink2)}
+.leak-e li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:1px;background:var(--ink3)}
+.leak-a{margin-top:11px;font-size:12.5px;color:var(--bone);display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.leak-a b{font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--gold);text-transform:uppercase;flex:0 0 auto;padding:3px 5px;border:1px solid rgba(255,199,44,.32);border-radius:3px}
+.leak-r{text-align:right}
+.leak-v{font:700 19px/1 var(--mono);color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
+.leak-v i{display:block;font-style:normal;font:400 10.5px/1 var(--mono);color:var(--ink3);letter-spacing:.1em;margin-top:6px;text-align:right}
+.leak-na{font:400 11.5px/1 var(--mono);color:var(--ink3);white-space:nowrap;border:1px dashed rgba(255,255,255,.18);border-radius:3px;padding:5px 7px}
+
+/* ---------- 策略 ---------- */
+.strat-head{
+  display:flex;align-items:baseline;gap:6px 16px;flex-wrap:wrap;
+  padding:16px 0 18px;margin-top:4px;border-top:1px solid var(--line);
+}
+.strat-head b{font-size:16px;font-weight:700;letter-spacing:-.015em}
+.strat-head b i{font-style:normal;font:400 12px/1 var(--mono);color:var(--ink3);margin-left:4px}
+.strat-head span{font:400 11px/1.6 var(--mono);color:var(--ink3)}
+.strats{display:flex;flex-direction:column}
+.strat{display:grid;grid-template-columns:46px 1fr auto;gap:20px;padding:22px 0;border-bottom:1px solid var(--line);transition:background .25s}
+.strat:hover{background:linear-gradient(90deg,rgba(255,199,44,.045),transparent 72%)}
+.strat-n{font:600 11px/1 var(--mono);letter-spacing:.1em;color:var(--gold);padding-top:4px}
+.strat-b{min-width:0}
+.strat-b h3{font-size:14.5px;letter-spacing:-.01em;font-weight:650;line-height:1.5;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.strat-k{
+  font:600 9.5px/1 var(--mono);letter-spacing:.1em;color:var(--ink3);
+  border:1px solid var(--line2);border-radius:3px;padding:3px 5px;white-space:nowrap;
+}
+.strat-e{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.strat-e li{position:relative;padding-left:15px;font-size:12.5px;color:var(--ink2)}
+.strat-e li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:1px;background:var(--ink3)}
+.strat-a{margin-top:11px;font-size:12.5px;color:var(--bone);display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.strat-a b{
+  font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--gold);text-transform:uppercase;
+  flex:0 0 auto;padding:3px 5px;border:1px solid rgba(255,199,44,.32);border-radius:3px;
+}
+.strat-r{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+.strat-v{font:700 17px/1 var(--mono);color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
+.strat-v i{font-style:normal;font:400 10px/1 var(--mono);color:var(--ink3);margin-left:3px}
+.strat-sub{font:400 10.5px/1 var(--mono);color:var(--ink3);white-space:nowrap}
+.strat-na{font:400 11.5px/1 var(--mono);color:var(--ink3);border:1px dashed rgba(255,255,255,.18);border-radius:3px;padding:5px 7px;white-space:nowrap}
+.strat-tag{font:600 9.5px/1 var(--mono);letter-spacing:.08em;border-radius:3px;padding:3px 5px;white-space:nowrap;border:1px solid var(--line2);color:var(--ink3)}
+.strat-tag[data-conf="high"]{color:var(--gold);border-color:rgba(255,199,44,.5)}
+.strat-tag[data-conf="medium"]{color:var(--gold-d);border-color:rgba(255,199,44,.28)}
+
+/* ---------- 窗口 ---------- */
+.wins{border-top:1px solid var(--line)}
+.win{display:grid;grid-template-columns:118px 1fr 92px;gap:20px;align-items:start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.win-head{padding:9px 0;border-bottom:1px solid var(--line);align-items:center}
+.win-th{font:600 10px/1 var(--mono);letter-spacing:.14em;color:var(--ink3);text-transform:uppercase}
+.win-th.r{text-align:right}
+.win-d{padding-top:3px}
+.win-d b{display:block;font-size:13px;font-weight:600}
+.win-d span{font:400 11px/1.5 var(--mono);color:var(--ink3)}
+.win-b{min-width:0}
+.track{position:relative;height:22px}
+.track-base{position:absolute;left:0;right:0;top:10px;height:1px;background:rgba(255,255,255,.1)}
+.track-band{
+  position:absolute;top:4px;height:13px;border-radius:2px;
+  background:linear-gradient(90deg,rgba(255,199,44,calc(.3 + var(--s) * .62)),rgba(255,199,44,calc(.12 + var(--s) * .45)));
+  border:1px solid rgba(255,199,44,calc(.28 + var(--s) * .52));
+  transform-origin:left;animation:bandIn .8s cubic-bezier(.2,.8,.2,1) both;
+}
+.track-h{position:absolute;top:6px;width:1px;height:6px;background:rgba(255,255,255,.16)}
+.track-x{display:flex;justify-content:space-between;font:400 10px/1 var(--mono);color:var(--ink3);margin-top:1px}
+.win-o{display:flex;flex-wrap:wrap;gap:2px 7px;margin-top:10px;font-size:12px;color:var(--ink2);line-height:1.65}
+.of{position:relative}
+.of-sep{opacity:.35}
+.win-s{text-align:right;font:600 12px/1.6 var(--mono);color:var(--gold);white-space:nowrap;padding-top:2px}
+
+/* ---------- 画像 ---------- */
+.cols{display:grid;gap:28px}
+.cols-3{grid-template-columns:1fr 1fr 1fr}
+.cols-wide{grid-template-columns:1.15fr 1fr}
+.mini-h{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.mini-h span{font-size:12px;font-weight:600;color:var(--ink)}
+.mini-h em{font:400 10px/1 var(--mono);letter-spacing:.12em;color:var(--ink3);font-style:normal;text-transform:uppercase}
+.mini-f{font:400 11.5px/1.6 var(--mono);color:var(--ink3);margin-top:12px}
+.rows{display:flex;flex-direction:column;gap:9px}
+.row{display:grid;grid-template-columns:62px 1fr 64px;gap:10px;align-items:center}
+.row-k{font-size:11.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-t{position:relative;height:6px;background:rgba(255,255,255,.07);border-radius:1px;overflow:hidden}
+.row-t i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#FFC72C,#C98A12);transform-origin:left;transform:scaleX(0);border-radius:1px;transition:transform .9s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s)}
+.in .row-t i{transform:scaleX(var(--v,1))}
+.row-v{font:600 11.5px/1 var(--mono);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.row-v em{display:block;font-style:normal;font:400 10.5px/1 var(--mono);color:var(--ink3);margin-top:3px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:88px}
+.wk{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.wk-bar{position:relative;width:100%;max-width:26px;height:var(--h);min-height:3px;border-radius:1px;background:linear-gradient(180deg,#FFD453,rgba(255,199,44,.22));transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s)}
+.in .wk-bar{transform:scaleY(1)}
+.wk-bar i{position:absolute;top:-16px;left:0;right:0;text-align:center;font:400 10px/1 var(--mono);color:var(--ink3);font-style:normal}
+.wk-l{font:400 10px/1 var(--mono);color:var(--ink3)}
+.hours{display:flex;justify-content:space-between;align-items:flex-end;height:64px;padding-top:14px}
+.hr{width:3px;height:max(4px,var(--h));background:rgba(255,199,44,.52);border-radius:0;transform:scaleY(0);transform-origin:bottom;transition:transform .6s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s)}
+.hr0{background:rgba(255,255,255,.24)}
+.hr[style*="--peak:1"]{background:#FFC72C}
+.in .hr{transform:scaleY(1)}
+.hours-x{display:flex;justify-content:space-between;font:400 10px/1 var(--mono);color:var(--ink3);margin-top:6px;border-top:1px solid rgba(255,255,255,.06);padding-top:5px}
+.tops{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tops li{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px}
+.tops-i{font:400 10px/1 var(--mono);color:var(--gold);letter-spacing:.06em}
+.tops-n{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tops b{font:600 12px/1 var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- 可信度 ---------- */
+.trust{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tr{padding:20px 22px;border-left:1px solid var(--line)}
+.tr:first-child{border-left:none;padding-left:0}
+.tr b{display:block;font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.tr b em{font-style:normal;font-size:13px;color:var(--ink3);font-weight:600;margin-left:1px}
+.tr span{display:block;font-size:11.5px;color:var(--ink2);margin-top:7px}
+.deg{list-style:none;margin:10px 0 0;padding:0}
+.deg li{font-size:12px;color:var(--ink2);padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.deg li b{color:var(--bone);margin-right:8px;font-weight:600}
+.deg li i{display:block;font-style:normal;color:var(--ink3);font-size:11.5px;margin-top:2px}
+.trace{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;font-size:11px;color:var(--ink3)}
+.trace-k{font:600 10px/1 var(--mono);letter-spacing:.18em;color:var(--gold);border:1px solid rgba(255,199,44,.3);border-radius:3px;padding:3px 5px}
+.trace code{font:400 11px/1 var(--mono);color:var(--ink2);background:rgba(255,255,255,.045);padding:4px 7px;border-radius:3px}
+.trace-h{color:var(--ink3)}
+
+/* ---------- 分享 ---------- */
+.share-lay{display:grid;grid-template-columns:360px 1fr;gap:44px;align-items:start}
+.tilt{perspective:1000px;perspective-origin:50% 45%}
+.tilt-inner{transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.card3d{
+  position:relative;border-radius:20px;padding:28px 26px 22px;
+  /* 底色单独给出，避免 background 简写把 background-color 重置为透明、
+     让卡片看起来像是页面上的一个"洞"。
+     金色光晕从左上角挪到卡片上边缘之外，只留一道边缘暖光——
+     原来 .16 的金色压在左上角，会把那里抬到 #393222，
+     灰字与红字在上面直接掉到 3:1 以下。 */
+  background-color:#131317;
+  background-image:
+    radial-gradient(118% 74% at 52% -16%,rgba(255,199,44,.13),transparent 60%),
+    linear-gradient(160deg,#1D1D22 0%,#111115 100%);
+  border:1px solid rgba(255,255,255,.14);
+  /* 用多层实心阴影伪造"下面还压着两张纸"，比额外 DOM 更省，也不会被 overflow 裁掉 */
+  box-shadow:
+    0 34px 64px -30px rgba(0,0,0,.95),
+    0 13px 0 -7px #101014,
+    0 13.5px 0 -7px rgba(255,255,255,.09),
+    0 25px 0 -17px #0B0B0E,
+    0 25.5px 0 -17px rgba(255,255,255,.06);
+  overflow:hidden;
+}
+.card-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;position:relative}
+.card-b{font:600 10.5px/1 var(--mono);letter-spacing:.18em;color:var(--gold)}
+.card-p{font:400 10.5px/1 var(--mono);color:var(--ink3)}
+.card-main{position:relative;margin:30px 0 24px;display:flex;flex-direction:column;gap:7px}
+.card-l{font-size:12px;color:var(--ink2);letter-spacing:.02em}
+.card-n{
+  font-size:40px;font-weight:800;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums;
+  color:#FFC72C;
+  background:linear-gradient(100deg,#FFE7A8,#FFC72C 52%,#E8A200);
+  -webkit-background-clip:text;background-clip:text;
+}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .card-n{-webkit-text-fill-color:transparent}
+}
+.card-r{font:400 11.5px/1 var(--mono);color:var(--ink3)}
+.card-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-top:1px solid rgba(255,255,255,.14);padding-top:14px;position:relative}
+.card-row b{display:block;font:700 15px/1 var(--mono);font-variant-numeric:tabular-nums}
+.card-row b.red{color:var(--red-t)}
+.card-row span{display:block;font-size:10.5px;color:var(--ink3);margin-top:5px;letter-spacing:.06em}
+.card-f{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:24px;position:relative}
+.card-sign{font:400 10px/1 var(--mono);color:var(--ink3);letter-spacing:.1em}
+.stamp-mark{
+  display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;
+  border:1.5px solid rgba(255,199,44,.66);border-radius:4px;
+  padding:7px 10px;color:var(--gold);font-size:12.5px;font-weight:700;letter-spacing:.08em;
+  transform:rotate(-7deg);line-height:1.15;
+  box-shadow:inset 0 0 0 1px rgba(255,199,44,.1),0 0 14px -6px rgba(255,199,44,.5);
+}
+.stamp-mark i{font-style:normal;font:600 8px/1 var(--mono);letter-spacing:.22em;opacity:.92}
+.share-act{padding-top:4px}
+.share-tip{font-size:12.5px;color:var(--ink2);max-width:44ch}
+.share-btns{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 20px}
+.share-pre{
+  margin:0;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.022);
+  font:400 12px/1.7 var(--mono);color:var(--ink2);white-space:pre-wrap;word-break:break-word;
+}
+
+/* ---------- 页脚 ---------- */
+.ft{padding:38px 0 56px;border-top:1px solid var(--line)}
+.ft-top{display:flex;gap:18px;align-items:flex-start}
+.ft-arch{width:36px;height:28px;color:var(--gold);flex:0 0 auto;margin-top:2px}
 .ft-strong{font-size:12px;font-weight:600;color:var(--ink2)}
-.src{margin:6px 0 12px;padding-left:16px;font-size:11.5px;color:var(--ink3);columns:2;column-gap:24px}
-.ft-note{font-size:11px;color:var(--ink3);line-height:1.7}
+.src{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 16px;font:400 10.5px/1.6 var(--mono);color:var(--ink3)}
+.src li{position:relative;padding-left:9px}
+.src li::before{content:"";position:absolute;left:0;top:.68em;width:4px;height:1px;background:var(--ink3)}
+.ft-note{font-size:11px;color:var(--ink3);line-height:1.8;margin-top:20px;max-width:78ch}
+.ft-meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;font:400 10.5px/1 var(--mono);color:var(--ink3);letter-spacing:.04em}
+.ft-meta code{color:var(--ink3)}
+
+/* ---------- 动效 ---------- */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .75s cubic-bezier(.2,.8,.2,1),transform .75s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+.draw{stroke-dasharray:100;stroke-dashoffset:100}
+.cover .draw{animation:draw 2s cubic-bezier(.3,.7,.2,1) .15s forwards}
+.in .draw{animation:draw 1.7s cubic-bezier(.3,.7,.2,1) .1s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes nodeIn{from{opacity:0}to{opacity:1}}
+@keyframes segIn{to{transform:scaleX(1)}}
+@keyframes bandIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.toast{
+  position:fixed;left:50%;bottom:34px;z-index:99;pointer-events:none;
+  transform:translate(-50%,16px);opacity:0;transition:opacity .3s,transform .3s;
+  background:rgba(22,22,26,.97);border:1px solid rgba(255,199,44,.35);color:var(--ink);
+  font-size:12.5px;padding:10px 18px;border-radius:999px;box-shadow:0 16px 40px -16px #000;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:980px){
+  .cols-3{grid-template-columns:1fr 1fr}
+  .cols-wide{grid-template-columns:1fr}
+  .share-lay{grid-template-columns:1fr;gap:32px}
+  .card3d{max-width:360px}
+  .win{grid-template-columns:100px 1fr 84px;gap:14px}
+  .win-head{display:none}
+}
 @media (max-width:760px){
-  .sheet{padding:26px 20px}
-  .hero,.attr,.grid2,.qgrid{grid-template-columns:1fr}
-  .qgrid>div{border-right:none;border-bottom:1px solid var(--line);padding-bottom:10px}
-  .win-row{grid-template-columns:1fr 1fr;row-gap:6px}
-  .src{columns:1}
-  h1{font-size:23px}
-  .kpi-v{font-size:26px}
+  .wrap,.bar-in{padding:0 18px}
+  .nav{display:none}
+  .bar-sum{display:none}
+  .cover{padding:44px 0 34px}
+  h1{font-size:25px;line-height:1.24;letter-spacing:-.03em;max-width:none}
+  .arches{width:280px;right:-110px;top:-16px;opacity:.3}
+  .kpis{grid-template-columns:1fr;border-bottom:none}
+  .kpi{border-left:none;border-bottom:1px solid var(--line);padding:18px 0}
+  .kpi:last-child{border-bottom:none}
+  .steps3{grid-template-columns:1fr;gap:2px}
+  .steps3 li{flex-direction:row;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.07)}
+  .steps3 i{color:var(--ink3)}
+  .cols-3{grid-template-columns:1fr}
+  .sec{padding:40px 0}
+  h2{font-size:18px}
+  .leak{grid-template-columns:1fr auto;grid-template-areas:"n v" "b b";gap:6px 14px}
+  .leak-n{grid-area:n;padding-top:3px}
+  .leak-b{grid-area:b}
+  .leak-r{grid-area:v;text-align:right}
+  .leak-v{font-size:18px}
+  .leak-v i{display:inline;margin-left:7px;text-align:left}
+  .cover-sub{gap:4px 9px}
+  .cover-sub .sep{width:3px;height:3px;border-radius:50%;background:var(--ink3);opacity:.55}
+  .trust{grid-template-columns:1fr 1fr}
+  .tr{padding:16px 14px}
+  .tr:first-child{padding-left:14px}
+  .tr:nth-child(odd){border-left:none;padding-left:0}
+  .tr:nth-child(n+3){border-top:1px solid var(--line)}
+  .lg-row{gap:10px}
+  .lg-p{display:none}
+  .svg-hint{display:none}
+  .flt{position:static;margin:0 -18px;padding:8px 18px;row-gap:8px}
+  .flt-span{margin-left:0;width:100%}
+  .sec,.cover{scroll-margin-top:74px}
+  .strat{grid-template-columns:1fr auto;grid-template-areas:"n r" "b b";gap:8px 14px}
+  .strat-n{grid-area:n;padding-top:3px}
+  .strat-b{grid-area:b}
+  .strat-r{grid-area:r}
+  .strat-v{font-size:15px}
+  .sec-r{margin-left:0;width:100%}
+  .win{grid-template-columns:1fr;gap:8px;padding:16px 0}
+  .win-s{text-align:left;padding-top:0}
+  .win-d{display:flex;align-items:baseline;gap:9px;padding-top:0}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001s!important;animation-delay:0s!important;transition-duration:.001s!important}
+  .rv{opacity:1;transform:none}
+  .draw{stroke-dashoffset:0}
+}
+/* Windows 高对比度模式会丢弃背景色，渐变文字此时会变成"透明字"。
+   这里回退成系统前景色，保证文字一定可见。 */
+@media (forced-colors:active){
+  .grad,h1 em,.card-n{background:none!important;-webkit-text-fill-color:currentColor!important;color:CanvasText}
+  .btn-gold,.nav a.on{border:1px solid ButtonText}
 }
 @media print{
-  body{background:#fff;padding:0}
-  .sheet{border:none;border-radius:0;box-shadow:none;max-width:none}
-  .block{break-inside:avoid}
+  :root{--bg:#fff;--ink:#111;--ink2:#444;--ink3:#666;--line:rgba(0,0,0,.14);--line2:rgba(0,0,0,.22);--bone:#222;--gold:#9A6C00;--red:#B32418;--red-t:#B32418}
+  body{background:#fff;color:#111}
+  body::before,.gridfade,.arches,.bar,.toast,.flt{display:none!important}
+  .tilt{perspective:none}
+  .tilt-inner{transform:none!important}
+  .wrap{max-width:none;padding:0 12px}
+  .sec{padding:22px 0;break-inside:avoid}
+  .rv{opacity:1!important;transform:none!important}
+  .draw{stroke-dashoffset:0!important}
+  .hours .hr,.week .wk-bar,.row-t i{transform:none!important}
+  /* 挖空描边在浅底上会变成黑边，改成白描边 */
+  .svg-val,.svg-save{stroke:#fff}
+  /* 渐变文字依赖背景绘制，打印时必须回退成实色 */
+  .grad,h1 em{background:none!important;-webkit-text-fill-color:#9A6C00;color:#9A6C00}
+  /* 分享卡改为浅色票券，避免"不打印背景"时白字白底 */
+  .card3d{background:#fff!important;border:1px solid #D9C58C!important;box-shadow:none!important;color:#111!important}
+  .card-b,.card-r,.card-sign{color:#8A6400!important}
+  .card-l,.card-row span{color:#555!important}
+  .card-row{border-top:1px solid #DDD!important}
+  .card-row b{color:#111!important}
+  .card-row b.red{color:#B32418!important}
+  .card-n{background:none!important;-webkit-text-fill-color:#9A6C00!important;color:#9A6C00!important}
+  .stamp-mark{color:#9A6C00!important;border-color:#C6A64E!important;box-shadow:none!important}
+  .share-pre{background:#f7f7f5}
 }
 </style>
+<noscript><style>
+  /* 无 JS 时直接给出终态，避免依赖入场动画的内容永远不可见 */
+  .rv{opacity:1;transform:none}
+  .draw{stroke-dashoffset:0}
+  .svg-node{opacity:1}
+  .spec-seg{transform:scaleX(1)}
+  .row-t i{transform:scaleX(var(--v,1))}
+  .wk-bar{transform:scaleY(1)}
+  .hr{transform:scaleY(1)}
+  .track-band{transform:scaleX(1)}
+  /* 没有 JS 就没有筛选：藏起筛选条，页面停在默认区间，而不是给一排按不动的按钮 */
+  .flt{display:none}
+</style></noscript>
 </head>
 <body>
-<main class="sheet">
 
-  <header class="hd">
-    <div class="hd-l">
-      <div class="brand">麦麦账本 <span class="dot"></span> McLedger</div>
-      <h1>你的麦当劳消费对账单</h1>
-      <p class="sub">2026-07-17 至 2026-10-18　·　共 94 天　·　26 笔完成订单</p>
+<script type="application/json" id="ledger-data">{"v":1,"now":1792468810955,"nowIso":"2026-10-20T04:00:10.955Z","defaultRange":"30d","rows":[{"ms":1784244660000,"m":451,"id":"10302594648467834568","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1784261340000,"m":729,"id":"10302837782536591887","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1784331840000,"m":464,"id":"10302416538606869125","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1784347560000,"m":726,"id":"10302246543956888997","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":18.37,"list":24.5,"ala":24.5,"cpn":6.13,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":["限时活动券"]},{"ms":1784503440000,"m":444,"id":"10302353183340945696","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.07,"list":13.5,"ala":21.5,"cpn":2.03,"act":5.4,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900003431","大脆鸡扒麦满分组合",1,8.1]],"coupons":["限时活动券"]},{"ms":1784677080000,"m":458,"id":"10302648118108848619","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":14.9,"list":29,"ala":28,"cpn":0,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":[]},{"ms":1784706000000,"m":940,"id":"10302549366082444822","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":13.9,"list":21,"ala":13.9,"cpn":0,"act":7.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1784781300000,"m":755,"id":"10302026897548639627","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1784848980000,"m":443,"id":"10302375910082865834","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":8.32,"list":18.5,"ala":21,"cpn":2.78,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":["限时活动券"]},{"ms":1785020940000,"m":429,"id":"10302162610536409577","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.85,"list":13,"ala":21,"cpn":1.95,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":["限时活动券"]},{"ms":1785039300000,"m":735,"id":"10302332238523925995","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1785050400000,"m":920,"id":"10302770346318588864","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":20,"list":20,"ala":20,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["520689","鲜萃咖啡",2,10]],"coupons":[]},{"ms":1785108000000,"m":440,"id":"10302709549228154718","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":12,"list":12,"ala":20,"cpn":0,"act":0,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1785195480000,"m":458,"id":"10302294887249996984","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":12,"list":12,"ala":20,"cpn":0,"act":0,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1785452700000,"m":425,"id":"10302115564121437671","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":58,"list":58,"ala":56,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",2,14.9]],"coupons":[]},{"ms":1785625860000,"m":431,"id":"10302196120840860515","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":31.8,"list":53,"ala":56,"cpn":0,"act":21.2,"cmb":3,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",2,15.9]],"coupons":[]},{"ms":1785644040000,"m":734,"id":"10302573515089436316","ch":"delivery","st":"麦当劳东莞茶山万润得来速餐厅","paid":58,"list":49,"ala":49,"cpn":0,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",2,24.5]],"coupons":[]},{"ms":1785713100000,"m":445,"id":"10302915593579683542","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.5,"list":17.5,"ala":24.5,"cpn":0,"act":7,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1785799380000,"m":443,"id":"10302230004435775604","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":8.32,"list":18.5,"ala":21,"cpn":2.78,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":["限时活动券"]},{"ms":1785817740000,"m":749,"id":"10302912924067601418","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1785886500000,"m":455,"id":"10302166728460784342","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":8.1,"list":13.5,"ala":21.5,"cpn":0,"act":5.4,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900003431","大脆鸡扒麦满分组合",1,8.1]],"coupons":[]},{"ms":1785971880000,"m":438,"id":"10302732852282113647","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":17.5,"list":17.5,"ala":24.5,"cpn":0,"act":0,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1786076340000,"m":739,"id":"10302289469719388389","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1786164240000,"m":764,"id":"10302627624105664145","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1786336260000,"m":751,"id":"10302306266919836199","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":15,"list":15,"ala":15,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":[]},{"ms":1786490880000,"m":448,"id":"10302517495855811607","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1786509300000,"m":755,"id":"10302553974509779441","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1786575780000,"m":423,"id":"10302329311664899694","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.8,"list":13,"ala":21,"cpn":0,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":[]},{"ms":1786663920000,"m":452,"id":"10302262355809270477","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.87,"list":17.5,"ala":20,"cpn":2.63,"act":7,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",1,10.5]],"coupons":["限时活动券"]},{"ms":1786692360000,"m":926,"id":"10302838910272570240","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.42,"list":21,"ala":13.9,"cpn":3.48,"act":7.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":["限时活动券"]},{"ms":1786780080000,"m":948,"id":"10302337837004839456","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":10,"list":10,"ala":10,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["520689","鲜萃咖啡",1,10]],"coupons":[]},{"ms":1786921320000,"m":422,"id":"10302392335240703237","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.8,"list":13,"ala":21,"cpn":0,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":[]},{"ms":1787010300000,"m":465,"id":"10302144677657934096","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.2,"list":12,"ala":20,"cpn":0,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1787025900000,"m":725,"id":"10302185049277237156","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":18.37,"list":24.5,"ala":24.5,"cpn":6.13,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":["限时活动券"]},{"ms":1787114460000,"m":761,"id":"10302267931711889731","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1787182500000,"m":455,"id":"10302829254202359247","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":21,"list":35,"ala":40,"cpn":0,"act":14,"cmb":5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",2,10.5]],"coupons":[]},{"ms":1787199900000,"m":745,"id":"10302305644368135750","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1787284860000,"m":721,"id":"10302265292146931552","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1787371200000,"m":720,"id":"10302596980767406201","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":15,"list":15,"ala":15,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":[]},{"ms":1787439660000,"m":421,"id":"10302309109859881234","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.8,"list":18,"ala":25,"cpn":0,"act":7.2,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003493","原味板烧鸡腿麦满分组合",1,10.8]],"coupons":[]},{"ms":1787546580000,"m":763,"id":"10302150954641234689","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1787556120000,"m":922,"id":"10302214274337643530","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.9,"list":19,"ala":11.9,"cpn":0,"act":7.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["507368","麦咖啡™热美式中杯",1,11.9]],"coupons":[]},{"ms":1787631420000,"m":737,"id":"10302376377444165587","ch":"delivery","st":"麦当劳东莞松山湖总部二路餐厅","paid":16.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1787700180000,"m":443,"id":"10302788935639450001","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":17.5,"list":17.5,"ala":20,"cpn":0,"act":0,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",1,10.5]],"coupons":[]},{"ms":1787717940000,"m":739,"id":"10302776077169364881","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1787787360000,"m":456,"id":"10302648680193081581","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":26.5,"list":26.5,"ala":28,"cpn":0,"act":0,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1787874540000,"m":469,"id":"10302176202155373302","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1788075120000,"m":932,"id":"10302839724202478694","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":7.5,"list":10,"ala":10,"cpn":2.5,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["520689","鲜萃咖啡",1,10]],"coupons":["限时活动券"]},{"ms":1788218460000,"m":441,"id":"10302856256908274555","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.4,"list":12,"ala":20,"cpn":1.8,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":["限时活动券"]},{"ms":1788392580000,"m":463,"id":"10302447426678314268","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.8,"list":18,"ala":25,"cpn":0,"act":7.2,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003493","原味板烧鸡腿麦满分组合",1,10.8]],"coupons":[]},{"ms":1788583140000,"m":759,"id":"10302132298434759297","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1788678000000,"m":900,"id":"10302565859275164854","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":21,"list":21,"ala":13.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1788738180000,"m":463,"id":"10302874405081252324","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":10.5,"list":17.5,"ala":24.5,"cpn":0,"act":7,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1788822660000,"m":431,"id":"10302450901957133579","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":10.5,"list":17.5,"ala":20,"cpn":0,"act":7,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",1,10.5]],"coupons":[]},{"ms":1789014720000,"m":752,"id":"10302307520562457174","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1789170060000,"m":461,"id":"10302849638394268035","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":18.37,"list":35,"ala":40,"cpn":2.63,"act":14,"cmb":5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",2,10.5]],"coupons":["限时活动券"]},{"ms":1789274820000,"m":767,"id":"10302045999564852347","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.25,"list":15,"ala":15,"cpn":3.75,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":["限时活动券"]},{"ms":1789284840000,"m":934,"id":"10302894429492210066","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":19,"list":19,"ala":11.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["507368","麦咖啡™热美式中杯",1,11.9]],"coupons":[]},{"ms":1789340760000,"m":426,"id":"10302824388813982939","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.6,"list":11,"ala":18,"cpn":0,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1789513440000,"m":424,"id":"10302338072094611370","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1789601040000,"m":444,"id":"10302588666412212359","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":4.95,"list":11,"ala":18,"cpn":1.65,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":["限时活动券"]},{"ms":1789686420000,"m":427,"id":"10302726925778592741","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1789793220000,"m":767,"id":"10302379069059907758","ch":"delivery","st":"麦当劳东莞茶山万润得来速餐厅","paid":18.75,"list":13,"ala":13,"cpn":3.25,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":["限时活动券"]},{"ms":1789861140000,"m":459,"id":"10302107464474843648","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":22.2,"list":37,"ala":42,"cpn":0,"act":14.8,"cmb":5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",2,11.1]],"coupons":[]},{"ms":1789947420000,"m":457,"id":"10302841365938003838","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.6,"list":11,"ala":18,"cpn":0,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1790033820000,"m":457,"id":"10302767214891725623","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1790119740000,"m":449,"id":"10302116596206336420","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.17,"list":29,"ala":28,"cpn":3.73,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":["限时活动券"]},{"ms":1790223120000,"m":732,"id":"10302880367606385421","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":16.62,"list":19,"ala":19,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",2,9.5]],"coupons":["限时活动券"]},{"ms":1790291640000,"m":434,"id":"10302786099448704195","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.6,"list":11,"ala":18,"cpn":0,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1790309520000,"m":732,"id":"10302679435917200744","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":26,"list":26,"ala":26,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",2,13]],"coupons":[]},{"ms":1790484540000,"m":769,"id":"10302454413423760211","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1790552580000,"m":463,"id":"10302755470271880125","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1790638680000,"m":458,"id":"10302256443058921223","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":5.85,"list":13,"ala":21,"cpn":1.95,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":["限时活动券"]},{"ms":1790742840000,"m":754,"id":"10302354033900905394","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1790753760000,"m":936,"id":"10302243745158145713","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":21,"list":21,"ala":13.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1790812020000,"m":467,"id":"10302134467833033384","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.2,"list":12,"ala":20,"cpn":0,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1790898240000,"m":464,"id":"10302245605666777050","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1790984460000,"m":461,"id":"10302519329432910656","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.17,"list":29,"ala":28,"cpn":3.73,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":["限时活动券"]},{"ms":1791156840000,"m":454,"id":"10302666997485680496","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.4,"list":12,"ala":20,"cpn":1.8,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":["限时活动券"]},{"ms":1791175560000,"m":766,"id":"10302846934902945804","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1791242880000,"m":448,"id":"10302431504759730255","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1791415800000,"m":450,"id":"1030246380000765751204635280","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":null,"del":0,"cov":0,"status":"cancelled","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1791416340000,"m":459,"id":"10302173815407895568","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1791433740000,"m":749,"id":"10302761913259387028","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1791502020000,"m":447,"id":"10302530160329444634","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":17.5,"list":17.5,"ala":24.5,"cpn":0,"act":0,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1791519240000,"m":734,"id":"10302361313067053937","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1791587400000,"m":430,"id":"10302863438568465304","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11.17,"list":29,"ala":28,"cpn":3.73,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":["限时活动券"]},{"ms":1791673560000,"m":426,"id":"10302312074984129619","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":8.1,"list":13.5,"ala":21.5,"cpn":0,"act":5.4,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900003431","大脆鸡扒麦满分组合",1,8.1]],"coupons":[]},{"ms":1791692280000,"m":738,"id":"10302198463114823070","ch":"delivery","st":"麦当劳东莞茶山万润得来速餐厅","paid":33.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1791762000000,"m":460,"id":"10302032381401496591","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1791846720000,"m":432,"id":"10302358715378488826","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.8,"list":18,"ala":25,"cpn":0,"act":7.2,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003493","原味板烧鸡腿麦满分组合",1,10.8]],"coupons":[]},{"ms":1791934020000,"m":447,"id":"10302437004740344405","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11,"list":11,"ala":18,"cpn":0,"act":0,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1792021560000,"m":466,"id":"10302435963575396263","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":18.5,"list":18.5,"ala":21,"cpn":0,"act":0,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1792124760000,"m":746,"id":"10302658874707456874","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1792136460000,"m":941,"id":"10302276716421261584","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":21,"list":21,"ala":13.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1792194180000,"m":463,"id":"10302849205596873044","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1792210500000,"m":735,"id":"10302501900235932493","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15,"list":15,"ala":15,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":[]},{"ms":1792453380000,"m":463,"id":"10302813559110375869","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.85,"list":13,"ala":21,"cpn":1.95,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":["限时活动券"]},{"ms":1792470960000,"m":756,"id":"10302623178557267320","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.75,"list":13,"ala":13,"cpn":3.25,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":["限时活动券"]}],"coupons":[{"id":"coupon-demo-1","name":"芝香脆鸡扒堡早餐两件套","price":9.9,"validFrom":"2026-10-20T05:00","validTo":"2026-10-21T10:29","weekdays":[],"startTime":"05:00","endTime":"10:29","channels":["到店专用"],"tags":["即将到期"],"worth":6.6},{"id":"coupon-demo-2","name":"11.9元麦辣鸡腿堡","price":11.9,"validFrom":"2026-10-20T10:30","validTo":"2026-10-23T23:59","weekdays":[],"startTime":"10:30","endTime":"23:59","channels":["到店专用","外送专用"],"tags":[],"worth":12.6},{"id":"coupon-demo-3","name":"19.9元王牌炸鸡任选2","price":19.9,"validFrom":"2026-10-20T10:30","validTo":"2026-10-23T23:59","weekdays":[1,2,3,4,5],"startTime":"10:30","endTime":"23:59","channels":["到店专用"],"tags":[],"worth":null},{"id":"coupon-demo-4","name":"高达芝士蛋堡早餐两件套","price":9.9,"validFrom":"2026-10-21T05:00","validTo":"2026-10-21T10:29","weekdays":[3],"startTime":"05:00","endTime":"10:29","channels":["到店专用"],"tags":[],"worth":5.1},{"id":"coupon-demo-5","name":"9.9元猪柳蛋麦满分","price":9.9,"validFrom":"2026-09-20T05:00","validTo":"2026-10-21T10:29","weekdays":[1,2,3,4,5],"startTime":"05:00","endTime":"10:29","channels":["到店专用"],"tags":[],"worth":6}],"campaigns":[{"title":"程序员节系列活动：趣味互动赢专属好券","date":"2026-10-23","summary":"10月23日-10月25日 参与趣味互动赢专属好券，还有机会解锁数字徽章","kind":"upcoming"},{"title":"限定主题丝巾 10:45 开售","date":"2026-10-22","summary":"任意餐品消费加 39.9 元可得，10月22日10:45开售","kind":"upcoming"},{"title":"超值 9.9 元早餐两件套","date":"2026-10-20","summary":"周一至周五早餐堡轮流上早班，凭券两件套 9.9 元","kind":"today"}],"menu":{"3010":{"p":9.5,"o":9.5,"d":null},"4437":{"p":13,"o":13,"d":null},"507368":{"p":11.9,"o":19,"d":"促销优惠"},"515946":{"p":13.9,"o":21,"d":"促销优惠"},"520689":{"p":10,"o":10,"d":null},"521884":{"p":24.5,"o":24.5,"d":null},"9900003449":{"p":11.1,"o":18.5,"d":"随单购早餐卡优惠"},"9900011872":{"p":9.9,"o":9.9,"d":null},"9900003431":{"p":8.1,"o":13.5,"d":"随单购早餐卡优惠"},"9900013221":{"p":14.9,"o":29,"d":null},"9900011709":{"p":7.8,"o":13,"d":"随单购早餐卡优惠"},"9900008094":{"p":7.2,"o":12,"d":"随单购早餐卡优惠"},"9900003458":{"p":15.9,"o":26.5,"d":"随单购早餐卡优惠"},"9900003423":{"p":10.5,"o":17.5,"d":"随单购早餐卡优惠"},"9900008754":{"p":15,"o":15,"d":null},"9900003453":{"p":10.5,"o":17.5,"d":"随单购早餐卡优惠"},"9900003493":{"p":10.8,"o":18,"d":"随单购早餐卡优惠"},"9900012729":{"p":6.6,"o":11,"d":"随单购早餐卡优惠"}},"meta":{"demo":true,"traceId":"trace-2026-10-20T04-00-10-950Z","dataFrom":"2026-07-17","dataTo":"2026-10-20"}}</script>
+
+<div class="bar" id="bar">
+  <div class="bar-in">
+    <a class="mark" href="#overview" aria-label="回到顶部">
+      <svg class="mark-arch" viewBox="0 0 216 164" fill="none" aria-hidden="true">
+        <path d="M10 150C10 62 34 14 60 14C86 14 108 62 108 150C108 62 130 14 156 14C182 14 206 62 206 150" stroke="currentColor" stroke-width="34" stroke-linecap="butt"/>
+      </svg>
+      <span class="mark-t">麦麦账本<em>McLedger</em></span>
+    </a>
+    <nav class="nav" aria-label="章节导航">
+      <a href="#overview" data-nav="overview">概览</a><a href="#flow" data-nav="flow">三层价</a><a href="#attr" data-nav="attr">省在哪</a><a href="#strategy" data-nav="strategy">怎么省</a><a href="#leak" data-nav="leak">漏在哪</a><a href="#window" data-nav="window">何时买</a><a href="#profile" data-nav="profile">画像</a><a href="#trust" data-nav="trust">可信度</a>
+    </nav>
+    <div class="bar-r">
+      <span class="bar-sum"><i data-bar-k>近 30 天 · 省下</i><b data-bar-v>¥247.45</b></span>
+      <button class="btn btn-gold" type="button" data-copy="麦麦账本 ｜ 2026-09-21 至 2026-10-20 ｜ 33 笔订单实付 ¥442.35，省下 ¥247.45（原价的 36%）。" data-ok="分享文案已复制">复制分享文案</button>
     </div>
-    <div class="hd-r">
-      <div class="stamp">
-        <span class="stamp-n">26</span>
-        <span class="stamp-l">笔订单</span>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+
+    <!-- ============================ 区间筛选 ============================ -->
+    <div class="flt" id="flt" role="group" aria-label="时间范围筛选">
+      <span class="flt-k">时间范围</span>
+      <div class="flt-chips" id="fltChips">
+        <button class="chip" type="button" data-range="7d" aria-pressed="false">近 7 天</button><button class="chip" type="button" data-range="30d" aria-pressed="true">近 30 天</button><button class="chip" type="button" data-range="90d" aria-pressed="false">近 90 天</button><button class="chip" type="button" data-range="all" aria-pressed="false">全部</button>
+        <button class="chip" type="button" data-range="custom" aria-pressed="false">自定义</button>
       </div>
-    </div>
-  </header>
-
-  <section class="hero">
-    <div class="kpi">
-      <div class="kpi-l">实付总额</div>
-      <div class="kpi-v">¥335.21</div>
-      <div class="kpi-s">平均每笔 ¥12.89</div>
-    </div>
-    <div class="kpi accent">
-      <div class="kpi-l">省下来的钱</div>
-      <div class="kpi-v">¥242.69</div>
-      <div class="kpi-s">相当于原价的 42.0%</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-l">漏掉的钱</div>
-      <div class="kpi-v warn">¥30.30</div>
-      <div class="kpi-s">3 项可改进点</div>
-    </div>
-  </section>
-
-  <section class="block">
-    <h2>同一顿饭的三个价格</h2>
-    <p class="note">把三种口径摊开，才看得出"省"到底发生在哪一层。</p>
-    <div class="wf">
-      <div class="wf-row ">
-        <div class="wf-l">单点合计<span>拆开单点要花多少</span></div>
-        <div class="wf-bar"><i style="width:100.0%"></i></div>
-        <div class="wf-v">¥577.90</div>
-      </div><div class="wf-row ">
-        <div class="wf-l">划线价<span>菜单标价合计</span></div>
-        <div class="wf-bar"><i style="width:84.8%"></i></div>
-        <div class="wf-v">¥490.00</div>
-      </div><div class="wf-row paid">
-        <div class="wf-l">实付<span>你实际付出</span></div>
-        <div class="wf-bar"><i style="width:58.0%"></i></div>
-        <div class="wf-v">¥335.21</div>
+      <div class="flt-custom" id="fltCustom" hidden>
+        <input type="date" id="fltFrom" aria-label="开始日期" value="2026-09-21" min="2026-07-17" max="2026-10-20">
+        <span class="flt-arrow">→</span>
+        <input type="date" id="fltTo" aria-label="结束日期" value="2026-10-20" min="2026-07-17" max="2026-10-20">
+        <button class="btn btn-mini" type="button" id="fltApply">应用</button>
       </div>
+      <span class="flt-span" id="fltSpan">2026-09-21 → 2026-10-20 · 30 天 · 33 笔</span>
     </div>
-  </section>
 
-  <section class="block">
-    <h2>省的钱从哪来</h2>
-    <p class="note">三项互不重叠：促销直降、套餐组合价值、券与账户权益。合计等于「省下来的钱」。</p>
-    <div class="attr"><div class="attr-item">
-      <div class="attr-top"><span>券优惠</span><b>¥12.49</b></div>
-      <div class="attr-bar"><i style="width:5.1%"></i></div>
-      <div class="attr-hint">逐券金额，可对到订单　·　占比 5%</div>
-    </div><div class="attr-item">
-      <div class="attr-top"><span>活动 / 卡权益</span><b>¥142.30</b></div>
-      <div class="attr-bar"><i style="width:58.6%"></i></div>
-      <div class="attr-hint">总优惠 − 券优惠　·　占比 59%</div>
-    </div><div class="attr-item">
-      <div class="attr-top"><span>套餐组合价值</span><b>¥87.90</b></div>
-      <div class="attr-bar"><i style="width:36.2%"></i></div>
-      <div class="attr-hint">单点合计 − 原价合计　·　占比 36%</div>
+    <!-- ============================ 概览 ============================ -->
+    <section class="cover" id="overview">
+      <div class="arches" aria-hidden="true">
+        <svg viewBox="0 0 216 164" fill="none">
+          <defs>
+            <linearGradient id="ag" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#FFE7A8"/>
+              <stop offset=".52" stop-color="#FFC72C"/>
+              <stop offset="1" stop-color="#D08E00"/>
+            </linearGradient>
+          </defs>
+          <g stroke="url(#ag)" stroke-linecap="butt" fill="none">
+            <path d="M10 150C10 62 34 14 60 14C86 14 108 62 108 150C108 62 130 14 156 14C182 14 206 62 206 150" stroke-width="22" transform="translate(9,9)" opacity=".06"/>
+            <path d="M10 150C10 62 34 14 60 14C86 14 108 62 108 150C108 62 130 14 156 14C182 14 206 62 206 150" stroke-width="22" transform="translate(4.5,4.5)" opacity=".14"/>
+            <path class="draw" pathLength="100" d="M10 150C10 62 34 14 60 14C86 14 108 62 108 150C108 62 130 14 156 14C182 14 206 62 206 150" stroke-width="22" opacity=".9"/>
+          </g>
+        </svg>
+      </div>
+      <div class="gridfade" aria-hidden="true"></div>
+
+      <div class="cover-in">
+        <div class="eyebrow"><i></i>MCD LEDGER · 消费审计报告</div>
+        <h1>你花在麦当劳的每一块钱，<br><em>都能对上账</em></h1>
+        <div id="h-cover" data-host="cover">
+        <p class="cover-sub">
+          2026-09-21 <span class="arw">→</span> 2026-10-20
+          <span class="sep"></span>30 天
+          <span class="sep"></span>33 笔完成订单
+          <span class="sep"></span>1 笔取消
+        </p>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="kpi-k">实付总额</div>
+            <div class="kpi-v"><span data-count="442.35" data-dec="2" data-pre="¥">¥442.35</span></div>
+            <div class="kpi-s">平均每笔 ¥13.40</div>
+          </div>
+          <div class="kpi kpi-hl">
+            <div class="kpi-k">省下来的钱</div>
+            <div class="kpi-v"><span class="grad" data-count="247.45" data-dec="2" data-pre="¥">¥247.45</span></div>
+            <div class="kpi-s">相当于原价的 35.9%</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-k">还能再省 / 月</div>
+            <div class="kpi-v gold">¥129.52</div>
+            <div class="kpi-s">4 条策略 · 1 条无法折算</div>
+          </div>
+        </div></div>
+
+        <ol class="steps3" aria-label="阅读顺序">
+          <li><b>01</b><span>先看省了多少</span><i>三项优惠互不重叠</i></li>
+          <li><b>02</b><span>再看漏在哪</span><i>只列有证据的项</i></li>
+          <li><b>03</b><span>最后看下次怎么买</span><i>按你选的区间给策略</i></li>
+        </ol>
+      </div>
+    </section>
+
+    <div id="h-flow" data-host="flow"><section class="sec rv" id="flow">
+    <div class="sec-h"><span class="sec-n">§ 01</span><h2>同一顿饭的三个价格</h2><span class="sec-r">近 30 天</span></div>
+    <p class="lead">把三种口径摊开，才看得出“省”到底发生在哪一层。每一段落差都对应一类优惠。</p>
+
+    <div class="chart brackets">
+      <svg class="flowsvg" viewBox="0 0 760 282" role="img" aria-label="单点合计、划线价与实付的阶梯对比">
+        <defs>
+          <linearGradient id="fg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#FFE7A8"/>
+            <stop offset=".5" stop-color="#FFC72C"/>
+            <stop offset="1" stop-color="#E8A200"/>
+          </linearGradient>
+        </defs>
+        <line class="svg-base" x1="48" y1="214" x2="734" y2="214"/>
+        <line class="svg-guide" x1="74" y1="58.2" x2="734" y2="58.2"/><line class="svg-guide" x1="380" y1="77.7" x2="734" y2="77.7"/><line class="svg-guide" x1="686" y1="112.8" x2="734" y2="112.8"/>
+        <line class="svg-tick" x1="74" y1="214" x2="74" y2="221"/><line class="svg-tick" x1="380" y1="214" x2="380" y2="221"/><line class="svg-tick" x1="686" y1="214" x2="686" y2="221"/>
+        <path class="svg-line draw" pathLength="100" d="M 74 58.2 L 380 58.2 L 380 77.7 L 686 77.7 L 686 112.8 L 734 112.8"/>
+        <text class="svg-save" x="227" y="68.9" text-anchor="middle">省 ¥84.90</text><text class="svg-save" x="533" y="92.7" text-anchor="middle">省 ¥153.55</text>
+        <g class="svg-node" style="--d:0.55s"><circle class="svg-halo" cx="74" cy="58.2" r="13"/><circle class="svg-dot" cx="74" cy="58.2" r="4"/><text class="svg-val" x="74" y="36.2" text-anchor="middle">¥680.80</text></g><g class="svg-node" style="--d:0.77s"><circle class="svg-halo" cx="380" cy="77.7" r="13"/><circle class="svg-dot" cx="380" cy="77.7" r="4"/><text class="svg-val" x="380" y="55.7" text-anchor="middle">¥595.90</text></g><g class="svg-node" style="--d:0.99s"><circle class="svg-halo" cx="686" cy="112.8" r="13"/><circle class="svg-dot" cx="686" cy="112.8" r="5.5"/><text class="svg-val svg-val-hl" x="686" y="90.8" text-anchor="middle">¥442.35</text></g>
+        <g><text class="svg-lb" x="74" y="244" text-anchor="middle">单点合计</text><text class="svg-hint" x="74" y="264" text-anchor="middle">把套餐拆成单品、各买一份的价钱</text></g><g><text class="svg-lb" x="380" y="244" text-anchor="middle">划线价</text><text class="svg-hint" x="380" y="264" text-anchor="middle">平台记录的商品原价合计</text></g><g><text class="svg-lb" x="686" y="244" text-anchor="middle">实付</text><text class="svg-hint" x="686" y="264" text-anchor="middle">你真正付出的钱</text></g>
+      </svg>
+    </div>
+  </section></div>
+
+    <div id="h-attr" data-host="attr"><section class="sec rv" id="attr">
+    <div class="sec-h"><span class="sec-n">§ 02</span><h2>省的钱从哪来</h2><span class="sec-r">近 30 天</span></div>
+    <p class="lead">三项互不重叠，合计等于“省下来的钱”。颜色深浅只表示层次，不代表好坏。</p>
+
+    <div class="spec" role="img" aria-label="优惠构成占比"><span class="spec-seg sA" style="flex:21.650;animation-delay:0.00s"></span><span class="spec-seg sB" style="flex:140.900;animation-delay:0.08s"></span><span class="spec-seg sC" style="flex:84.900;animation-delay:0.16s"></span></div>
+    <div class="legend"><div class="lg-row">
+      <span class="lg-dot sA"></span>
+      <span class="lg-l">券与折扣<i>逐券金额，可对到具体订单</i></span>
+      <span class="lg-lead"></span>
+      <span class="lg-v">¥21.65</span>
+      <span class="lg-p">9%</span>
+    </div><div class="lg-row">
+      <span class="lg-dot sB"></span>
+      <span class="lg-l">活动 / 卡权益<i>平台总优惠 − 券优惠</i></span>
+      <span class="lg-lead"></span>
+      <span class="lg-v">¥140.90</span>
+      <span class="lg-p">57%</span>
+    </div><div class="lg-row">
+      <span class="lg-dot sC"></span>
+      <span class="lg-l">套餐组合价值<i>单点合计 − 原价合计</i></span>
+      <span class="lg-lead"></span>
+      <span class="lg-v">¥84.90</span>
+      <span class="lg-p">34%</span>
     </div></div>
-  
-  <table class="tbl"><thead><tr><th>优惠类型</th><th class="r">金额</th><th class="r">涉及订单</th></tr></thead><tbody>
-    <tr><td>活动 / 卡权益</td><td class="r">¥142.30</td><td class="r">17</td></tr><tr><td>限时活动券</td><td class="r">¥12.49</td><td class="r">3</td></tr>
-  </tbody></table>
-  
+
+    
+    <p class="note">另有 ¥9.00 配送费计入实付，不属于优惠，未参与归因。</p>
+  </section></div>
+
+    <div id="h-strategy" data-host="strategy"><section class="sec rv" id="strategy">
+    <div class="sec-h"><span class="sec-n">§ 03</span><h2>下次怎么买</h2><span class="sec-r">近 30 天</span></div>
+    <p class="lead">不是泛泛的“多领券”，而是从你这段区间的订单结构里挑出还能改的地方。金额是该区间的可优化空间，月化为按同样节奏推算的一个月。</p>
+
+    <div class="strat-head">
+      <b>还可再省 ¥129.52<i>/ 月</i></b>
+      <span>4 条策略 · 1 条无法折算</span>
+    </div>
+
+    <div class="strats"><article class="strat">
+        <span class="strat-n">01</span>
+        <div class="strat-b">
+          <h3>早餐 21 笔里有 15 笔没用券<span class="strat-k">时段 × 券</span></h3>
+          <ul class="strat-e"><li>早餐共 21 笔（占该区间 64%），集中在 07:12–07:44</li><li>卡包里有 2 张券的生效时段正好覆盖这段时间：芝香脆鸡扒堡早餐两件套、9.9元猪柳蛋麦满分</li><li>这 15 笔订单没有用券记录（已用 6 笔），单张最多可省 ¥6.30</li><li>月化按「同类券可持续领取」推算——券本身是一次性的</li></ul>
+          <p class="strat-a"><b>怎么做</b>下单前先翻一遍卡包：芝香脆鸡扒堡早餐两件套 05:00–10:29 正好落在你的早餐时段，把它变成点单前的固定动作</p>
+        </div>
+        <div class="strat-r">
+          <span class="strat-v">¥94.50<i>/ 月</i></span>
+          <span class="strat-tag" data-conf="medium">中置信</span>
+          <span class="strat-sub">该区间 ¥94.50</span>
+        </div>
+      </article><article class="strat">
+        <span class="strat-n">02</span>
+        <div class="strat-b">
+          <h3>浓浓黑巧（冰/热） 等 3 个常点品有更低的买法<span class="strat-k">单价</span></h3>
+          <ul class="strat-e"><li>浓浓黑巧（冰/热）：买了 2 份，平均 ¥21.00/份，菜单现价 ¥13.90（促销优惠）</li><li>火腿扒麦满分套餐：买了 3 份，平均 ¥13.57/份，菜单现价 ¥11.10（随单购早餐卡优惠）</li><li>脆香油条组合：买了 3 份，平均 ¥8.07/份，菜单现价 ¥6.60（随单购早餐卡优惠）</li><li>单价按订单实付总额按行拆分推算，属于估算</li></ul>
+          <p class="strat-a"><b>怎么做</b>点单时先走促销 / 卡权益入口，别在默认价上下单；如果同款在套餐里，换成套餐往往比单点再便宜一截</p>
+        </div>
+        <div class="strat-r">
+          <span class="strat-v">¥26.02<i>/ 月</i></span>
+          <span class="strat-tag" data-conf="medium">中置信</span>
+          <span class="strat-sub">该区间 ¥26.02</span>
+        </div>
+      </article><article class="strat">
+        <span class="strat-n">03</span>
+        <div class="strat-b">
+          <h3>1 笔外送付了 ¥9.00 配送费<span class="strat-k">渠道</span></h3>
+          <ul class="strat-e"><li>该区间 1 笔订单产生了配送费，合计 ¥9.00</li><li>平均每笔 ¥9.00，这部分不属于优惠，是实打实的支出</li><li>同期有 23 笔是到店自取，没有这笔成本</li></ul>
+          <p class="strat-a"><b>怎么做</b>把时间宽裕的那几单改成到店自取；必须外送时优先用「外送专用」券抵扣配送费，而不是让它原价叠加</p>
+        </div>
+        <div class="strat-r">
+          <span class="strat-v">¥9.00<i>/ 月</i></span>
+          <span class="strat-tag" data-conf="high">高置信</span>
+          <span class="strat-sub">该区间 ¥9.00</span>
+        </div>
+      </article><article class="strat">
+        <span class="strat-n">04</span>
+        <div class="strat-b">
+          <h3>3 张券按你的节奏用不完<span class="strat-k">券库存</span></h3>
+          <ul class="strat-e"><li>芝香脆鸡扒堡早餐两件套：还有 0.9 天到期，按你的节奏预计只能用上 0.66 次</li><li>高达芝士蛋堡早餐两件套：还有 0.9 天到期，按你的节奏预计只能用上 0.06 次</li><li>9.9元猪柳蛋麦满分：还有 0.9 天到期，按你的节奏预计只能用上 0.53 次</li><li>可用次数按「该券生效时段内的历史下单频率」外推，同窗口的券按张数平摊</li><li>这些券面值合计 ¥17.70，已计入 §04 的漏损，这里不重复折算</li></ul>
+          <p class="strat-a"><b>怎么做</b>到期前优先塞进最近一次同品类订单；确实用不完的话，下次别囤同类券——囤券本身就是一种沉没成本</p>
+        </div>
+        <div class="strat-r">
+          <span class="strat-na">不折算</span>
+          <span class="strat-tag" data-conf="medium">中置信</span>
+          
+        </div>
+      </article></div>
+
+    <p class="note">不同策略可能指向同一笔订单的不同环节（例如既没用券、单价也偏高），合计是<strong>上限估计</strong>；标注“一次性”的是券类机会，不做月化。</p>
+  </section></div>
+
+    <section class="sec rv" id="leak">
+    <div class="sec-h"><span class="sec-n">§ 04</span><h2>漏掉的钱</h2><span class="sec-r">账户口径 · 全程</span></div>
+    <p class="lead">只列有证据的项。时间筛选只影响「省了多少」与「还能再省」，这一节是按账户全程统计的既成损失，所以数字不随上方区间变化。</p>
+
+    <div class="leaks">
+      <article class="leak">
+        <span class="leak-n">01</span>
+        <div class="leak-b">
+          <h3>1860.4 积分已过期作废</h3>
+          <ul class="leak-e"><li>累计 3860.2 积分，已用 1840，过期 1860.4</li><li>可用余额 320.5，本月将过期 120</li></ul>
+          <p class="leak-a"><b>怎么做</b>把积分余额设成每月固定检查项；临近过期时优先兑换无门槛券，而不是攒着等大件</p>
+        </div>
+        <div class="leak-r"><span class="leak-v">−¥18.60<i>估算</i></span></div>
+      </article><article class="leak">
+        <span class="leak-n">02</span>
+        <div class="leak-b">
+          <h3>3 张券将在 48 小时内到期</h3>
+          <ul class="leak-e"><li>芝香脆鸡扒堡早餐两件套（¥9.9） · 05:00–10:29 · 至 2026-10-21 10:29</li><li>高达芝士蛋堡早餐两件套（¥9.9） · 05:00–10:29 · 至 2026-10-21 10:29</li><li>9.9元猪柳蛋麦满分（¥9.9） · 05:00–10:29 · 至 2026-10-21 10:29</li></ul>
+          <p class="leak-a"><b>怎么做</b>到期前用掉，或优先用在小额订单上——小额单用券的边际收益最高</p>
+        </div>
+        <div class="leak-r"><span class="leak-v">−¥17.70<i>估算</i></span></div>
+      </article><article class="leak">
+        <span class="leak-n">03</span>
+        <div class="leak-b">
+          <h3>4 张券在可用时段内被错过</h3>
+          <ul class="leak-e"><li>芝香脆鸡扒堡早餐两件套：窗口内有 1 笔订单，券未使用，这张券最多可省 ¥6.60</li><li>11.9元麦辣鸡腿堡：窗口内有 1 笔订单，券未使用，这张券最多可省 ¥12.60</li><li>19.9元王牌炸鸡任选2：窗口内有 1 笔订单，券未使用</li><li>9.9元猪柳蛋麦满分：窗口内有 17 笔订单，券未使用，这张券最多可省 ¥6.00</li></ul>
+          <p class="leak-a"><b>怎么做</b>把券的有效时段当成点单提醒：券在 05:00–10:29 生效，就把它绑到早餐决策上</p>
+        </div>
+        <div class="leak-r"><span class="leak-v">−¥25.20<i>估算</i></span></div>
+      </article><article class="leak">
+        <span class="leak-n">04</span>
+        <div class="leak-b">
+          <h3>1 笔订单被取消</h3>
+          <ul class="leak-e"><li>2026-10-08 07:32:04 · 麦当劳东莞茶山万润得来速餐厅 · ¥9.90</li></ul>
+          <p class="leak-a"><b>怎么做</b>取消多集中在同一门店时，先确认出餐时长再下单，比反复取消更省时间</p>
+        </div>
+        <div class="leak-r"><span class="leak-na">不折算</span></div>
+      </article>
+    </div>
   </section>
 
-  <section class="block">
-    <h2>漏掉的钱</h2>
-    <p class="note">只列有证据的项。已下架商品导致的归因缺口不折算金额——账本选择不估算，而不是编一个数字。</p>
-    <div class="leak">
-    <div class="leak-h"><b>1860.4 积分已过期作废</b><span class="leak-amt">¥18.60<i>估算</i></span></div>
-    <ul><li>累计 3860.2 积分，已用 1840，过期 1860.4</li><li>可用余额 320.5，本月将过期 120</li></ul>
-    <div class="leak-a">建议：把积分余额设成每月固定检查项；临近过期时优先兑换无门槛券，而不是攒着等大件</div>
-  </div><div class="leak">
-    <div class="leak-h"><b>2 张券将在 48 小时内到期</b><span class="leak-amt">¥11.70<i>估算</i></span></div>
-    <ul><li>芝香脆鸡扒堡早餐两件套（¥9.9） · 05:00–10:29 · 至 2026-10-20 10:29</li><li>高达芝士蛋堡早餐两件套（¥9.9） · 05:00–10:29 · 至 2026-10-21 10:29</li></ul>
-    <div class="leak-a">建议：到期前用掉，或优先用在小额订单上——小额单用券的边际收益最高</div>
-  </div><div class="leak">
-    <div class="leak-h"><b>1 笔订单被取消</b><span class="leak-na">不折算</span></div>
-    <ul><li>2026-10-08 07:32:04 · 麦当劳东莞茶山万润得来速餐厅 · ¥9.90</li></ul>
-    <div class="leak-a">建议：取消多集中在同一门店时，先确认出餐时长再下单，比反复取消更省时间</div>
-  </div>
-  </section>
-
-  <section class="block">
-    <h2>接下来 7 天，什么时候买最划算</h2>
-    <div class="win">
-    <div class="win-row">
-      <div class="win-d"><b>今天</b><span>2026-10-20 周二</span></div>
-      <div class="win-t">05:00–10:29</div>
-      <div class="win-o"><span class="tag">芝香脆鸡扒堡早餐两件套 ¥9.9</span><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag more">+1</span></div>
-      <div class="win-s">省 ¥19.20</div>
-    </div><div class="win-row">
-      <div class="win-d"><b>明天</b><span>2026-10-21 周三</span></div>
-      <div class="win-t">10:30–23:59</div>
-      <div class="win-o"><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag">高达芝士蛋堡早餐两件套 ¥9.9</span></div>
-      <div class="win-s">省 ¥17.70</div>
-    </div><div class="win-row">
-      <div class="win-d"><b>周四</b><span>2026-10-22 周四</span></div>
-      <div class="win-t">10:30–23:59</div>
-      <div class="win-o"><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag">限定主题丝巾 10:45 开售</span></div>
-      <div class="win-s">省 ¥12.60</div>
-    </div><div class="win-row">
-      <div class="win-d"><b>周五</b><span>2026-10-23 周五</span></div>
-      <div class="win-t">10:30–23:59</div>
-      <div class="win-o"><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag">程序员节系列活动：趣味互动赢专属好券</span></div>
-      <div class="win-s">省 ¥12.60</div>
-    </div>
-  </div>
-  </section>
-
-  <section class="block">
-    <h2>你的消费画像</h2>
-    <div class="grid2">
-      <div class="mini">
-    <div class="mini-t">时段分布</div>
-    <div class="bar-row">
-      <span class="bar-k">早餐</span>
-      <span class="bar-t"><i style="width:100.0%"></i></span>
-      <span class="bar-v">16 · 62%</span>
-    </div><div class="bar-row">
-      <span class="bar-k">午餐</span>
-      <span class="bar-t"><i style="width:50.0%"></i></span>
-      <span class="bar-v">8 · 31%</span>
-    </div><div class="bar-row">
-      <span class="bar-k">下午茶</span>
-      <span class="bar-t"><i style="width:12.5%"></i></span>
-      <span class="bar-v">2 · 8%</span>
-    </div>
-  </div>
-      <div class="mini">
-    <div class="mini-t">渠道分布</div>
-    <div class="bar-row">
-      <span class="bar-k">到店自取</span>
-      <span class="bar-t"><i style="width:100.0%"></i></span>
-      <span class="bar-v">21 · 81%</span>
-    </div><div class="bar-row">
-      <span class="bar-k">得来速</span>
-      <span class="bar-t"><i style="width:23.8%"></i></span>
-      <span class="bar-v">5 · 19%</span>
-    </div>
-  </div>
-    </div>
-    <div class="grid2" style="margin-top:18px">
-      <div class="mini">
-    <div class="mini-t">一周节奏</div>
-    <div class="heat">
-      <div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.90)">5</span><span class="heat-l">日</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.90)">5</span><span class="heat-l">一</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.28)">1</span><span class="heat-l">二</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.74)">4</span><span class="heat-l">三</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.74)">4</span><span class="heat-l">四</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.74)">4</span><span class="heat-l">五</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.59)">3</span><span class="heat-l">六</span></div>
-    </div>
-  </div>
-      <div class="mini">
-    <div class="mini-t">最常点</div>
-    <ol class="tops">
-      <li><span>猪柳蛋麦满分套餐</span><b>×4</b></li><li><span>大脆鸡扒麦满分组合</span><b>×4</b></li><li><span>麦辣鸡腿汉堡</span><b>×3</b></li><li><span>火腿扒麦满分组合</span><b>×3</b></li><li><span>脆香油条组合</span><b>×3</b></li><li><span>一早现磨 超值二件套</span><b>×2</b></li><li><span>雪碧</span><b>×2</b></li><li><span>玉米杯</span><b>×2</b></li>
-    </ol>
-  </div>
+    <section class="sec rv" id="window">
+    <div class="sec-h"><span class="sec-n">§ 05</span><h2>接下来 7 天，什么时候买最划算</h2><span class="sec-r">未来 · 与区间无关</span></div>
+    <p class="lead">横轴是一天 24 小时。金色区间越亮，说明这个时段能省得越多。</p>
+    <div class="wins">
+      <div class="win win-head"><span></span><span class="win-th">可用时段 · 可叠加的券</span><span class="win-th r">预估</span></div>
+      <div class="win">
+        <div class="win-d"><b>今天</b><span>2026-10-20 周二</span></div>
+        <div class="win-b">
+          <div class="track">
+            <span class="track-base"></span>
+            <span class="track-band" style="left:20.83%;width:22.85%;--s:0.89"></span>
+            <span class="track-h" style="left:0%"></span><span class="track-h" style="left:25%"></span>
+            <span class="track-h" style="left:50%"></span><span class="track-h" style="left:75%"></span>
+            <span class="track-h" style="left:100%"></span>
+          </div>
+          <div class="track-x"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+          <div class="win-o"><span class="of">芝香脆鸡扒堡早餐两件套 ¥9.9</span><span class="of-sep">·</span><span class="of">11.9元麦辣鸡腿堡 ¥11.9</span><span class="of-sep">·</span><span class="of">19.9元王牌炸鸡任选2 ¥19.9</span><span class="of-sep">·</span><span class="of">9.9元猪柳蛋麦满分 ¥9.9</span><span class="of-sep">·</span><span class="of">超值 9.9 元早餐两件套</span></div>
+        </div>
+        <div class="win-s">省 ¥25.20</div>
+      </div><div class="win">
+        <div class="win-d"><b>明天</b><span>2026-10-21 周三</span></div>
+        <div class="win-b">
+          <div class="track">
+            <span class="track-base"></span>
+            <span class="track-band" style="left:20.83%;width:22.85%;--s:1.00"></span>
+            <span class="track-h" style="left:0%"></span><span class="track-h" style="left:25%"></span>
+            <span class="track-h" style="left:50%"></span><span class="track-h" style="left:75%"></span>
+            <span class="track-h" style="left:100%"></span>
+          </div>
+          <div class="track-x"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+          <div class="win-o"><span class="of">芝香脆鸡扒堡早餐两件套 ¥9.9</span><span class="of-sep">·</span><span class="of">11.9元麦辣鸡腿堡 ¥11.9</span><span class="of-sep">·</span><span class="of">19.9元王牌炸鸡任选2 ¥19.9</span><span class="of-sep">·</span><span class="of">高达芝士蛋堡早餐两件套 ¥9.9</span><span class="of-sep">·</span><span class="of">9.9元猪柳蛋麦满分 ¥9.9</span></div>
+        </div>
+        <div class="win-s">省 ¥30.30</div>
+      </div><div class="win">
+        <div class="win-d"><b>周四</b><span>2026-10-22 周四</span></div>
+        <div class="win-b">
+          <div class="track">
+            <span class="track-base"></span>
+            <span class="track-band" style="left:43.75%;width:56.18%;--s:0.62"></span>
+            <span class="track-h" style="left:0%"></span><span class="track-h" style="left:25%"></span>
+            <span class="track-h" style="left:50%"></span><span class="track-h" style="left:75%"></span>
+            <span class="track-h" style="left:100%"></span>
+          </div>
+          <div class="track-x"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+          <div class="win-o"><span class="of">11.9元麦辣鸡腿堡 ¥11.9</span><span class="of-sep">·</span><span class="of">19.9元王牌炸鸡任选2 ¥19.9</span><span class="of-sep">·</span><span class="of">限定主题丝巾 10:45 开售</span></div>
+        </div>
+        <div class="win-s">省 ¥12.60</div>
+      </div><div class="win">
+        <div class="win-d"><b>周五</b><span>2026-10-23 周五</span></div>
+        <div class="win-b">
+          <div class="track">
+            <span class="track-base"></span>
+            <span class="track-band" style="left:43.75%;width:56.18%;--s:0.62"></span>
+            <span class="track-h" style="left:0%"></span><span class="track-h" style="left:25%"></span>
+            <span class="track-h" style="left:50%"></span><span class="track-h" style="left:75%"></span>
+            <span class="track-h" style="left:100%"></span>
+          </div>
+          <div class="track-x"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+          <div class="win-o"><span class="of">11.9元麦辣鸡腿堡 ¥11.9</span><span class="of-sep">·</span><span class="of">19.9元王牌炸鸡任选2 ¥19.9</span><span class="of-sep">·</span><span class="of">程序员节系列活动：趣味互动赢专属好券</span></div>
+        </div>
+        <div class="win-s">省 ¥12.60</div>
+      </div>
     </div>
   </section>
 
-  <section class="block quality">
-    <h2>这份账本有多可信</h2>
-    <div class="qgrid">
-      <div><span class="qn">100%</span><span class="ql">金额可精确归因</span></div>
-      <div><span class="qn">26</span><span class="ql">笔订单完整还原</span></div>
-      <div><span class="qn">演示</span><span class="ql">合成数据</span></div>
-      <div><span class="qn">0.0s</span><span class="ql">审计耗时</span></div>
+    <div id="h-profile" data-host="profile"><section class="sec rv" id="profile">
+    <div class="sec-h"><span class="sec-n">§ 06</span><h2>你的消费画像</h2><span class="sec-r">近 30 天</span></div>
+    <p class="lead">不是给你贴标签，只是让前面的结论有依据。</p>
+
+    <div class="cols cols-3">
+      <div class="mini">
+    <div class="mini-h"><span>时段分布</span><em>占比</em></div>
+    <div class="rows">
+      <div class="row">
+        <span class="row-k">早餐</span>
+        <span class="row-t"><i style="--v:1.000;--d:0.00s"></i></span>
+        <span class="row-v">21<em>64%</em></span>
+      </div><div class="row">
+        <span class="row-k">午餐</span>
+        <span class="row-t"><i style="--v:0.476;--d:0.06s"></i></span>
+        <span class="row-v">10<em>30%</em></span>
+      </div><div class="row">
+        <span class="row-k">下午茶</span>
+        <span class="row-t"><i style="--v:0.095;--d:0.12s"></i></span>
+        <span class="row-v">2<em>6%</em></span>
+      </div>
     </div>
+  </div>
+      <div class="mini">
+    <div class="mini-h"><span>渠道分布</span><em>占比</em></div>
+    <div class="rows">
+      <div class="row">
+        <span class="row-k">到店自取</span>
+        <span class="row-t"><i style="--v:1.000;--d:0.00s"></i></span>
+        <span class="row-v">23<em>70%</em></span>
+      </div><div class="row">
+        <span class="row-k">得来速</span>
+        <span class="row-t"><i style="--v:0.391;--d:0.06s"></i></span>
+        <span class="row-v">9<em>27%</em></span>
+      </div><div class="row">
+        <span class="row-k">外送</span>
+        <span class="row-t"><i style="--v:0.043;--d:0.12s"></i></span>
+        <span class="row-v">1<em>3%</em></span>
+      </div>
+    </div>
+  </div>
+
+      <div class="mini">
+        <div class="mini-h"><span>一周节奏</span><em>订单数</em></div>
+        <div class="week">
+          <div class="wk">
+            <span class="wk-bar" style="--h:48.6%;--d:0.00s"><i>3</i></span>
+            <span class="wk-l">日</span>
+          </div><div class="wk">
+            <span class="wk-bar" style="--h:74.3%;--d:0.05s"><i>5</i></span>
+            <span class="wk-l">一</span>
+          </div><div class="wk">
+            <span class="wk-bar" style="--h:74.3%;--d:0.10s"><i>5</i></span>
+            <span class="wk-l">二</span>
+          </div><div class="wk">
+            <span class="wk-bar" style="--h:61.4%;--d:0.15s"><i>4</i></span>
+            <span class="wk-l">三</span>
+          </div><div class="wk">
+            <span class="wk-bar" style="--h:74.3%;--d:0.20s"><i>5</i></span>
+            <span class="wk-l">四</span>
+          </div><div class="wk">
+            <span class="wk-bar" style="--h:100.0%;--d:0.25s"><i>7</i></span>
+            <span class="wk-l">五</span>
+          </div><div class="wk">
+            <span class="wk-bar" style="--h:61.4%;--d:0.30s"><i>4</i></span>
+            <span class="wk-l">六</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cols cols-wide" style="margin-top:26px">
+      <div class="mini">
+        <div class="mini-h"><span>一天里什么时候下单</span><em>按小时</em></div>
+        <div class="hours">
+          <span class="hr hr0" style="--h:0.0%;--d:0.00s" title="0:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.01s" title="1:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.03s" title="2:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.04s" title="3:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.06s" title="4:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.07s" title="5:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.08s" title="6:00 · 0 笔"></span><span class="hr" style="--h:100.0%;--d:0.10s;--peak:1" title="7:00 · 21 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.11s" title="8:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.13s" title="9:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.14s" title="10:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.15s" title="11:00 · 0 笔"></span><span class="hr" style="--h:51.8%;--d:0.17s" title="12:00 · 10 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.18s" title="13:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.20s" title="14:00 · 0 笔"></span><span class="hr" style="--h:16.8%;--d:0.21s" title="15:00 · 2 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.22s" title="16:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.24s" title="17:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.25s" title="18:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.27s" title="19:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.28s" title="20:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.29s" title="21:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.31s" title="22:00 · 0 笔"></span><span class="hr hr0" style="--h:0.0%;--d:0.32s" title="23:00 · 0 笔"></span>
+        </div>
+        <div class="hours-x"><span>0</span><span>6</span><span>12</span><span>18</span><span>23</span></div>
+        <p class="mini-f">最贵的一单 ¥33.50　·　2026-10-11</p>
+      </div>
+
+      <div class="mini">
+        <div class="mini-h"><span>最常点</span><em>份数</em></div>
+        <ol class="tops"><li><span class="tops-i">01</span><span class="tops-n">雪碧</span><b>×5</b></li><li><span class="tops-i">02</span><span class="tops-n">猪柳蛋麦满分套餐</span><b>×4</b></li><li><span class="tops-i">03</span><span class="tops-n">玉米杯</span><b>×4</b></li><li><span class="tops-i">04</span><span class="tops-n">脆香油条组合</span><b>×3</b></li><li><span class="tops-i">05</span><span class="tops-n">一早现磨 超值二件套</span><b>×3</b></li><li><span class="tops-i">06</span><span class="tops-n">火腿扒麦满分套餐</span><b>×3</b></li><li><span class="tops-i">07</span><span class="tops-n">麦辣鸡腿汉堡</span><b>×2</b></li><li><span class="tops-i">08</span><span class="tops-n">火腿扒麦满分组合</span><b>×2</b></li></ol>
+      </div>
+    </div>
+  </section></div>
+
+    <section class="sec rv" id="trust">
+    <div class="sec-h"><span class="sec-n">§ 07</span><h2>这份账本有多可信</h2><span class="sec-r">全程口径</span></div>
+    <p class="lead">审计的价值不在数字好看，而在于每个数字都能指回来源，算不出的地方敢留白。</p>
+
+    <div class="trust">
+      <div class="tr"><b>100<em>%</em></b><span>金额可精确归因</span></div>
+      <div class="tr"><b>33<em>/33</em></b><span>笔订单完整还原</span></div>
+      <div class="tr"><b>演示</b><span>合成数据，未调用 MCP</span></div>
+      <div class="tr"><b>—</b><span>审计耗时</span></div>
+    </div>
+
     
     
-    <p class="trace">trace：<code>trace-2026-10-20T02-19-34-408Z</code>　·　把 trace.jsonl 拖进 viewer 可逐步回放这次审计</p>
-  </section>
 
-  <section class="block share-wrap">
-    <h2>分享卡</h2>
-    <p class="note">截图这一块即可分享。数字来自本机审计结果，不含订单明细。</p>
-    <div class="share">
-      <div class="share-b">麦麦账本</div>
-      <div class="share-per">2026-07-17 — 2026-10-18</div>
-      <div class="share-main">
-        <div class="share-n">¥242.69</div>
-        <div class="share-l">这段时间省下来的钱</div>
-      </div>
-      <div class="share-row">
-        <div><b>¥335.21</b><span>实付</span></div>
-        <div><b>26</b><span>笔订单</span></div>
-        <div><b>¥30.30</b><span>还漏掉</span></div>
-      </div>
-      <div class="share-f">mcd-ledger · 非官方作品</div>
+    <div class="trace">
+      <span class="trace-k">TRACE</span>
+      <code>trace-2026-10-20T04-00-10-950Z</code>
+      <span class="trace-h">把 trace.jsonl 拖进 viewer 可逐步回放这次审计</span>
     </div>
   </section>
 
-  <footer class="ft">
-    <p class="ft-strong">数据来源：麦当劳 MCP Server（mcp.mcd.cn）</p>
-    <ul class="src"><li>麦当劳 MCP Server · order-list（历史订单）</li><li>麦当劳 MCP Server · query-meals（门店菜单与划线价）</li><li>麦当劳 MCP Server · query-my-coupons（卡包券）</li><li>麦当劳 MCP Server · query-my-account（积分账户）</li><li>麦当劳 MCP Server · campaign-calendar（活动日历）</li><li>麦当劳 MCP Server · now-time-info（基准时间）</li></ul>
-    <p class="ft-note">本项目为非官方作品，由开发者独立完成，与麦当劳无隶属关系。输出仅供参考，不构成财务、税务或投资建议；餐品价格与供应状态以麦当劳官方渠道实时结果为准。本页由 mcd-ledger v0.1.0 于 2026-10-20 02:19:34 生成。</p>
-  </footer>
+    <div id="h-share" data-host="share"><section class="sec rv" id="share">
+    <div class="sec-h"><span class="sec-n">§ 08</span><h2>带走这张卡</h2><span class="sec-r">近 30 天</span></div>
+    <p class="lead">截图或复制文案都行。卡上只有汇总数字，不含任何订单明细。</p>
 
+    <div class="share-lay">
+      <div class="tilt">
+        <div class="tilt-inner">
+          <div class="card3d" id="card3d">
+            <div class="card-hd">
+              <span class="card-b">MCD LEDGER</span>
+              <span class="card-p">2026-09-21 — 2026-10-20</span>
+            </div>
+            <div class="card-main">
+              <span class="card-l">这段时间省下来的钱</span>
+              <span class="card-n">¥247.45</span>
+              <span class="card-r">原价的 36%</span>
+            </div>
+            <div class="card-row">
+              <div><b>¥442.35</b><span>实付</span></div>
+              <div><b>33</b><span>笔订单</span></div>
+              <div><b class="gold">¥129.52</b><span>还能再省</span></div>
+            </div>
+            <div class="card-f">
+              <span class="card-sign">mcd-ledger · 非官方作品</span>
+              <span class="stamp-mark">对账无误<i>AUDITED</i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="share-act">
+        <p class="share-tip">把鼠标移到卡片上，它会跟着倾斜——这是纯 CSS 3D 变换，没有 WebGL，也不额外加载任何东西。</p>
+        <div class="share-btns">
+          <button class="btn btn-gold" type="button" data-copy="麦麦账本 ｜ 2026-09-21 至 2026-10-20 ｜ 33 笔订单实付 ¥442.35，省下 ¥247.45（原价的 36%）。" data-ok="分享文案已复制">复制分享文案</button>
+          <button class="btn" type="button" data-print="1">打印 / 存为 PDF</button>
+        </div>
+        <pre class="share-pre" aria-label="分享文案预览">麦麦账本 ｜ 2026-09-21 至 2026-10-20 ｜ 33 笔订单实付 ¥442.35，省下 ¥247.45（原价的 36%）。</pre>
+      </div>
+    </div>
+  </section></div>
+
+    <footer class="ft">
+      <div class="ft-top">
+        <svg class="ft-arch" viewBox="0 0 216 164" fill="none" aria-hidden="true">
+          <path d="M10 150C10 62 34 14 60 14C86 14 108 62 108 150C108 62 130 14 156 14C182 14 206 62 206 150" stroke="currentColor" stroke-width="30" stroke-linecap="butt" opacity=".35"/>
+        </svg>
+        <div>
+          <p class="ft-strong">数据来源：麦当劳 MCP Server（mcp.mcd.cn）</p>
+          <ul class="src"><li>麦当劳 MCP Server · order-list（历史订单）</li><li>麦当劳 MCP Server · query-meals（门店菜单与划线价）</li><li>麦当劳 MCP Server · query-my-coupons（卡包券）</li><li>麦当劳 MCP Server · query-my-account（积分账户）</li><li>麦当劳 MCP Server · campaign-calendar（活动日历）</li><li>麦当劳 MCP Server · now-time-info（基准时间）</li></ul>
+        </div>
+      </div>
+      <p class="ft-note">
+        本项目为非官方作品，由开发者独立完成，与麦当劳无隶属关系。输出仅供参考，不构成财务、税务或投资建议；餐品价格与供应状态以麦当劳官方渠道实时结果为准。
+      </p>
+      <p class="ft-meta">
+        <span>mcd-ledger v0.2.0</span>
+        <span>演示数据</span>
+        <span>数据覆盖 2026-07-17 → 2026-10-20</span>
+        <span>生成于 2026-10-20 04:00:10</span>
+        <span>trace <code>trace-2026-10-20T04-00-10-950Z</code></span>
+      </p>
+    </footer>
+
+  </div>
 </main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>window.MCD_LEDGER_ENGINE=(function(){/**
+ * 同构引擎：区间筛选 + 聚合 + 策略生成 + 片段渲染。
+ *
+ * 为什么是一个 .mjs？
+ * ------------------------------------------------------------------
+ * 账本页是**单文件、零请求、可离线**的 HTML。时间筛选不能靠"重新跑一遍 CLI"，
+ * 必须在页面里就地重算。而重算的结果又必须与服务端渲染（SSR）的数字**完全一致**，
+ * 否则用户切一次区间就会发现两套账。
+ *
+ * 所以这里只写一份实现：
+ *   · Node 侧  → pipeline 用它解析区间，html.ts 用它渲染首屏
+ *   · 浏览器侧 → 同一份源码被内联进 <script>，切区间时重新调用
+ *
+ * 唯一不允许出现的重复是"两套算法"。因此本文件不 import 任何东西，
+ * 也不做任何 IO，所有输入（订单行、券、菜单价）都由调用方传入。
+ *
+ * 约定：金额一律用 number（元），聚合时逐步 money() 取两位小数，
+ * 与 src/audit/attribution.ts 的口径保持同一套舍入，保证双端数字对得上。
+ */
+
+/* ============================ 0. 基础工具 ============================ */
+
+const ENGINE_VERSION = 1;
+
+/** 两位小数，与 runtime/contract.ts 的 money() 完全一致 */
+function money(n) {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+function yuan(n) {
+  return "¥" + n.toFixed(2);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** SVG 坐标保留 1 位小数，减小体积 */
+function r(n) {
+  return String(Math.round(n * 10) / 10);
+}
+
+function sum(values) {
+  return values.reduce((a, b) => a + b, 0);
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function startOfDay(ms) {
+  const d = new Date(ms);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
+function endOfDay(ms) {
+  const d = new Date(ms);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999).getTime();
+}
+
+/** 本地时间字符串 → 毫秒。手写解析，避免各浏览器对 "YYYY-MM-DD HH:mm" 的解释差异 */
+function parseLocal(s) {
+  if (typeof s !== "string") return null;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+  if (!m) return null;
+  const ms = new Date(
+    Number(m[1]),
+    Number(m[2]) - 1,
+    Number(m[3]),
+    m[4] === undefined ? 0 : Number(m[4]),
+    m[5] === undefined ? 0 : Number(m[5]),
+  ).getTime();
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function dateKey(ms) {
+  const d = new Date(ms);
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+
+function hhmm(minutes) {
+  return pad2(Math.floor(minutes / 60)) + ":" + pad2(minutes % 60);
+}
+
+const WEEKDAY_SHORT = ["日", "一", "二", "三", "四", "五", "六"];
+const CHANNEL_CN = {
+  pickup: "到店自取",
+  delivery: "外送",
+  drivethru: "得来速",
+  group: "团餐",
+  unknown: "其他",
+};
+
+/** 时段划分与 src/audit/report.ts 的 mealPeriod 完全一致：早餐券基本只到 10:29 */
+function mealPeriod(minutes) {
+  if (minutes < 10 * 60 + 30) return "早餐";
+  if (minutes < 14 * 60) return "午餐";
+  if (minutes < 17 * 60) return "下午茶";
+  if (minutes < 21 * 60) return "晚餐";
+  return "夜宵";
+}
+
+function pct(sorted, q) {
+  if (sorted.length === 0) return 0;
+  const i = Math.min(sorted.length - 1, Math.max(0, Math.round((sorted.length - 1) * q)));
+  return sorted[i];
+}
+
+/* ============================ 1. 时间区间 ============================ */
+
+const PRESETS = [
+  { key: "7d", label: "近 7 天", days: 7 },
+  { key: "30d", label: "近 30 天", days: 30 },
+  { key: "90d", label: "近 90 天", days: 90 },
+  { key: "all", label: "全部", days: null },
+];
+
+const DEFAULT_RANGE = "30d";
+
+/**
+ * 解析命令行 / URL 传入的区间描述。
+ *   "7d" | "30d" | "90d" | "all" | "2026-09-01..2026-10-01"
+ * 解析不出来时退回默认区间，而不是报错——一个筛选器不该让整份报告打不开。
+ */
+function parseRangeSpec(spec) {
+  if (typeof spec !== "string" || spec === "") return { key: DEFAULT_RANGE };
+  const key = spec.trim();
+  if (PRESETS.some((p) => p.key === key)) return { key };
+  const m = key.match(/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/);
+  if (m) return { key: "custom", from: m[1], to: m[2] };
+  return { key: DEFAULT_RANGE };
+}
+
+/**
+ * 求区间的毫秒边界。
+ * 预设区间用**自然日**而非 24 小时倍数：「近 7 天」= 含今天在内的 7 个自然日，
+ * 这样 00:10 与 23:50 打开页面看到的是同一批订单。
+ */
+function resolveRange(spec, nowMs, rows) {
+  const g = parseRangeSpec(spec);
+  const preset = PRESETS.find((p) => p.key === g.key);
+
+  if (preset) {
+    const days = preset.days;
+    if (days === null) {
+      const times = rows.map((x) => x.ms).filter((v) => Number.isFinite(v));
+      const fromMs = times.length > 0 ? startOfDay(Math.min(...times)) : startOfDay(nowMs);
+      const span = Math.max(1, Math.round((nowMs - fromMs) / 86400000) + 1);
+      return {
+        key: "all",
+        label: "全部",
+        fromMs,
+        toMs: nowMs,
+        from: dateKey(fromMs),
+        to: dateKey(nowMs),
+        days: span,
+        custom: false,
+      };
+    }
+    const fromMs = startOfDay(nowMs) - (days - 1) * 86400000;
+    return {
+      key: preset.key,
+      label: preset.label,
+      fromMs,
+      toMs: nowMs,
+      from: dateKey(fromMs),
+      to: dateKey(nowMs),
+      days,
+      custom: false,
+    };
+  }
+
+  const fromRaw = parseLocal(g.from);
+  const toRaw = parseLocal(g.to);
+  let fromMs = fromRaw === null ? startOfDay(nowMs) : startOfDay(fromRaw);
+  let toMs = toRaw === null ? nowMs : endOfDay(toRaw);
+  if (fromMs > toMs) {
+    const swap = fromMs;
+    fromMs = startOfDay(toMs);
+    toMs = endOfDay(swap);
+  }
+  const days = Math.max(1, Math.round((startOfDay(toMs) - fromMs) / 86400000) + 1);
+  return {
+    key: "custom",
+    label: dateKey(fromMs) + " → " + dateKey(toMs),
+    fromMs,
+    toMs,
+    from: dateKey(fromMs),
+    to: dateKey(toMs),
+    days,
+    custom: true,
+  };
+}
+
+function filterRows(rows, range) {
+  return rows.filter((x) => x.ms >= range.fromMs && x.ms <= range.toMs);
+}
+
+/* ============================ 2. 聚合 ============================ */
+
+/**
+ * 在选定区间内重算一遍汇总。口径与审计层一致：
+ *   · 只有拿到订单详情的订单（cov=1）才参与「省了多少」
+ *   · 组合价值 = 单点合计 − 原价合计，缺一项就整项留白，不补零
+ */
+function summarize(rows, range) {
+  const done = rows.filter((x) => x.status === "completed");
+  const cancelled = rows.length - done.length;
+  const covered = done.filter((x) => x.cov === 1);
+
+  const paid = money(sum(done.map((x) => x.paid)));
+  const attributablePaid = money(sum(covered.map((x) => x.paid)));
+
+  const listVals = covered.map((x) => x.list);
+  const alaVals = covered.map((x) => x.ala);
+  const list =
+    listVals.length > 0 && listVals.every((v) => v !== null) ? money(sum(listVals)) : null;
+  const alaCarte =
+    alaVals.length > 0 && alaVals.every((v) => v !== null) ? money(sum(alaVals)) : null;
+
+  const comboKnown = covered.map((x) => x.cmb).filter((v) => v !== null);
+  const comboMissing = covered.length - comboKnown.length;
+  const combo =
+    alaCarte !== null && list !== null
+      ? money(Math.max(0, alaCarte - list))
+      : comboKnown.length > 0
+        ? money(sum(comboKnown))
+        : null;
+
+  const coupon = money(sum(covered.map((x) => x.cpn)));
+  const activity = money(sum(covered.map((x) => x.act)));
+  const delivery = money(sum(covered.map((x) => x.del)));
+  const coverage = paid > 0 ? attributablePaid / paid : 0;
+  const saved = coverage > 0 ? money(coupon + activity + (combo ?? 0)) : null;
+
+  const mealPeriods = {};
+  const channels = {};
+  const storeMap = new Map();
+  const itemMap = new Map();
+  const weekday = new Array(7).fill(0);
+  const hour = new Array(24).fill(0);
+  let items = 0;
+
+  for (const x of done) {
+    const d = new Date(x.ms);
+    const mp = mealPeriod(x.m);
+    mealPeriods[mp] = (mealPeriods[mp] || 0) + 1;
+    channels[x.ch] = (channels[x.ch] || 0) + 1;
+    weekday[d.getDay()] += 1;
+    hour[d.getHours()] += 1;
+
+    const st = storeMap.get(x.st) || { orders: 0, paid: 0 };
+    st.orders += 1;
+    st.paid = money(st.paid + x.paid);
+    storeMap.set(x.st, st);
+
+    for (const it of x.items || []) {
+      items += it[2];
+      itemMap.set(it[1], (itemMap.get(it[1]) || 0) + it[2]);
+    }
+  }
+
+  const stores = [...storeMap.entries()]
+    .map(([name, v]) => ({ name, orders: v.orders, paid: v.paid }))
+    .sort((a, b) => b.orders - a.orders)
+    .slice(0, 5);
+
+  const topItems = [...itemMap.entries()]
+    .map(([name, quantity]) => ({ name, quantity }))
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 8);
+
+  let maxTicket = null;
+  for (const x of done) {
+    if (maxTicket === null || x.paid > maxTicket.paid) {
+      maxTicket = { orderId: x.id, paid: x.paid, date: dateKey(x.ms) };
+    }
+  }
+
+  return {
+    range,
+    orders: done.length,
+    cancelled,
+    paid,
+    list,
+    alaCarte,
+    coupon,
+    activity,
+    combo,
+    saved,
+    savedRate: saved !== null && paid + saved > 0 ? saved / (paid + saved) : null,
+    lowerBound: comboMissing > 0,
+    delivery,
+    coverage,
+    gap: money(paid - attributablePaid),
+    resolved: done.filter((x) => x.cov === 1).length,
+    unresolved: done.length - done.filter((x) => x.cov === 1).length,
+    items,
+    mealPeriods,
+    channels,
+    stores,
+    topItems,
+    weekday,
+    hour,
+    avgTicket: done.length > 0 ? money(paid / done.length) : 0,
+    maxTicket,
+  };
+}
+
+/* ============================ 3. 策略生成 ============================ */
+
+/**
+ * 策略 = 「基于所选区间的消费结构」×「当前可用的券 / 菜单价 / 活动」→ 一条能执行的动作。
+ *
+ * 硬约束（沿用账本的原则）：
+ *   1. 每条策略必须带**能对回订单的证据**，不允许"猜你想吃"。
+ *   2. 估不出来就留白（amount = null），不编一个好看的数字。
+ *   3. 区间是策略的前提：7 天和 90 天看到的结构不同，结论就该不同。
+ */
+
+const CONF_LABEL = { high: "高置信", medium: "中置信", low: "低置信" };
+const CONF_SCORE = { high: 26, medium: 18, low: 9 };
+const KIND_LABEL = {
+  window: "时段 × 券",
+  price: "单价",
+  delivery: "渠道",
+  expiry: "券库存",
+  timing: "择时",
+};
+
+/** 券的时段是否覆盖 [lo, hi]（分钟） */
+function couponCoversTime(c, lo, hi) {
+  const s = c.startTime ? toMin(c.startTime) : null;
+  const e = c.endTime ? toMin(c.endTime) : null;
+  if (s === null && e === null) return true;
+  const a = s === null ? 0 : s;
+  const b = e === null ? 24 * 60 - 1 : e;
+  return a <= hi && b >= lo;
+}
+
+function toMin(hhmmText) {
+  const m = String(hhmmText).match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+function couponExpired(c, now) {
+  const t = parseLocal(c.validTo);
+  return t !== null && t < now - 3600000;
+}
+
+/** 订单是否落在券的"星期 + 时段"内 */
+function rowInCouponWindow(c, row) {
+  if (c.weekdays && c.weekdays.length > 0) {
+    const wd = new Date(row.ms).getDay();
+    if (c.weekdays.indexOf(wd) < 0) return false;
+  }
+  return couponCoversTime(c, row.m, row.m);
+}
+
+function completed(rows) {
+  return rows.filter((x) => x.status === "completed");
+}
+
+function groupByMeal(rows) {
+  const map = new Map();
+  for (const x of rows) {
+    const k = mealPeriod(x.m);
+    const arr = map.get(k) || [];
+    arr.push(x);
+    map.set(k, arr);
+  }
+  return map;
+}
+
+function dominantWeekday(rows) {
+  const tally = new Map();
+  for (const x of rows) {
+    const wd = new Date(x.ms).getDay();
+    tally.set(wd, (tally.get(wd) || 0) + 1);
+  }
+  let best = null;
+  let bestN = 0;
+  for (const [wd, n] of tally) {
+    if (n > bestN) {
+      best = wd;
+      bestN = n;
+    }
+  }
+  return best;
+}
+
+function makeStrat(o) {
+  const amount = o.perMonth !== null ? o.perMonth : o.inRange;
+  const score = Math.min(70, (amount === null ? 0 : amount) * 1.5) + CONF_SCORE[o.confidence];
+  return {
+    id: o.id,
+    kind: o.kind,
+    kindLabel: KIND_LABEL[o.kind],
+    title: o.title,
+    basis: o.basis,
+    action: o.action,
+    inRange: o.inRange,
+    perMonth: o.perMonth,
+    estimated: o.estimated !== false,
+    confidence: o.confidence,
+    confidenceLabel: CONF_LABEL[o.confidence],
+    score: Math.round(score * 10) / 10,
+  };
+}
+
+function buildStrategies(summary, rows, data) {
+  const ctx = {
+    rows,
+    done: completed(rows),
+    range: summary.range,
+    coupons: data.coupons || [],
+    menu: data.menu || {},
+    campaigns: data.campaigns || [],
+    now: data.now,
+    summary,
+  };
+  const found = [
+    stratWindow(ctx),
+    stratPrice(ctx),
+    stratDelivery(ctx),
+    stratExpiry(ctx),
+    stratTiming(ctx),
+  ].filter((x) => x !== null);
+  return found.sort((a, b) => b.score - a.score).slice(0, 4);
+}
+
+/** 一句话说明策略规模：30 天区间里"月化"与"区间内"本来就相等，不必重复两遍 */
+function strategyCaption(totals) {
+  const parts = [totals.count + " 条策略"];
+  if (Math.abs(totals.perMonth - totals.inRangeAll) > 0.02 && totals.inRangeAll > 0) {
+    parts.push("该区间内已发生 " + yuan(totals.inRangeAll));
+  }
+  if (totals.withAmount < totals.count) parts.push((totals.count - totals.withAmount) + " 条无法折算");
+  return parts.join(" · ");
+}
+
+function strategyTotals(strats) {
+  let perMonth = 0;
+  let oneOff = 0;
+  let inRangeAll = 0;
+  let withAmount = 0;
+  for (const s of strats) {
+    if (s.inRange !== null) inRangeAll = money(inRangeAll + s.inRange);
+    if (s.perMonth !== null) {
+      perMonth = money(perMonth + s.perMonth);
+      withAmount += 1;
+    } else if (s.inRange !== null) {
+      oneOff = money(oneOff + s.inRange);
+      withAmount += 1;
+    }
+  }
+  return { perMonth, oneOff, inRangeAll, count: strats.length, withAmount };
+}
+
+/* ---- 3.1 时段 × 券：券在生效，订单却没用上 ---- */
+function stratWindow(ctx) {
+  const done = ctx.done;
+  if (done.length < 3) return null;
+
+  const buckets = groupByMeal(done);
+  let period = null;
+  let list = [];
+  for (const [k, arr] of buckets) {
+    if (arr.length > list.length) {
+      period = k;
+      list = arr;
+    }
+  }
+  if (period === null || list.length < 3) return null;
+
+  const mins = list.map((x) => x.m).sort((a, b) => a - b);
+  const lo = pct(mins, 0.1);
+  const hi = pct(mins, 0.9);
+  const used = list.filter((x) => (x.coupons || []).length > 0).length;
+  const missed = list.length - used;
+
+  const wd = dominantWeekday(list);
+  const covering = ctx.coupons.filter(
+    (c) =>
+      !couponExpired(c, ctx.now) &&
+      couponCoversTime(c, lo, hi) &&
+      (!c.weekdays || c.weekdays.length === 0 || (wd !== null && c.weekdays.indexOf(wd) >= 0)),
+  );
+
+  const basis = [
+    period + "共 " + list.length + " 笔（占该区间 " + pct120(list.length, done.length) + "），集中在 " +
+      hhmm(lo) + "–" + hhmm(hi),
+  ];
+
+  if (covering.length === 0) {
+    basis.push("卡包里没有一张券的生效时段覆盖这段时间");
+    if (used > 0) basis.push("这 " + used + " 笔用过券，说明券本身可用，是时段对不上");
+    return makeStrat({
+      id: "window",
+      kind: "window",
+      title: period + " " + list.length + " 笔都落在 " + hhmm(lo) + "–" + hhmm(hi) + "，券覆盖不到",
+      basis,
+      action:
+        "两条路：把下单时间挪到券生效之后，或者直接找覆盖 " + hhmm(lo) + "–" + hhmm(hi) +
+        " 的早餐卡 / 时段券——这是结构性缺口，靠单张券补不上",
+      inRange: null,
+      perMonth: null,
+      confidence: "medium",
+    });
+  }
+
+  if (missed === 0) return null;
+
+  const worths = covering.map((c) => c.worth).filter((v) => typeof v === "number" && v > 0);
+  const perOrder = worths.length > 0 ? money(sum(worths) / worths.length) : null;
+  const inRange = perOrder !== null ? money(perOrder * missed) : null;
+  const perMonth = inRange !== null ? money(inRange * (30 / ctx.range.days)) : null;
+  basis.push(
+    "卡包里有 " + covering.length + " 张券的生效时段正好覆盖这段时间：" +
+      covering.slice(0, 2).map((c) => c.name).join("、"),
+  );
+  basis.push(
+    "这 " + missed + " 笔订单没有用券记录（已用 " + used + " 笔）" +
+      (perOrder !== null ? "，单张最多可省 " + yuan(perOrder) : ""),
+  );
+  if (perMonth !== null) basis.push("月化按「同类券可持续领取」推算——券本身是一次性的");
+  return makeStrat({
+    id: "window",
+    kind: "window",
+    title: period + " " + list.length + " 笔里有 " + missed + " 笔没用券",
+    basis,
+    action:
+      "下单前先翻一遍卡包：" + covering[0].name +
+      (covering[0].startTime ? " " + covering[0].startTime + "–" + covering[0].endTime : "") +
+      " 正好落在你的" + period + "时段，把它变成点单前的固定动作",
+    inRange,
+    perMonth,
+    confidence: "medium",
+  });
+}
+
+/* ---- 3.2 单价：常点品的实付单价高于菜单现价 ---- */
+function stratPrice(ctx) {
+  const done = ctx.done;
+  const agg = new Map();
+
+  for (const row of done) {
+    const items = row.items || [];
+    if (items.length === 0) continue;
+    if (!items.every((it) => typeof it[3] === "number" && it[3] > 0)) continue;
+    const totalSale = sum(items.map((it) => it[3] * it[2]));
+    if (!(totalSale > 0)) continue;
+    const net = money(row.paid - (row.del || 0));
+    for (const it of items) {
+      const code = it[0];
+      const cur = agg.get(code) || { name: it[1], qty: 0, alloc: 0 };
+      cur.qty += it[2];
+      cur.alloc += net * ((it[3] * it[2]) / totalSale);
+      agg.set(code, cur);
+    }
+  }
+
+  const gaps = [];
+  for (const [code, v] of agg) {
+    const m = ctx.menu[code];
+    if (!m || typeof m.p !== "number" || v.qty < 2) continue;
+    const unitPaid = money(v.alloc / v.qty);
+    const gap = money(unitPaid - m.p);
+    if (gap < 0.3) continue;
+    gaps.push({ code, name: v.name, qty: v.qty, unitPaid, best: m.p, gap, total: money(gap * v.qty), tag: m.d });
+  }
+  if (gaps.length === 0) return null;
+  gaps.sort((a, b) => b.total - a.total);
+
+  const top = gaps.slice(0, 3);
+  const inRange = money(sum(top.map((g) => g.total)));
+  const perMonth = money(inRange * (30 / ctx.range.days));
+  const head = top[0];
+  const basis = top.map(
+    (g) =>
+      g.name + "：买了 " + g.qty + " 份，平均 " + yuan(g.unitPaid) + "/份，菜单现价 " + yuan(g.best) +
+      (g.tag ? "（" + g.tag + "）" : ""),
+  );
+  basis.push("单价按订单实付总额按行拆分推算，属于估算");
+  return makeStrat({
+    id: "price",
+    kind: "price",
+    title: head.name + (top.length > 1 ? " 等 " + top.length + " 个常点品" : "") + "有更低的买法",
+    basis,
+    action:
+      "点单时先走促销 / 卡权益入口，别在默认价上下单；如果同款在套餐里，换成套餐往往比单点再便宜一截",
+    inRange,
+    perMonth,
+    confidence: "medium",
+  });
+}
+
+/* ---- 3.3 渠道：配送费是硬支出 ---- */
+function stratDelivery(ctx) {
+  const withFee = ctx.done.filter((x) => (x.del || 0) > 0);
+  if (withFee.length === 0) return null;
+  const fee = money(sum(withFee.map((x) => x.del)));
+  if (fee <= 0) return null;
+
+  const deliveryTotal = ctx.done.filter((x) => x.ch === "delivery").length;
+  const perMonth = money(fee * (30 / ctx.range.days));
+  const basis = [
+    "该区间 " + withFee.length + " 笔订单产生了配送费，合计 " + yuan(fee),
+    "平均每笔 " + yuan(money(fee / withFee.length)) + "，这部分不属于优惠，是实打实的支出",
+  ];
+  const pickup = ctx.done.filter((x) => x.ch === "pickup").length;
+  if (pickup > 0) basis.push("同期有 " + pickup + " 笔是到店自取，没有这笔成本");
+
+  return makeStrat({
+    id: "delivery",
+    kind: "delivery",
+    title: withFee.length + " 笔外送付了 " + yuan(fee) + " 配送费",
+    basis,
+    action:
+      "把时间宽裕的那几单改成到店自取；必须外送时优先用「外送专用」券抵扣配送费，而不是让它原价叠加",
+    inRange: fee,
+    perMonth,
+    confidence: "high",
+  });
+}
+
+/* ---- 3.4 券库存：到期前按你的节奏用不用得完 ---- */
+function stratExpiry(ctx) {
+  const now = ctx.now;
+  const soon = ctx.coupons.filter((c) => {
+    const t = parseLocal(c.validTo);
+    if (t === null) return false;
+    const hours = (t - now) / 3600000;
+    return hours > -1 && hours <= 7 * 24;
+  });
+  if (soon.length === 0) return null;
+
+  const weeks = Math.max(ctx.range.days / 7, 0.5);
+
+  // 同一时段（同星期、同时段）的多张券会互相挤占：你只会买一次早餐，
+  // 却可能同时持有 3 张早餐券，所以可用次数要在同组内平摊。
+  const groups = new Map();
+  const keyOf = (c) => (c.startTime || "") + "-" + (c.endTime || "") + "|" + (c.weekdays || []).join(",");
+  for (const c of soon) {
+    const k = keyOf(c);
+    groups.set(k, (groups.get(k) || 0) + 1);
+  }
+
+  const risk = [];
+  for (const c of soon) {
+    const t = parseLocal(c.validTo);
+    const daysLeft = Math.max(0, (t - now) / 86400000);
+    const fit = ctx.done.filter((x) => rowInCouponWindow(c, x)).length / weeks;
+    const share = groups.get(keyOf(c)) || 1;
+    const expected = (fit * (daysLeft / 7)) / share;
+    if (expected < 0.9) risk.push({ coupon: c, expected, daysLeft, share });
+  }
+
+  if (risk.length > 0) {
+    // 金额刻意留白：这些券的面值已经作为「漏损」记在 §04 了，
+    // 策略这一节只回答"怎么办"，不把同一笔钱再算一次。
+    const worths = risk.map((x) => x.coupon.worth).filter((v) => typeof v === "number" && v > 0);
+    const basis = risk
+      .slice(0, 3)
+      .map(
+        (x) =>
+          x.coupon.name + "：还有 " + x.daysLeft.toFixed(1) + " 天到期，按你的节奏预计只能用上 " +
+          x.expected.toFixed(2) + " 次" + (x.share > 1 ? "（同窗口共 " + x.share + " 张，互相挤占）" : ""),
+      );
+    basis.push("可用次数按「该券生效时段内的历史下单频率」外推，同窗口的券按张数平摊");
+    if (worths.length > 0) basis.push("这些券面值合计 " + yuan(money(sum(worths))) + "，已计入 §04 的漏损，这里不重复折算");
+    return makeStrat({
+      id: "expiry",
+      kind: "expiry",
+      title: risk.length + " 张券按你的节奏用不完",
+      basis,
+      action:
+        "到期前优先塞进最近一次同品类订单；确实用不完的话，下次别囤同类券——囤券本身就是一种沉没成本",
+      inRange: null,
+      perMonth: null,
+      confidence: "medium",
+    });
+  }
+
+  const basis = soon
+    .slice(0, 3)
+    .map((c) => c.name + (c.validTo ? "：至 " + String(c.validTo).replace("T", " ") : "：长期有效"));
+  basis.push("按你在这些券生效时段的下单频率，到期前足够用掉");
+  return makeStrat({
+    id: "expiry",
+    kind: "expiry",
+    title: soon.length + " 张券到期前用得完",
+    basis,
+    action: "不用抢在最后一天：跟着你原本的" + mealPeriodOfCoupons(soon, ctx) + "节奏用掉就行",
+    inRange: null,
+    perMonth: null,
+    confidence: "high",
+  });
+}
+
+function mealPeriodOfCoupons(coupons, ctx) {
+  const hit = ctx.done.filter((x) => coupons.some((c) => rowInCouponWindow(c, x)));
+  if (hit.length === 0) return "下单";
+  const buckets = groupByMeal(hit);
+  let best = "下单";
+  let n = 0;
+  for (const [k, arr] of buckets) {
+    if (arr.length > n) {
+      best = k;
+      n = arr.length;
+    }
+  }
+  return best;
+}
+
+/* ---- 3.5 择时：活动日 × 你的节奏 ---- */
+const MEAL_KEYWORDS = {
+  早餐: ["早餐", "早安", "麦满分", "豆浆", "油条", "厚松饼"],
+  午餐: ["午餐", "汉堡", "炸鸡", "套餐", "超值"],
+  下午茶: ["下午茶", "咖啡", "麦咖啡", "甜品", "冰淇淋", "麦旋风"],
+  晚餐: ["晚餐", "汉堡", "炸鸡", "套餐"],
+  夜宵: ["夜宵", "宵夜", "炸鸡"],
+};
+
+function stratTiming(ctx) {
+  const now = ctx.now;
+  const upcoming = ctx.campaigns.filter((c) => {
+    const t = parseLocal(c.date);
+    if (t === null) return false;
+    return t >= startOfDay(now) && t <= startOfDay(now) + 7 * 86400000;
+  });
+  if (upcoming.length === 0) return null;
+
+  const buckets = groupByMeal(ctx.done);
+  let period = null;
+  let n = 0;
+  for (const [k, arr] of buckets) {
+    if (arr.length > n) {
+      period = k;
+      n = arr.length;
+    }
+  }
+  if (period === null) return null;
+
+  const kws = MEAL_KEYWORDS[period] || [];
+  const topNames = ctx.summary.topItems.map((i) => i.name);
+  const hit = upcoming.filter((c) => {
+    const text = String(c.title) + String(c.summary || "");
+    if (kws.some((k) => text.indexOf(k) >= 0)) return true;
+    return topNames.some((name) => {
+      const core = name.slice(0, 4);
+      return core.length >= 3 && text.indexOf(core) >= 0;
+    });
+  });
+  if (hit.length === 0) return null;
+  const c = hit[0];
+
+  return makeStrat({
+    id: "timing",
+    kind: "timing",
+    title: String(c.date).slice(5) + " 的活动正好撞上你的" + period + "习惯",
+    basis: [
+      "活动：" + c.title,
+      c.summary || "",
+      "你在该区间的" + period + "订单最多（" + n + " 笔），活动日落在你的常规下单节奏上",
+    ].filter((x) => x !== ""),
+    action: "那一单先看活动细则再点——活动日叠券往往比平时多省一档，但没必要为了凑活动多买",
+    inRange: null,
+    perMonth: null,
+    confidence: "low",
+  });
+}
+
+function pct120(a, b) {
+  if (!b) return "0%";
+  return ((a / b) * 100).toFixed(0) + "%";
+}
+
+/* ============================ 4. 渲染：概览 ============================ */
+
+function rangeTag(range) {
+  return '<span class="sec-r">' + esc(range.label) + "</span>";
+}
+
+function emptyBlock(title, hint) {
+  return '<div class="empty"><b>' + esc(title) + "</b><span>" + esc(hint) + "</span></div>";
+}
+
+function renderOverview(s, strats, range) {
+  const totals = strategyTotals(strats);
+  const savedText = s.saved === null ? "—" : yuan(s.saved);
+  const rateText = s.savedRate === null ? "—" : (s.savedRate * 100).toFixed(1) + "%";
+  const oppo = totals.perMonth > 0 ? yuan(totals.perMonth) : totals.oneOff > 0 ? yuan(totals.oneOff) : "—";
+  const oppoNote =
+    totals.withAmount === 0
+      ? "该区间没有可量化的改进点"
+      : totals.perMonth > 0
+        ? strategyCaption(totals)
+        : "一次性机会 · " + strategyCaption(totals);
+
+  return `
+        <p class="cover-sub">
+          ${esc(range.from)} <span class="arw">→</span> ${esc(range.to)}
+          <span class="sep"></span>${range.days} 天
+          <span class="sep"></span>${s.orders} 笔完成订单
+          ${s.cancelled > 0 ? `<span class="sep"></span>${s.cancelled} 笔取消` : ""}
+        </p>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="kpi-k">实付总额</div>
+            <div class="kpi-v">${moneyCell(s.paid, 2)}</div>
+            <div class="kpi-s">平均每笔 ${yuan(s.avgTicket)}</div>
+          </div>
+          <div class="kpi kpi-hl">
+            <div class="kpi-k">省下来的钱</div>
+            <div class="kpi-v"><span class="grad" ${countAttrs(s.saved)}>${esc(savedText)}</span></div>
+            <div class="kpi-s">相当于原价的 ${rateText}${s.lowerBound ? ' <b class="tagline">下限</b>' : ""}</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-k">还能再省 / 月</div>
+            <div class="kpi-v gold">${esc(oppo)}</div>
+            <div class="kpi-s">${esc(oppoNote)}</div>
+          </div>
+        </div>`;
+}
+
+/* ============================ 5. 渲染：三层价 ============================ */
+
+function renderFlow(s, range) {
+  const raw = [
+    { label: "单点合计", hint: "把套餐拆成单品、各买一份的价钱", value: s.alaCarte },
+    { label: "划线价", hint: "平台记录的商品原价合计", value: s.list },
+    { label: "实付", hint: "你真正付出的钱", value: s.paid },
+  ];
+  const steps = raw.filter((x) => x.value !== null && x.value > 0);
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 01</span><h2>同一顿饭的三个价格</h2>' +
+    rangeTag(range) +
+    "</div>";
+
+  if (steps.length < 2) {
+    return (
+      '<section class="sec rv" id="flow">' +
+      head +
+      emptyBlock(
+        "这个区间不够画出三层价",
+        "需要至少两种价格口径（单点合计 / 划线价 / 实付）才能比较，换一个更长的区间试试。",
+      ) +
+      "</section>"
+    );
+  }
+
+  const W = 760;
+  const H = 282;
+  const padX = 74;
+  const top = 52;
+  const base = 214;
+  const span = Math.max(...steps.map((x) => x.value), 1);
+  const max = span * 1.04;
+
+  const x = (i) => padX + (i * (W - padX * 2)) / (steps.length - 1);
+  const y = (v) => base - (v / max) * (base - top);
+
+  const pts = steps.map((st, i) => ({ label: st.label, hint: st.hint, value: st.value, cx: x(i), cy: y(st.value) }));
+  const lastPt = pts[pts.length - 1];
+
+  let line = "";
+  let prev = null;
+  for (const pt of pts) {
+    line += prev
+      ? " L " + r(pt.cx) + " " + r(prev.cy) + " L " + r(pt.cx) + " " + r(pt.cy)
+      : "M " + r(pt.cx) + " " + r(pt.cy);
+    prev = pt;
+  }
+  line += " L " + (W - 26) + " " + r(lastPt.cy);
+
+  const guides = pts
+    .map((pt) => '<line class="svg-guide" x1="' + r(pt.cx) + '" y1="' + r(pt.cy) + '" x2="' + (W - 26) + '" y2="' + r(pt.cy) + '"/>')
+    .join("");
+
+  const ticks = pts
+    .map((pt) => '<line class="svg-tick" x1="' + r(pt.cx) + '" y1="' + base + '" x2="' + r(pt.cx) + '" y2="' + (base + 7) + '"/>')
+    .join("");
+
+  const drops = [];
+  let dropPrev = null;
+  for (const pt of pts) {
+    const before = dropPrev;
+    dropPrev = pt;
+    if (!before) continue;
+    const save = before.value - pt.value;
+    if (save <= 0.005) continue;
+    const mx = (before.cx + pt.cx) / 2;
+    const my = before.cy + Math.min(15, (pt.cy - before.cy) * 0.55);
+    drops.push('<text class="svg-save" x="' + r(mx) + '" y="' + r(my) + '" text-anchor="middle">省 ' + yuan(save) + "</text>");
+  }
+
+  const nodes = pts
+    .map(
+      (pt, i) =>
+        '<g class="svg-node" style="--d:' + (0.55 + i * 0.22).toFixed(2) + 's">' +
+        '<circle class="svg-halo" cx="' + r(pt.cx) + '" cy="' + r(pt.cy) + '" r="13"/>' +
+        '<circle class="svg-dot" cx="' + r(pt.cx) + '" cy="' + r(pt.cy) + '" r="' + (i === pts.length - 1 ? 5.5 : 4) + '"/>' +
+        '<text class="svg-val' + (i === pts.length - 1 ? " svg-val-hl" : "") + '" x="' + r(pt.cx) + '" y="' + r(pt.cy - 22) + '" text-anchor="middle">' +
+        yuan(pt.value) +
+        "</text></g>",
+    )
+    .join("");
+
+  const labels = pts
+    .map(
+      (pt) =>
+        '<g><text class="svg-lb" x="' + r(pt.cx) + '" y="' + (base + 30) + '" text-anchor="middle">' +
+        esc(pt.label) + '</text><text class="svg-hint" x="' + r(pt.cx) + '" y="' + (base + 50) + '" text-anchor="middle">' +
+        esc(pt.hint) + "</text></g>",
+    )
+    .join("");
+
+  return `<section class="sec rv" id="flow">
+    ${head}
+    <p class="lead">把三种口径摊开，才看得出“省”到底发生在哪一层。每一段落差都对应一类优惠。</p>
+
+    <div class="chart brackets">
+      <svg class="flowsvg" viewBox="0 0 ${W} ${H}" role="img" aria-label="单点合计、划线价与实付的阶梯对比">
+        <defs>
+          <linearGradient id="fg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#FFE7A8"/>
+            <stop offset=".5" stop-color="#FFC72C"/>
+            <stop offset="1" stop-color="#E8A200"/>
+          </linearGradient>
+        </defs>
+        <line class="svg-base" x1="${padX - 26}" y1="${base}" x2="${W - 26}" y2="${base}"/>
+        ${guides}
+        ${ticks}
+        <path class="svg-line draw" pathLength="100" d="${line}"/>
+        ${drops.join("")}
+        ${nodes}
+        ${labels}
+      </svg>
+    </div>
+  </section>`;
+}
+
+/* ============================ 6. 渲染：归因 ============================ */
+
+function renderAttr(s, range) {
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 02</span><h2>省的钱从哪来</h2>' + rangeTag(range) + "</div>";
+
+  if (s.orders === 0) {
+    return '<section class="sec rv" id="attr">' + head +
+      emptyBlock("这个区间没有完成的订单", "换一个更长的区间，或从自定义里挑一段有消费的日期。") +
+      "</section>";
+  }
+
+  const segs = [
+    { label: "券与折扣", hint: "逐券金额，可对到具体订单", value: s.coupon, cls: "sA" },
+    { label: "活动 / 卡权益", hint: "平台总优惠 − 券优惠", value: s.activity, cls: "sB" },
+  ];
+  if (s.combo !== null) {
+    segs.push({ label: "套餐组合价值", hint: "单点合计 − 原价合计", value: s.combo, cls: "sC" });
+  }
+  const total = segs.reduce((acc, i) => acc + i.value, 0) || 1;
+
+  const spectrum = segs
+    .map(
+      (x, i) =>
+        '<span class="spec-seg ' + x.cls + '" style="flex:' + Math.max(x.value, 0.001).toFixed(3) +
+        ";animation-delay:" + (0.08 * i).toFixed(2) + 's"></span>',
+    )
+    .join("");
+
+  const rows = segs
+    .map(
+      (x) => `<div class="lg-row">
+      <span class="lg-dot ${x.cls}"></span>
+      <span class="lg-l">${esc(x.label)}<i>${esc(x.hint)}</i></span>
+      <span class="lg-lead"></span>
+      <span class="lg-v">${yuan(x.value)}</span>
+      <span class="lg-p">${((x.value / total) * 100).toFixed(0)}%</span>
+    </div>`,
+    )
+    .join("");
+
+  const ghost =
+    s.combo === null
+      ? `<div class="lg-row lg-ghost">
+      <span class="lg-dot dashed"></span>
+      <span class="lg-l">套餐组合价值<i>该区间套餐商品已下架，单品现价无法还原</i></span>
+      <span class="lg-lead"></span>
+      <span class="lg-v">—</span>
+      <span class="lg-p">未计入</span>
+    </div>`
+      : "";
+
+  return `<section class="sec rv" id="attr">
+    ${head}
+    <p class="lead">三项互不重叠，合计等于“省下来的钱”。颜色深浅只表示层次，不代表好坏。</p>
+
+    <div class="spec" role="img" aria-label="优惠构成占比">${spectrum}</div>
+    <div class="legend">${rows}${ghost}</div>
+
+    ${s.lowerBound ? `<p class="note">“省下来的钱”是<strong>下限</strong>：已计入的部分全部来自平台订单记录（原价合计 − 实付），可逐笔核对；未计入的是无法还原的套餐组合价值。</p>` : ""}
+    ${s.delivery > 0 ? `<p class="note">另有 ${yuan(s.delivery)} 配送费计入实付，不属于优惠，未参与归因。</p>` : ""}
+  </section>`;
+}
+
+/* ============================ 7. 渲染：策略 ============================ */
+
+function renderStrategy(strats, s, range) {
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 03</span><h2>下次怎么买</h2>' + rangeTag(range) + "</div>";
+
+  if (s.orders === 0) {
+    return '<section class="sec rv" id="strategy">' + head +
+      emptyBlock("这个区间没有完成的订单", "策略需要订单结构做依据，先选一段有消费的区间。") +
+      "</section>";
+  }
+
+  if (strats.length === 0) {
+    return '<section class="sec rv" id="strategy">' + head +
+      emptyBlock(
+        "这个区间的买法已经接近最优",
+        s.orders + " 笔订单里没有发现可量化的改进点：券用在了有效期内，单价也没有高于菜单现价。",
+      ) +
+      "</section>";
+  }
+
+  const totals = strategyTotals(strats);
+  const headAmount =
+    totals.perMonth > 0
+      ? yuan(totals.perMonth) + '<i>/ 月</i>'
+      : totals.oneOff > 0
+        ? yuan(totals.oneOff) + "<i>/ 一次性</i>"
+        : "—";
+
+  const cards = strats
+    .map((x, i) => {
+      const amount =
+        x.perMonth !== null
+          ? '<span class="strat-v">' + yuan(x.perMonth) + '<i>/ 月</i></span>'
+          : x.inRange !== null
+            ? '<span class="strat-v">' + yuan(x.inRange) + "<i>/ 一次性</i></span>"
+            : '<span class="strat-na">不折算</span>';
+      return `<article class="strat">
+        <span class="strat-n">${String(i + 1).padStart(2, "0")}</span>
+        <div class="strat-b">
+          <h3>${esc(x.title)}<span class="strat-k">${esc(x.kindLabel)}</span></h3>
+          <ul class="strat-e">${x.basis.map((b) => "<li>" + esc(b) + "</li>").join("")}</ul>
+          <p class="strat-a"><b>怎么做</b>${esc(x.action)}</p>
+        </div>
+        <div class="strat-r">
+          ${amount}
+          <span class="strat-tag" data-conf="${x.confidence}">${esc(x.confidenceLabel)}</span>
+          ${x.inRange !== null && x.perMonth !== null ? '<span class="strat-sub">该区间 ' + yuan(x.inRange) + "</span>" : ""}
+        </div>
+      </article>`;
+    })
+    .join("");
+
+  return `<section class="sec rv" id="strategy">
+    ${head}
+    <p class="lead">不是泛泛的“多领券”，而是从你这段区间的订单结构里挑出还能改的地方。金额是该区间的可优化空间，月化为按同样节奏推算的一个月。</p>
+
+    <div class="strat-head">
+      <b>还可再省 ${headAmount}</b>
+      <span>${strategyCaption(totals)}</span>
+    </div>
+
+    <div class="strats">${cards}</div>
+
+    <p class="note">不同策略可能指向同一笔订单的不同环节（例如既没用券、单价也偏高），合计是<strong>上限估计</strong>；标注“一次性”的是券类机会，不做月化。</p>
+  </section>`;
+}
+
+/* ============================ 8. 渲染：画像 ============================ */
+
+function renderBars(title, entries, total) {
+  const max = Math.max(...entries.map((e) => e[1]), 1);
+  return `<div class="mini">
+    <div class="mini-h"><span>${esc(title)}</span><em>占比</em></div>
+    <div class="rows">
+      ${entries
+        .map(
+          ([k, v], i) => `<div class="row">
+        <span class="row-k">${esc(k)}</span>
+        <span class="row-t"><i style="--v:${(v / max).toFixed(3)};--d:${(i * 0.06).toFixed(2)}s"></i></span>
+        <span class="row-v">${v}<em>${total > 0 ? ((v / total) * 100).toFixed(0) + "%" : ""}</em></span>
+      </div>`,
+        )
+        .join("")}
+    </div>
+  </div>`;
+}
+
+function renderProfile(s, range) {
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 06</span><h2>你的消费画像</h2>' + rangeTag(range) + "</div>";
+
+  if (s.orders === 0) {
+    return '<section class="sec rv" id="profile">' + head +
+      emptyBlock("这个区间没有完成的订单", "画像需要样本，换一个更长的区间。") +
+      "</section>";
+  }
+
+  const total = s.orders || 1;
+  const meal = Object.entries(s.mealPeriods).sort((a, b) => b[1] - a[1]);
+  const channels = Object.entries(s.channels).sort((a, b) => b[1] - a[1]);
+  const wdMax = Math.max(...s.weekday, 1);
+  const hrMax = Math.max(...s.hour, 1);
+
+  return `<section class="sec rv" id="profile">
+    ${head}
+    <p class="lead">不是给你贴标签，只是让前面的结论有依据。</p>
+
+    <div class="cols cols-3">
+      ${renderBars("时段分布", meal, total)}
+      ${renderBars("渠道分布", channels.map(([k, v]) => [CHANNEL_CN[k] || k, v]), total)}
+
+      <div class="mini">
+        <div class="mini-h"><span>一周节奏</span><em>订单数</em></div>
+        <div class="week">
+          ${s.weekday
+            .map(
+              (v, i) => `<div class="wk">
+            <span class="wk-bar" style="--h:${(v === 0 ? 2 : 10 + (v / wdMax) * 90).toFixed(1)}%;--d:${(i * 0.05).toFixed(2)}s"><i>${v}</i></span>
+            <span class="wk-l">${WEEKDAY_SHORT[i] || ""}</span>
+          </div>`,
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="cols cols-wide" style="margin-top:26px">
+      <div class="mini">
+        <div class="mini-h"><span>一天里什么时候下单</span><em>按小时</em></div>
+        <div class="hours">
+          ${s.hour
+            .map(
+              (v, i) =>
+                '<span class="hr' + (v === 0 ? " hr0" : "") + '" style="--h:' +
+                (v === 0 ? 0 : 8 + (v / hrMax) * 92).toFixed(1) + "%;--d:" + (i * 0.014).toFixed(2) + "s" +
+                (v === hrMax && v > 0 ? ";--peak:1" : "") + '" title="' + i + ":00 · " + v + ' 笔"></span>',
+            )
+            .join("")}
+        </div>
+        <div class="hours-x"><span>0</span><span>6</span><span>12</span><span>18</span><span>23</span></div>
+        ${s.maxTicket ? '<p class="mini-f">最贵的一单 ' + yuan(s.maxTicket.paid) + "　·　" + esc(s.maxTicket.date) + "</p>" : ""}
+      </div>
+
+      <div class="mini">
+        <div class="mini-h"><span>最常点</span><em>份数</em></div>
+        ${
+          s.topItems.length === 0
+            ? '<p class="muted" style="padding:12px 0">订单里还没有可识别的商品。</p>'
+            : '<ol class="tops">' +
+              s.topItems
+                .map(
+                  (it, idx) =>
+                    '<li><span class="tops-i">' + String(idx + 1).padStart(2, "0") + '</span><span class="tops-n">' +
+                    esc(it.name) + "</span><b>×" + it.quantity + "</b></li>",
+                )
+                .join("") +
+              "</ol>"
+        }
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================ 9. 渲染：分享 ============================ */
+
+function shareText(s, range) {
+  const saved =
+    s.saved === null
+      ? ""
+      : "，省下 " + yuan(s.saved) + (s.savedRate === null ? "" : "（原价的 " + (s.savedRate * 100).toFixed(0) + "%）");
+  return (
+    "麦麦账本 ｜ " + range.from + " 至 " + range.to + " ｜ " + s.orders + " 笔订单实付 " + yuan(s.paid) + saved + "。"
+  );
+}
+
+function renderShare(s, strats, range) {
+  const totals = strategyTotals(strats);
+  const canSave =
+    totals.perMonth > 0 ? yuan(totals.perMonth) : totals.oneOff > 0 ? yuan(totals.oneOff) : "—";
+  const text = shareText(s, range);
+
+  return `<section class="sec rv" id="share">
+    <div class="sec-h"><span class="sec-n">§ 08</span><h2>带走这张卡</h2>${rangeTag(range)}</div>
+    <p class="lead">截图或复制文案都行。卡上只有汇总数字，不含任何订单明细。</p>
+
+    <div class="share-lay">
+      <div class="tilt">
+        <div class="tilt-inner">
+          <div class="card3d" id="card3d">
+            <div class="card-hd">
+              <span class="card-b">MCD LEDGER</span>
+              <span class="card-p">${esc(range.from)} — ${esc(range.to)}</span>
+            </div>
+            <div class="card-main">
+              <span class="card-l">这段时间省下来的钱</span>
+              <span class="card-n">${s.saved === null ? "—" : yuan(s.saved)}</span>
+              <span class="card-r">原价的 ${s.savedRate === null ? "—" : (s.savedRate * 100).toFixed(0) + "%"}</span>
+            </div>
+            <div class="card-row">
+              <div><b>${yuan(s.paid)}</b><span>实付</span></div>
+              <div><b>${s.orders}</b><span>笔订单</span></div>
+              <div><b class="gold">${canSave}</b><span>还能再省</span></div>
+            </div>
+            <div class="card-f">
+              <span class="card-sign">mcd-ledger · 非官方作品</span>
+              <span class="stamp-mark">对账无误<i>AUDITED</i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="share-act">
+        <p class="share-tip">把鼠标移到卡片上，它会跟着倾斜——这是纯 CSS 3D 变换，没有 WebGL，也不额外加载任何东西。</p>
+        <div class="share-btns">
+          <button class="btn btn-gold" type="button" data-copy="${esc(text)}" data-ok="分享文案已复制">复制分享文案</button>
+          <button class="btn" type="button" data-print="1">打印 / 存为 PDF</button>
+        </div>
+        <pre class="share-pre" aria-label="分享文案预览">${esc(text)}</pre>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================ 10. 组装 ============================ */
+
+function moneyCell(value, dec) {
+  return '<span data-count="' + value.toFixed(2) + '" data-dec="' + dec + '" data-pre="¥">' + yuan(value) + "</span>";
+}
+
+function countAttrs(value) {
+  if (value === null) return "";
+  return 'data-count="' + value.toFixed(2) + '" data-dec="2" data-pre="¥"';
+}
+
+/**
+ * 一次算出整个页面的"区间视图"。
+ * 服务端首屏与浏览器切换区间走的是同一个函数——这是双端数字一致的根本保证。
+ */
+function buildView(data, spec) {
+  const range = resolveRange(spec, data.now, data.rows);
+  const rows = filterRows(data.rows, range);
+  const summary = summarize(rows, range);
+  const strats = buildStrategies(summary, rows, data);
+  return {
+    spec: typeof spec === "string" ? spec : DEFAULT_RANGE,
+    range,
+    summary,
+    strats,
+    totals: strategyTotals(strats),
+    html: {
+      cover: renderOverview(summary, strats, range),
+      flow: renderFlow(summary, range),
+      attr: renderAttr(summary, range),
+      strategy: renderStrategy(strats, summary, range),
+      profile: renderProfile(summary, range),
+      share: renderShare(summary, strats, range),
+    },
+  };
+}
+
+return {ENGINE_VERSION,money,yuan,esc,parseLocal,dateKey,mealPeriod,PRESETS,DEFAULT_RANGE,parseRangeSpec,resolveRange,filterRows,summarize,buildStrategies,strategyCaption,strategyTotals,renderOverview,renderFlow,renderAttr,renderStrategy,renderProfile,shareText,renderShare,buildView};})();</script>
+<script>
+(function(){
+  var doc = document;
+  var R = window.MCD_LEDGER_ENGINE;
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) {}
+
+  /* 1. 滚动进入：一次观察，元素进入后立刻断开，避免长期持有 */
+  var rvs = [].slice.call(doc.querySelectorAll('.rv'));
+  var io = null;
+  if (reduce || !('IntersectionObserver' in window)) {
+    rvs.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    io = new IntersectionObserver(function(list){
+      list.forEach(function(en){
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.1 });
+    rvs.forEach(function(el){ io.observe(el); });
+  }
+
+  /* 2. 数字滚动：只跑一次，用 rAF + 缓出，千分位手写避免正则开销 */
+  function grp(s){
+    var p = s.split('.');
+    var n = p[0], out = '', c = 0;
+    for (var i = n.length - 1; i >= 0; i--) {
+      out = n.charAt(i) + out; c++;
+      if (c % 3 === 0 && i > 0) out = ',' + out;
+    }
+    return p.length > 1 ? out + '.' + p[1] : out;
+  }
+  function count(el){
+    var target = parseFloat(el.getAttribute('data-count'));
+    if (isNaN(target)) return;
+    var dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+    var pre = el.getAttribute('data-pre') || '';
+    var dur = 900, t0 = 0;
+    function frame(ts){
+      if (!t0) t0 = ts;
+      var k = Math.min(1, (ts - t0) / dur);
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = pre + grp((target * e).toFixed(dec));
+      if (k < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  function animateCounts(root){
+    var scope = root || doc;
+    var nodes = [].slice.call(scope.querySelectorAll('[data-count]'));
+    nodes.forEach(function(el){
+      if (reduce) {
+        var pre = el.getAttribute('data-pre') || '';
+        var dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+        el.textContent = pre + grp(parseFloat(el.getAttribute('data-count')).toFixed(dec));
+      } else {
+        count(el);
+      }
+    });
+  }
+  var nums = [].slice.call(doc.querySelectorAll('[data-count]'));
+  if (reduce || !('IntersectionObserver' in window)) {
+    animateCounts(doc);
+  } else {
+    var io2 = new IntersectionObserver(function(list){
+      list.forEach(function(en){
+        if (en.isIntersecting) { count(en.target); io2.unobserve(en.target); }
+      });
+    }, { threshold: 0.6 });
+    nums.forEach(function(el){ io2.observe(el); });
+  }
+
+  /* 3. 顶栏状态 + 章节高亮（区间切换后需要重新挂载） */
+  var bar = doc.getElementById('bar');
+  var cover = doc.getElementById('overview');
+  var links = [].slice.call(doc.querySelectorAll('[data-nav]'));
+  var spy = null;
+  function mountSpy(){
+    if (!('IntersectionObserver' in window)) return;
+    if (bar && cover) {
+      new IntersectionObserver(function(list){
+        bar.classList.toggle('on', !list[0].isIntersecting);
+      }, { threshold: 0.18 }).observe(cover);
+    }
+    spy = new IntersectionObserver(function(list){
+      list.forEach(function(en){
+        if (!en.isIntersecting) return;
+        var id = en.target.id;
+        links.forEach(function(a){
+          a.classList.toggle('on', a.getAttribute('data-nav') === id);
+        });
+      });
+    }, { rootMargin: '-42% 0px -54% 0px' });
+    spy.observe(cover);
+    [].slice.call(doc.querySelectorAll('section[id]')).forEach(function(s){ spy.observe(s); });
+  }
+  mountSpy();
+
+  /* 4. 分享卡 3D：指针驱动，rAF 合并，离开即复位 */
+  function bindTilt(){
+    var tilt = doc.querySelector('.tilt');
+    var inner = doc.querySelector('.tilt-inner');
+    if (!tilt || !inner || reduce) return;
+    if (!window.matchMedia('(hover: hover)').matches) return;
+    if (tilt.getAttribute('data-tilt') === '1') return;
+    tilt.setAttribute('data-tilt', '1');
+    var raf = 0, tx = 0, ty = 0;
+    var paint = function(){
+      raf = 0;
+      inner.style.transform = 'rotateY(' + (tx * 11).toFixed(2) + 'deg) rotateX(' + (-ty * 9).toFixed(2) + 'deg)';
+    };
+    tilt.addEventListener('pointermove', function(ev){
+      var b = tilt.getBoundingClientRect();
+      tx = ((ev.clientX - b.left) / b.width - 0.5) * 2;
+      ty = ((ev.clientY - b.top) / b.height - 0.5) * 2;
+      if (!raf) raf = requestAnimationFrame(paint);
+    });
+    tilt.addEventListener('pointerleave', function(){ inner.style.transform = ''; });
+  }
+  bindTilt();
+
+  /* 5. 复制 / 打印 */
+  var toast = doc.getElementById('toast');
+  var toastTimer = 0;
+  function say(msg){
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('on'); }, 1800);
+  }
+  function fallbackCopy(text, done){
+    var ta = doc.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    doc.body.appendChild(ta);
+    ta.select();
+    try { doc.execCommand('copy'); done(); } catch(e) {}
+    doc.body.removeChild(ta);
+  }
+  doc.addEventListener('click', function(ev){
+    var t = ev.target;
+    if (!t || !t.closest) return;
+    var copyBtn = t.closest('[data-copy]');
+    if (copyBtn) {
+      var text = copyBtn.getAttribute('data-copy') || '';
+      var ok = copyBtn.getAttribute('data-ok') || '已复制';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ say(ok); }, function(){ fallbackCopy(text, function(){ say(ok); }); });
+      } else {
+        fallbackCopy(text, function(){ say(ok); });
+      }
+      return;
+    }
+    if (t.closest('[data-print]')) window.print();
+  });
+
+  /* 6. 区间筛选：所有数字来自同一份引擎，见 src/engine/range.mjs */
+  var raw = doc.getElementById('ledger-data');
+  if (!R || !raw) return;
+  var DATA = null;
+  try { DATA = JSON.parse(raw.textContent || '{}'); } catch(e) { return; }
+  if (!DATA || !DATA.rows) return;
+
+  var HOSTS = ['cover', 'flow', 'attr', 'strategy', 'profile', 'share'];
+  var hosts = {};
+  HOSTS.forEach(function(k){ hosts[k] = doc.getElementById('h-' + k); });
+
+  var chips = doc.getElementById('fltChips');
+  var panel = doc.getElementById('fltCustom');
+  var inFrom = doc.getElementById('fltFrom');
+  var inTo = doc.getElementById('fltTo');
+  var btnApply = doc.getElementById('fltApply');
+  var spanEl = doc.getElementById('fltSpan');
+  var barK = doc.querySelector('[data-bar-k]');
+  var barV = doc.querySelector('[data-bar-v]');
+  var copyTop = doc.querySelector('.bar-r [data-copy]');
+  var KEY = 'mcd-ledger-range';
+  var current = DATA.defaultRange || '30d';
+
+  function money(v){ return R.yuan(v); }
+
+  function paintChips(range){
+    if (!chips) return;
+    [].slice.call(chips.querySelectorAll('[data-range]')).forEach(function(b){
+      var k = b.getAttribute('data-range');
+      var on = range.custom ? k === 'custom' : k === range.key;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  function paintMeta(view){
+    if (spanEl) {
+      spanEl.textContent =
+        view.range.from + ' → ' + view.range.to + ' · ' + view.range.days + ' 天 · ' +
+        view.summary.orders + ' 笔' + (view.summary.orders === 0 ? '（无订单）' : '');
+    }
+    if (barK) barK.textContent = (view.range.custom ? '自定义' : view.range.label) + ' · 省下';
+    if (barV) barV.textContent = view.summary.saved === null ? '—' : money(view.summary.saved);
+    if (copyTop) copyTop.setAttribute('data-copy', R.shareText(view.summary, view.range));
+    doc.title = '麦麦账本 · ' + view.range.from + ' 至 ' + view.range.to;
+  }
+
+  function readStore(){
+    try { return window.localStorage.getItem(KEY); } catch(e) { return null; }
+  }
+  function writeStore(spec){
+    try { window.localStorage.setItem(KEY, spec); } catch(e) {}
+  }
+
+  function applyRange(spec, remember){
+    var view;
+    try {
+      view = R.buildView(DATA, spec);
+    } catch (e) {
+      say('这个区间算不出来：' + (e && e.message ? e.message : '未知错误'));
+      return;
+    }
+    HOSTS.forEach(function(k){
+      var el = hosts[k];
+      if (!el) return;
+      el.innerHTML = view.html[k];
+      [].slice.call(el.querySelectorAll('.rv')).forEach(function(x){ x.classList.add('in'); });
+    });
+    animateCounts(hosts.cover);
+    bindTilt();
+    if (spy) {
+      spy.disconnect();
+      spy.observe(cover);
+      [].slice.call(doc.querySelectorAll('section[id]')).forEach(function(s){ spy.observe(s); });
+    }
+    paintChips(view.range);
+    paintMeta(view);
+    current = spec;
+    if (remember) writeStore(spec);
+  }
+
+  if (chips) {
+    chips.addEventListener('click', function(ev){
+      var btn = ev.target && ev.target.closest ? ev.target.closest('[data-range]') : null;
+      if (!btn) return;
+      var key = btn.getAttribute('data-range');
+      if (key === 'custom') {
+        if (panel) panel.hidden = false;
+        paintChips({ key: '', custom: true });
+        if (inFrom && !inFrom.value) inFrom.value = '';
+        if (inTo && !inTo.value) inTo.value = '';
+        if (inFrom) inFrom.focus();
+        return;
+      }
+      if (panel) panel.hidden = true;
+      applyRange(key, true);
+    });
+  }
+
+  if (btnApply) {
+    btnApply.addEventListener('click', function(){
+      var a = inFrom ? inFrom.value : '';
+      var b = inTo ? inTo.value : '';
+      if (!a || !b) { say('请把起止日期都选上'); return; }
+      if (a > b) { say('开始日期不能晚于结束日期'); return; }
+      if (panel) panel.hidden = true;
+      applyRange(a + '..' + b, true);
+    });
+  }
+
+  /* 打印前展开所有折叠块，避免内容被吞 */
+  window.addEventListener('beforeprint', function(){
+    [].slice.call(doc.querySelectorAll('details')).forEach(function(d){ d.open = true; });
+  });
+
+  /* 记住上次的选择：下次打开直接落在他关心的区间上 */
+  var saved = readStore();
+  if (saved && saved !== current) {
+    try {
+      var probe = R.buildView(DATA, saved);
+      if (probe.range.key === 'custom') {
+        if (inFrom) inFrom.value = probe.range.from;
+        if (inTo) inTo.value = probe.range.to;
+      }
+      applyRange(saved, false);
+    } catch(e) {}
+  }
+})();
+</script>
 </body>
 </html>

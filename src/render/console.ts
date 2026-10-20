@@ -3,6 +3,7 @@
  * 所有可选信息（trace、降级、覆盖率）放在摘要之后，而不是挤在第一屏。
  */
 import type { AuditReport } from "../model/types.ts";
+import { strategyCaption } from "../engine/range.mjs";
 
 const useColor = process.stdout.isTTY === true && !process.env.NO_COLOR;
 const c = {
@@ -24,7 +25,7 @@ export function renderConsole(report: AuditReport): string {
   out.push(`  ${c.bold("麦麦账本")} ${c.dim("· 你的麦当劳消费对账单")}`);
   out.push("");
   out.push(
-    `  期间   ${report.period.from ?? "—"} → ${report.period.to ?? "—"} ${c.dim(`· ${report.period.days} 天 · ${t.completedOrders} 笔`)}`,
+    `  期间   ${report.period.from ?? "—"} → ${report.period.to ?? "—"} ${c.dim(`· ${report.period.days} 天 · ${t.completedOrders} 笔 · ${report.range.label}`)}`,
   );
   out.push(`  实付   ${c.bold(yuan(t.paid))}   ${c.dim(`平均每笔 ${yuan(report.profile.avgTicket)}`)}`);
   out.push(
@@ -33,7 +34,11 @@ export function renderConsole(report: AuditReport): string {
       (t.savedRate !== null ? c.dim(`   相当于原价 ${(t.savedRate * 100).toFixed(1)}%`) : ""),
   );
   out.push(
-    `  漏掉   ${report.leakTotal > 0 ? c.red(c.bold(yuan(report.leakTotal))) : c.green("0.00")}   ${c.dim(`${report.leaks.length} 项`)}`,
+    `  漏掉   ${report.leakTotal > 0 ? c.red(c.bold(yuan(report.leakTotal))) : c.green("0.00")}   ${c.dim(`${report.leaks.length} 项 · 账户口径，不随区间变化`)}`,
+  );
+  const st = report.strategyTotals;
+  out.push(
+    `  再省   ${st.perMonth > 0 ? c.yellow(c.bold(yuan(st.perMonth))) + c.dim(" / 月（估算）") : c.dim("—")}   ${c.dim(strategyCaption(st))}`,
   );
   out.push(line);
 
@@ -65,6 +70,21 @@ export function renderConsole(report: AuditReport): string {
       out.push(`  ${amt}  ${leak.title}${leak.amountEstimated ? c.dim("（估算）") : ""}`);
       const first = leak.evidence[0];
       if (first) out.push(c.dim(`             ${truncate(first, 74)}`));
+    }
+    out.push(line);
+  }
+
+  if (report.strategy.length > 0) {
+    out.push(`  ${c.bold("下次怎么买")}  ${c.dim(report.range.label)}`);
+    for (const item of report.strategy) {
+      const amount =
+        item.perMonth !== null
+          ? c.yellow(pad(yuan(item.perMonth) + "/月", 13))
+          : item.inRange !== null
+            ? c.yellow(pad(yuan(item.inRange), 13))
+            : c.dim(pad("不折算", 13));
+      out.push(`  ${amount}  ${item.title}${c.dim("（" + item.confidenceLabel + "）")}`);
+      out.push(c.dim(`                ${truncate(item.action, 72)}`));
     }
     out.push(line);
   }

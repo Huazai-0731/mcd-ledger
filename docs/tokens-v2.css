@@ -1,0 +1,213 @@
+/* ============================================================================
+   麦麦账本 V2 · Design Tokens
+   ----------------------------------------------------------------------------
+   浅色：Ardot 设计稿「方案卡 / 待支付确认页」口径
+   深色：与 demo-report.html 的深色主题逐值对齐（--bg/--panel/--ink/--gold/--red）
+        基底 #09090A、面板 #111113、金 #FFC72C、红 #E23B2E、墨 #F3EFE6
+
+   用法：
+     <link rel="stylesheet" href="tokens-v2.css">
+     <html data-theme="light"> 或 <html data-theme="dark">
+
+   约定（重要的那一条）：
+     品牌红有两个角色 ——
+       --brand    : 大面积填充、≥18px 的大号数字、图标
+       --brand-ink: 任何小于 18px 的红字、链接、券抵扣金额
+     深色底上 #E23B2E 只有 4.4:1，做小字会掉到 AA 以下，所以深色的小字红换成 #F4685B。
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- 背景与表面 ---------- */
+  --app-bg: #f6f4f1;          /* 页面底 */
+  --surface: #ffffff;         /* 卡片 */
+  --surface-2: #f7f5f2;       /* 次级块（合计条、说明块） */
+  --surface-3: #f2eee8;       /* 凹陷块（序号圆、失效卡） */
+  --surface-tint: #fef2f0;    /* 选中态浅底：品牌红 4% */
+  --intent-bg: #1a1614;       /* 意图条（深色块） */
+  --intent-text: #ffffff;
+  --intent-sub: #9a938b;      /* 5.9:1 on --intent-bg */
+  --scrim: rgba(26, 22, 20, 0.38);
+  --bezel: #f2eee8;           /* 手机中框（仅原型外壳用） */
+
+  /* ---------- 文字 ----------
+     设计稿原来的 #8C8681 / #9E9791 在 #F6F4F1 上只有 3.3 / 2.6:1，
+     做 11px 辅助文字是不过 AA 的，这里按实测压深到 5.9 / 4.7:1，
+     层级改由字号承担，不靠灰度。 */
+  --text: #1a1614;            /*  16.4:1 on --app-bg */
+  --text-2: #4a443f;          /*   8.7:1 */
+  --text-3: #635d57;          /*   5.9:1 · 辅助信息、副标题 */
+  --text-4: #736c66;          /*   4.7:1 · 脚注下限 */
+  --text-on-brand: #ffffff;
+
+  /* ---------- 品牌 ---------- */
+  --brand: #da291c;           /* 4.9:1 on white · 大号数字 / 图形 */
+  --brand-fill: #da291c;      /* 实心按钮底：与白字 4.9:1 */
+  --brand-ink: #b0231a;       /* 6.8:1 on white · 小字专用 */
+  --brand-soft: #fef2f0;
+  --gold: #ffc72c;
+  --gold-ink: #3d2b00;        /* 金底上的字 */
+  --gold-deep: #b4791a;
+
+  /* ---------- 语义色 ---------- */
+  --warn: #c0651a;            /* 图标 / 描边 / 徽标底 */
+  --warn-strong: #a85610;     /* 白底上的警示文字：5.3:1 */
+  --warn-text: #8a5a00;
+  --warn-bg: #fff8e8;
+  --warn-border: #f2d9bc;
+  --danger-ink: #b0231a;      /* 撤销这类破坏性次要操作 */
+  --danger-border: #e4b4ae;
+  --success: #14713f;         /* 5.5:1 on --success-bg */
+  --toast-ok: #8ae0ae;        /* 深色 toast 上的成功图标 */
+  --success-bg: #edf6f0;
+  --success-border: #b9dcc7;
+  --neutral-ink: #6b6560;
+
+  /* ---------- 边框 ---------- */
+  --border: #ebe7e2;          /* 卡片描边 */
+  --border-2: #f0ece6;        /* 卡片内分割线 */
+  --border-strong: #dcd6ce;   /* 次按钮描边 */
+  --border-brand: #da291c;
+
+  /* ---------- 圆角 ---------- */
+  --r-xs: 5px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 14px;
+  --r-2xl: 16px;
+  --r-3xl: 18px;
+  --r-4xl: 20px;
+  --r-pill: 999px;
+
+  /* ---------- 阴影 ----------
+     浅色：投影只向下（y 偏移 ≥ 1px、负扩散收住外沿），
+     绝不会在卡片上方形成"压住内容"的暗边。 */
+  --shadow-card: 0 1px 2px rgba(26, 22, 20, 0.05), 0 10px 22px -16px rgba(26, 22, 20, 0.20);
+  --shadow-raised: 0 6px 20px -10px rgba(26, 22, 20, 0.28);
+  --shadow-sheet: 0 -10px 40px -12px rgba(26, 22, 20, 0.28);
+  --shadow-brand: 0 8px 20px -10px rgba(218, 41, 28, 0.6);
+
+  /* ---------- 间距 ----------
+     --gutter-top  正文与导航之间的呼吸位：必须 ≥ --fade-nav，
+                   否则导航下方的渐隐带会压在首张卡片上（浅色更明显）。
+     --fade-nav    导航下缘渐隐带高度，只作用于"滚动中"的内容。 */
+  --gutter-top: 12px;
+  --fade-nav: 9px;
+  --s-1: 4px;
+  --s-2: 6px;
+  --s-3: 8px;
+  --s-4: 10px;
+  --s-5: 12px;
+  --s-6: 14px;
+  --s-7: 16px;
+  --s-8: 20px;
+  --s-9: 24px;
+
+  /* ---------- 字号 / 行高 ---------- */
+  --f-micro: 9.5px;
+  --f-cap: 10.5px;
+  --f-xs: 11px;
+  --f-sm: 12px;
+  --f-base: 12.5px;
+  --f-md: 13px;
+  --f-lg: 15px;
+  --f-xl: 16px;
+  --f-2xl: 17px;
+  --f-3xl: 20px;
+  --f-4xl: 22px;
+  --f-5xl: 26px;
+  --f-6xl: 32px;
+  --f-7xl: 54px;
+  --lh-tight: 1.25;
+  --lh-body: 1.5;
+  --lh-loose: 1.62;
+
+  /* ---------- 动效 ---------- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur: 220ms;
+  --dur-slow: 320ms;
+
+  /* ---------- 布局 ---------- */
+  --vp: 390px;                 /* 设计基准宽；375 / 390 / 430 三档 */
+  --tap: 44px;                 /* 最小命中区 */
+  --cta: 50px;                 /* 主按钮高 */
+}
+
+/* ============================================================================
+   深色主题 —— 与 demo-report.html 同源
+   ========================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* 背景与表面：与 demo 的 --bg 同底（#09090A），
+     但卡片抬到 #17171B —— demo 的 #111113 与底色只差 2 级，
+     叠在 0.075 白描边上，整片界面糊成一团黑，卡片边界读不出来。
+     这里按"底 → 卡 → 卡内次级块 → 卡内凹槽"四级重新拉开。 */
+  --app-bg: #09090a;
+  --surface: #17171b;         /* 卡片 · 比底色亮 14 级，边界可读 */
+  --surface-2: #202026;       /* 卡内次级块（合计条、提示条） */
+  --surface-3: #0e0e11;       /* 卡内凹槽（序号圆、失效图标底） */
+  --surface-tint: #2c1a19;    /* 选中态：品牌红 12% 压在新卡面上 */
+  --intent-bg: #232329;       /* 意图条：比卡片再高一档，保证与卡片可区分 */
+  --intent-text: #f3efe6;
+  --intent-sub: #a29c90;
+  --scrim: rgba(0, 0, 0, 0.66);
+  --bezel: #1a1a20;
+
+  /* 文字：demo 的三档灰，最暗处实测 17.3 / 8.3 / 6.0 */
+  --text: #f3efe6;            /* 17.3:1 on --app-bg */
+  --text-2: #c2bdb2;          /* 10.6:1 */
+  --text-3: #a29c90;          /*  7.3:1 */
+  --text-4: #8f897e;          /*  5.7:1 · 脚注底线 */
+  --text-on-brand: #ffffff;
+
+  /* 品牌：红 #E23B2E 只做填充与大号数字（4.6:1），小字换 #F4685B（6.6:1） */
+  --brand: #e23b2e;           /* 4.6:1 on #111113 · 大号数字 */
+  --brand-fill: #c9281b;      /* 实心按钮底：与白字 5.5:1 */
+  --brand-ink: #f4685b;
+  --brand-soft: #2c1a19;
+  --gold: #ffc72c;
+  --gold-ink: #1a1200;
+  --gold-deep: #ffc72c;
+
+  /* 语义色：深色底上整体提亮一档，底色改为低透明填充 */
+  --warn: #e0a24e;
+  --warn-strong: #e0a24e;
+  --warn-text: #f0c464;
+  --toast-ok: #8ae0ae;       /* 10.9:1 on #1B1710 */
+  --warn-bg: rgba(255, 199, 44, 0.1);
+  --warn-border: rgba(255, 199, 44, 0.28);
+  --danger-ink: #f4685b;
+  --danger-border: rgba(244, 104, 91, 0.42);
+  --success: #3fbe79;         /* 8.0:1 on #111113 */
+  --success-bg: rgba(63, 190, 121, 0.12);
+  --success-border: rgba(63, 190, 121, 0.32);
+  --neutral-ink: #c2bdb2;
+
+  /* 边框：白透明而非灰实色。
+     旧值 0.075 压在 #111113 上几乎等于没画；提到 0.14 后
+     卡片外沿 ≈ #3A3A3E，与卡面 1.6:1、与底色 2.4:1，肉眼可辨。
+     分割线（--border-2）必须比外描边更弱，与浅色同一套层级。 */
+  --border: rgba(255, 255, 255, 0.14);
+  --border-2: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.26);
+  --border-brand: #e23b2e;
+
+  /* 阴影：深色下投影几乎不可见，靠"顶部 1px 内高光 + 外描边"立起层级，
+     投影只做兜底，避免卡片边缘发灰。 */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 20px -14px rgba(0, 0, 0, 0.9);
+  --shadow-raised: 0 10px 30px -16px rgba(0, 0, 0, 0.9);
+  --shadow-sheet: 0 -12px 44px -14px rgba(0, 0, 0, 0.92);
+  --shadow-brand: 0 10px 26px -12px rgba(226, 59, 46, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+  }
+}

@@ -10,6 +10,14 @@ import { parseOrderDetail } from "../src/ingest/orderDetail.ts";
 import { normalizeName, parseCouponTitle, looseMatch } from "../src/model/text.ts";
 import { detectLeaks } from "../src/audit/detectors.ts";
 import { mealPeriod } from "../src/audit/report.ts";
+import {
+  buildStrategies,
+  buildView,
+  resolveRange,
+  summarize,
+  filterRows,
+} from "../src/engine/range.mjs";
+import type { LedgerData, LedgerRow } from "../src/engine/range.mjs";
 import type { MenuItem, Order, OrderDetail } from "../src/model/types.ts";
 
 export interface Case {
@@ -286,7 +294,181 @@ export const CASES: Case[] = [
       assert(mealPeriod(new Date(2026, 9, 20, 23, 30)) === "夜宵", "23:30 应为夜宵");
     },
   },
+  /* ---------------------- 区间筛选与策略引擎 ---------------------- */
+
+  {
+    name: "区间解析：近 7 天含今天，共 7 个自然日",
+    run: () => {
+      const now = new Date(2026, 9, 20, 14, 30).getTime();
+      const r = resolveRange("7d", now, []);
+      assert(r.days === 7, `days=${r.days}`);
+      assert(r.from === "2026-10-14" && r.to === "2026-10-20", `${r.from}→${r.to}`);
+      assert(r.fromMs <= new Date(2026, 9, 14, 0, 0).getTime(), "起点应为 14 日 00:00");
+      assert(r.toMs >= now, "终点应包含当前时刻");
+    },
+  },
+  {
+    name: "区间解析：自定义区间反着填也能纠正",
+    run: () => {
+      const now = new Date(2026, 9, 20).getTime();
+      const r = resolveRange("2026-10-10..2026-10-01", now, []);
+      assert(r.key === "custom", `key=${r.key}`);
+      assert(r.from === "2026-10-01" && r.to === "2026-10-10", `${r.from}→${r.to}`);
+      assert(r.days === 10, `days=${r.days}`);
+    },
+  },
+  {
+    name: "区间解析：无法识别的写法退回默认区间而不是报错",
+    run: () => {
+      const r = resolveRange("上个月", new Date(2026, 9, 20).getTime(), []);
+      assert(r.key === "30d", `key=${r.key}`);
+    },
+  },
+  {
+    name: "区间筛选：边界毫秒内的订单要算进来",
+    run: () => {
+      const now = new Date(2026, 9, 20, 12, 0).getTime();
+      const range = resolveRange("7d", now, []);
+      const rows = [
+        row({ ms: range.fromMs }),
+        row({ ms: range.toMs }),
+        row({ ms: range.fromMs - 1 }),
+        row({ ms: range.toMs + 1 }),
+      ];
+      const kept = filterRows(rows, range);
+      assert(kept.length === 2, `kept=${kept.length}`);
+    },
+  },
+  {
+    name: "引擎聚合：区间内实付与节省和三段口径自洽",
+    run: () => {
+      const now = new Date(2026, 9, 20, 12, 0).getTime();
+      const range = resolveRange("7d", now, []);
+      const rows = [
+        row({ ms: now - 3600_000, paid: 15.9, list: 26.5, ala: 28, act: 10.6, cpn: 0 }),
+        row({ ms: now - 7200_000, paid: 24.5, list: 24.5, ala: 24.5, act: 0, cmb: 0 }),
+      ];
+      const s = summarize(rows, range);
+      assert(near(s.paid, 40.4), `paid=${s.paid}`);
+      // 省下 = 券 0 + 活动 10.6 + 组合价值 (28+24.5) − (26.5+24.5) = 1.5
+      assert(near(s.saved ?? -1, 12.1), `saved=${s.saved}`);
+      assert(near(s.combo ?? -1, 1.5), `combo=${s.combo}`);
+      assert(s.orders === 2, `orders=${s.orders}`);
+    },
+  },
+  {
+    name: "引擎聚合：区间外订单不进入任何汇总",
+    run: () => {
+      const now = new Date(2026, 9, 20, 12, 0).getTime();
+      const range = resolveRange("7d", now, []);
+      const rows = [
+        row({ ms: now - 3600_000, paid: 10 }),
+        row({ ms: now - 40 * 86_400_000, paid: 999 }),
+      ];
+      const s = summarize(filterRows(rows, range), range);
+      assert(near(s.paid, 10), `paid=${s.paid}`);
+    },
+  },
+  {
+    name: "策略：券覆盖了高频时段却没用上 → 给出时段×券建议",
+    run: () => {
+      const now = new Date(2026, 9, 20, 12, 0).getTime();
+      const rows = [0, 1, 2].map((i) =>
+        row({ ms: new Date(2026, 9, 18 + i, 7, 20).getTime(), paid: 15.9, del: 0, coupons: [] }),
+      );
+      const data = ledgerData(rows, now, [
+        {
+          id: "c1",
+          name: "9.9元猪柳蛋麦满分",
+          price: 9.9,
+          validFrom: "2026-10-01T05:00",
+          validTo: "2026-10-25T10:29",
+          weekdays: [],
+          startTime: "05:00",
+          endTime: "10:29",
+          channels: [],
+          tags: [],
+          worth: 8.1,
+        },
+      ]);
+      const view = buildView(data, "7d");
+      const hit = view.strats.find((x) => x.kind === "window");
+      assert(hit !== undefined, "应命中 window 策略");
+      assert(near(hit?.inRange ?? 0, 24.3), `inRange=${hit?.inRange}`);
+      assert((hit?.basis.length ?? 0) >= 2, "策略必须带证据");
+    },
+  },
+  {
+    name: "策略：区间内没有订单时返回空集而不是报错",
+    run: () => {
+      const now = new Date(2026, 9, 20, 12, 0).getTime();
+      const data = ledgerData([row({ ms: now - 200 * 86_400_000 })], now, []);
+      const view = buildView(data, "7d");
+      assert(view.summary.orders === 0, `orders=${view.summary.orders}`);
+      assert(view.strats.length === 0, `strats=${view.strats.length}`);
+      assert(view.html.strategy.indexOf("没有完成的订单") > 0, "应给出空状态");
+    },
+  },
+  {
+    name: "策略：只有单一区间才能算出月化，一次性券机会不月化",
+    run: () => {
+      const now = new Date(2026, 9, 20, 12, 0).getTime();
+      const rows = [0, 1, 2, 3].map((i) =>
+        row({ ms: new Date(2026, 9, 16 + i, 12, 10).getTime(), paid: 30, list: 24.5, del: 9 }),
+      );
+      const data = ledgerData(rows, now, []);
+      const view = buildView(data, "7d");
+      const del = view.strats.find((x) => x.kind === "delivery");
+      assert(del !== undefined, "应命中配送费策略");
+      assert(near(del?.inRange ?? 0, 36), `inRange=${del?.inRange}`);
+      assert(near(del?.perMonth ?? 0, 36 * (30 / 7)), `perMonth=${del?.perMonth}`);
+    },
+  },
 ];
+
+/** 造一行订单事实，默认可精确归因 */
+function row(over: Partial<LedgerRow> = {}): LedgerRow {
+  const ms = over.ms ?? new Date(2026, 9, 20, 7, 20).getTime();
+  const d = new Date(ms);
+  return {
+    ms,
+    m: d.getHours() * 60 + d.getMinutes(),
+    id: "O1",
+    ch: "pickup",
+    st: "测试门店",
+    paid: 15.9,
+    list: 26.5,
+    ala: 28,
+    cpn: 0,
+    act: 10.6,
+    cmb: 1.5,
+    del: 0,
+    cov: 1,
+    status: "completed",
+    items: [["9900003458", "猪柳蛋麦满分套餐", 1, 15.9]],
+    coupons: [],
+    ...over,
+  };
+}
+
+function ledgerData(
+  rows: LedgerRow[],
+  now: number,
+  coupons: LedgerData["coupons"],
+): LedgerData {
+  return {
+    v: 1,
+    now,
+    nowIso: new Date(now).toISOString(),
+    defaultRange: "7d",
+    rows,
+    coupons,
+    campaigns: [],
+    menu: { "9900003458": { p: 15.9, o: 26.5, d: "随单购早餐卡优惠" } },
+    meta: { demo: true, traceId: "t", dataFrom: "2026-07-01", dataTo: "2026-10-20" },
+  };
+}
+
 
 export function assert(cond: boolean, message: string): void {
   if (!cond) throw new Error(message);

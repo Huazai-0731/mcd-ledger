@@ -17,6 +17,7 @@ import { renderConsole } from "./render/console.ts";
 import { renderHtml } from "./render/html.ts";
 import { renderOrdersCsv } from "./render/csv.ts";
 import { toDateKey } from "./audit/windows.ts";
+import { DEFAULT_RANGE } from "./engine/range.mjs";
 import type { AuditReport } from "./model/types.ts";
 
 interface Args {
@@ -27,11 +28,12 @@ interface Args {
   cache: boolean;
   verbose: boolean;
   days: number | undefined;
+  range: string;
   maxStores: number;
 }
 
 const HELP = `
-麦麦账本 mcd-ledger v0.1.0
+麦麦账本 mcd-ledger v0.2.0
 你的麦当劳消费对账单：省了多少、漏了多少、下次何时买最划算。
 
 用法
@@ -42,7 +44,9 @@ const HELP = `
 
 选项
   --out <dir>        输出目录（默认当前目录）
-  --days <n>         只审计最近 n 天
+  --range <范围>     页面默认选中的区间：7d / 30d / 90d / all
+                     也可以给自定义区间：2026-09-01..2026-10-01（默认 30d）
+  --days <n>         只拉取最近 n 天的订单（减少 MCP 调用，与 --range 无关）
   --max-stores <n>   最多查询几个门店的菜单（默认 3，控制调用量）
   --json             把报告以 JSON 打印到 stdout
   --no-cache         禁用本地缓存
@@ -64,6 +68,7 @@ function parseArgs(argv: string[]): Args {
     cache: true,
     verbose: false,
     days: undefined,
+    range: DEFAULT_RANGE,
     maxStores: 3,
   };
 
@@ -93,6 +98,9 @@ function parseArgs(argv: string[]): Args {
         break;
       case "--days":
         args.days = Number(argv[++i] ?? "0") || undefined;
+        break;
+      case "--range":
+        args.range = argv[++i] ?? DEFAULT_RANGE;
         break;
       case "--max-stores":
         args.maxStores = Math.max(1, Number(argv[++i] ?? "3") || 3);
@@ -153,6 +161,7 @@ async function main(): Promise<void> {
     verbose: args.verbose,
     days: args.days,
     maxStores: args.maxStores,
+    range: args.range,
   });
 
   const { report } = result;
@@ -168,7 +177,7 @@ async function main(): Promise<void> {
   const csvPath = resolve(outDir, `mcd-ledger-${stamp}.csv`);
   const tracePath = result.trace.file;
 
-  writeFileSync(htmlPath, renderHtml(report), "utf8");
+  writeFileSync(htmlPath, renderHtml(report, result.view, result.ledger), "utf8");
   writeFileSync(csvPath, renderOrdersCsv(result.priced), "utf8");
 
   if (!args.json) {

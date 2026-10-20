@@ -17,6 +17,8 @@ import { priceOrder } from "../model/pricing.ts";
 import { summarizeAttribution } from "../audit/attribution.ts";
 import { detectLeaks } from "../audit/detectors.ts";
 import { buildReport, toDateKey } from "../audit/report.ts";
+import { buildLedger } from "../audit/ledger.ts";
+import { buildView, DEFAULT_RANGE } from "../engine/range.mjs";
 import { demoCampaigns, demoCoupons, demoPoints, DEMO_MENU, generateDemoOrders } from "../demo/fixtures.ts";
 import type {
   AuditReport,
@@ -30,6 +32,7 @@ import type {
   PointsAccount,
   PricedOrder,
 } from "../model/types.ts";
+import type { LedgerData, View } from "../engine/range.mjs";
 
 export interface RunOptions {
   demo: boolean;
@@ -43,6 +46,8 @@ export interface RunOptions {
   maxStores?: number;
   /** 最多拉取多少笔订单详情（订单详情会永久缓存） */
   maxDetails?: number;
+  /** 分析区间："7d" / "30d" / "90d" / "all" / "2026-09-01..2026-10-01" */
+  range?: string;
 }
 
 export interface RunResult {
@@ -50,6 +55,10 @@ export interface RunResult {
   priced: PricedOrder[];
   orders: Order[];
   trace: TraceRecorder;
+  /** 下发到页面的区间无关事实表 */
+  ledger: LedgerData;
+  /** 默认区间的视图（首屏 SSR 用） */
+  view: View;
 }
 
 const MENU_TTL = 6 * 3600_000;
@@ -216,9 +225,33 @@ export async function runAudit(opts: RunOptions): Promise<RunResult> {
     }
   }
 
-  const priced = orders.map((o) => priceOrder(o, menu));
-  const attribution = summarizeAttribution(priced.filter((p) => p.order.status === "completed"));
+  const pricedAll = orders.map((o) => priceOrder(o, menu));
 
+  // ---- 区间：一次解析，双端共用 ----------------------------------------
+  // 首屏（Node）与页面上的区间切换（浏览器）走的是同一个 buildView()，
+  // 所以「报告里写的数字」和「页面上看到的数字」在结构上就不可能不一致。
+  const ledger = buildLedger({
+    priced: pricedAll,
+    coupons,
+    campaigns,
+    menu,
+    now,
+    demo: opts.demo,
+    traceId: trace.id,
+  });
+  const view = buildView(ledger, opts.range ?? DEFAULT_RANGE);
+  const range = view.range;
+
+  const inRange = (o: Order): boolean => o.createdAtMs >= range.fromMs && o.createdAtMs <= range.toMs;
+  const ordersInRange = orders.filter(inRange);
+  const pricedInRange = pricedAll.filter((p) => inRange(p.order));
+
+  const attribution = summarizeAttribution(
+    pricedInRange.filter((p) => p.order.status === "completed"),
+  );
+
+  // 漏损是「账户口径」：过期积分、券到期、取消单都不随页面区间变化，
+  // 因此这里刻意用全量订单，页面上也会标明这一点。
   const leaks = detectLeaks({
     orders,
     coupons,
@@ -226,12 +259,16 @@ export async function runAudit(opts: RunOptions): Promise<RunResult> {
     menu,
     now,
     attributionGap: attribution.gap,
-    unresolvedOrders: priced.filter((p) => p.order.status === "completed" && p.coverage < 1).length,
+    unresolvedOrders: pricedAll.filter((p) => p.order.status === "completed" && p.coverage < 1).length,
   });
 
+  const allTimes = orders.map((o) => o.createdAtMs);
+  const dataFrom = allTimes.length > 0 ? new Date(Math.min(...allTimes)) : null;
+  const dataTo = allTimes.length > 0 ? new Date(Math.max(...allTimes)) : null;
+
   const report = buildReport({
-    orders,
-    priced: priced.filter((p) => p.order.status === "completed"),
+    orders: ordersInRange,
+    priced: pricedInRange.filter((p) => p.order.status === "completed"),
     attribution,
     leaks,
     points,
@@ -243,9 +280,22 @@ export async function runAudit(opts: RunOptions): Promise<RunResult> {
     trace: { traceId: trace.id, toolCalls: trace.toolCalls, durationMs: trace.durationMs },
     pointsPerYuan: points?.pointsPerYuan ?? 100,
     demo: opts.demo,
+    range,
+    dataSpan: {
+      from: dataFrom ? toDateKey(dataFrom) : null,
+      to: dataTo ? toDateKey(dataTo) : null,
+      days:
+        dataFrom && dataTo
+          ? Math.max(1, Math.round((dataTo.getTime() - dataFrom.getTime()) / 86_400_000) + 1)
+          : 0,
+      orders: orders.filter((o) => o.status === "completed").length,
+    },
   });
 
-  return { report, priced, orders, trace };
+  report.strategy = view.strats;
+  report.strategyTotals = view.totals;
+
+  return { report, priced: pricedInRange, orders: ordersInRange, trace, ledger, view };
 }
 
 /** 工具调用失败 → 记录降级，返回 null，不中断流水线 */

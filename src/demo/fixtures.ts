@@ -121,100 +121,35 @@ function lcg(seed: number): () => number {
   };
 }
 
-export function generateDemoOrders(now: Date, count = 26): Order[] {
+export function generateDemoOrders(now: Date, days = 96): Order[] {
   const rnd = lcg(20261024);
   const orders: Order[] = [];
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 96);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-  for (let i = 0; i < count; i += 1) {
-    const dayOffset = Math.floor((i / count) * 96) + Math.floor(rnd() * 3);
-    const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + dayOffset);
+  /*
+   * 按"每天独立掷骰子"生成，而不是把 N 笔均匀撒在 N 天里。
+   * 这样任何区间（7 天 / 30 天）都有足够的样本，且频次本身是真实信号——
+   * 「早餐 4 次/周」这件事，正是策略层判断"券够不够用"的依据。
+   */
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const day = new Date(today - offset * 86_400_000);
     const weekday = day.getDay();
     const isWeekend = weekday === 0 || weekday === 6;
 
-    // 周末偏向午餐，工作日偏向早餐——贴近真实节奏
-    const slot = rnd();
-    const isBreakfast = isWeekend ? slot < 0.35 : slot < 0.78;
-    const store = STORES[Math.floor(rnd() * STORES.length)] ?? STORES[0]!;
+    const roll = rnd();
+    const slots: Array<"breakfast" | "lunch" | "coffee"> = [];
+    if (roll < (isWeekend ? 0.3 : 0.62)) slots.push("breakfast");
+    if (rnd() < (isWeekend ? 0.46 : 0.22)) slots.push("lunch");
+    if (rnd() < (isWeekend ? 0.16 : 0.12)) slots.push("coffee");
 
-    let hour: number;
-    let minute: number;
-    let productCode: string;
-    if (isBreakfast) {
-      hour = 7;
-      minute = Math.floor(rnd() * 50);
-      productCode = BREAKFAST_POOL[Math.floor(rnd() * BREAKFAST_POOL.length)] ?? "9900011872";
-    } else if (slot < 0.9) {
-      hour = 12;
-      minute = Math.floor(rnd() * 50);
-      productCode = LUNCH_POOL[Math.floor(rnd() * LUNCH_POOL.length)] ?? "521884";
-    } else {
-      hour = 15;
-      minute = Math.floor(rnd() * 50);
-      productCode = COFFEE_POOL[Math.floor(rnd() * COFFEE_POOL.length)] ?? "507368";
+    for (const slot of slots) {
+      const order = buildOrder(day, slot, rnd);
+      if (order) orders.push(order);
     }
-
-    const item = DEMO_MENU[productCode];
-    if (!item || item.currentPrice === null) continue;
-
-    const quantity = rnd() < 0.12 ? 2 : 1;
-    const parts = COMBO_PARTS[productCode] ?? [];
-    const comboItems = parts
-      .map(([code, q]) => {
-        const sub = DEMO_MENU[code];
-        return sub ? { code, name: sub.name, quantity: q } : null;
-      })
-      .filter((x): x is { code: string; name: string; quantity: number } => x !== null);
-
-    // 16% 的订单叠加了券/活动，实付低于销售价
-    const couponCut = rnd() < 0.16 ? Math.round(item.currentPrice * 0.25 * 100) / 100 : 0;
-    const isDelivery = !isBreakfast && rnd() < 0.15;
-    const deliveryFee = isDelivery ? 9 : 0;
-
-    const createdAt = `${toDateKey(day)} ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:${String(Math.floor(rnd() * 60)).padStart(2, "0")}`;
-    const paid =
-      Math.round((item.currentPrice * quantity - couponCut + deliveryFee) * 100) / 100;
-    const totalAmount =
-      Math.round((item.originalPrice ?? item.currentPrice) * quantity * 100) / 100;
-
-    orders.push({
-      orderId: `1030${String(20261000 + i).slice(-8)}${String(Math.floor(rnd() * 1e8)).padStart(8, "0")}`,
-      createdAt,
-      createdAtMs: new Date(
-        day.getFullYear(),
-        day.getMonth(),
-        day.getDate(),
-        hour,
-        minute,
-      ).getTime(),
-      channel: isDelivery ? "delivery" : rnd() < 0.3 ? "drivethru" : "pickup",
-      storeCode: store.code,
-      storeName: store.name,
-      status: "completed",
-      lines: [
-        {
-          productCode,
-          productName: item.name,
-          quantity,
-          comboItems,
-        },
-      ],
-      paid,
-      detail: {
-        orderId: "",
-        totalAmount,
-        paid,
-        discount: Math.max(0, Math.round((totalAmount - (paid - deliveryFee)) * 100) / 100),
-        deliveryFee,
-        productPrice: Math.round((item.currentPrice * quantity - couponCut) * 100) / 100,
-        coupons: couponCut > 0 ? [{ name: "限时活动券", amount: couponCut }] : [],
-        pickupCode: String(30000 + Math.floor(rnd() * 9000)),
-      },
-    });
   }
 
   // 一笔取消订单（用于"取消率"检测）
-  const cancelledDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 12);
+  const cancelledDay = new Date(today - 12 * 86_400_000);
   orders.push({
     orderId: "1030246380000765751204635280",
     createdAt: `${toDateKey(cancelledDay)} 07:32:04`,
@@ -240,6 +175,68 @@ export function generateDemoOrders(now: Date, count = 26): Order[] {
   return orders.sort((a, b) => b.createdAtMs - a.createdAtMs);
 }
 
+function buildOrder(
+  day: Date,
+  slot: "breakfast" | "lunch" | "coffee",
+  rnd: () => number,
+): Order | null {
+  const pool =
+    slot === "breakfast" ? BREAKFAST_POOL : slot === "lunch" ? LUNCH_POOL : COFFEE_POOL;
+  const productCode = pool[Math.floor(rnd() * pool.length)] ?? pool[0]!;
+  const item = DEMO_MENU[productCode];
+  if (!item || item.currentPrice === null) return null;
+
+  const hour = slot === "breakfast" ? 7 : slot === "lunch" ? 12 : 15;
+  const minute = Math.floor(rnd() * 50);
+  const quantity = rnd() < 0.12 ? 2 : 1;
+
+  const parts = COMBO_PARTS[productCode] ?? [];
+  const comboItems = parts
+    .map(([code, q]) => {
+      const sub = DEMO_MENU[code];
+      return sub ? { code, name: sub.name, quantity: q } : null;
+    })
+    .filter((x): x is { code: string; name: string; quantity: number } => x !== null);
+
+  // 18% 用券，另有 30% 按原价买——真实的账本里这两种"可以更省"的情况都很常见，
+  // 演示数据必须把它们造出来，否则策略层永远是空的。
+  const useCoupon = rnd() < 0.18;
+  const fullPrice = !useCoupon && rnd() < 0.3;
+  const unit = fullPrice ? (item.originalPrice ?? item.currentPrice) : item.currentPrice;
+  const couponCut = useCoupon ? Math.round(unit * 0.25 * 100) / 100 : 0;
+
+  const isDelivery = slot !== "breakfast" && rnd() < 0.15;
+  const deliveryFee = isDelivery ? 9 : 0;
+
+  const createdAt = `${toDateKey(day)} ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:${String(Math.floor(rnd() * 60)).padStart(2, "0")}`;
+  const paid = Math.round((unit * quantity - couponCut + deliveryFee) * 100) / 100;
+  const totalAmount = Math.round((item.originalPrice ?? item.currentPrice) * quantity * 100) / 100;
+
+  return {
+    orderId: `1030${String(20261000 + Math.floor(rnd() * 9_000_000)).slice(-8)}${String(Math.floor(rnd() * 1e8)).padStart(8, "0")}`,
+    createdAt,
+    createdAtMs: new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, minute).getTime(),
+    channel: isDelivery ? "delivery" : rnd() < 0.3 ? "drivethru" : "pickup",
+    storeCode: STORES[Math.floor(rnd() * STORES.length)]?.code ?? STORES[0]!.code,
+    storeName: STORES[Math.floor(rnd() * STORES.length)]?.name ?? STORES[0]!.name,
+    status: "completed",
+    lines: [
+      { productCode, productName: item.name, quantity, comboItems },
+    ],
+    paid,
+    detail: {
+      orderId: "",
+      totalAmount,
+      paid,
+      discount: Math.max(0, Math.round((totalAmount - (paid - deliveryFee)) * 100) / 100),
+      deliveryFee,
+      productPrice: Math.round((unit * quantity - couponCut) * 100) / 100,
+      coupons: couponCut > 0 ? [{ name: "限时活动券", amount: couponCut }] : [],
+      pickupCode: String(30000 + Math.floor(rnd() * 9000)),
+    },
+  };
+}
+
 export function demoCoupons(now: Date): Coupon[] {
   const today = toDateKey(now);
   const inDays = (n: number) => {
@@ -251,15 +248,17 @@ export function demoCoupons(now: Date): Coupon[] {
   return [
     {
       id: "coupon-demo-1",
+      // 到期时间刻意跨到明天同一时刻：这样"48 小时内到期"的判断不随打开页面的钟点漂移，
+      // 演示数字才能稳定复现（原来写死在今天 10:29，下午跑就会少一项漏损）。
       name: "芝香脆鸡扒堡早餐两件套",
       price: 9.9,
       validFrom: `${today}T05:00`,
-      validTo: `${today}T10:29`,
-      weekdays: [wd(0)],
+      validTo: `${inDays(1)}T10:29`,
+      weekdays: [],
       startTime: "05:00",
       endTime: "10:29",
       channels: ["到店专用"],
-      tags: ["今日到期"],
+      tags: ["即将到期"],
     },
     {
       id: "coupon-demo-2",
@@ -292,6 +291,18 @@ export function demoCoupons(now: Date): Coupon[] {
       validFrom: `${inDays(1)}T05:00`,
       validTo: `${inDays(1)}T10:29`,
       weekdays: [wd(1)],
+      startTime: "05:00",
+      endTime: "10:29",
+      channels: ["到店专用"],
+      tags: [],
+    },
+    {
+      id: "coupon-demo-5",
+      name: "9.9元猪柳蛋麦满分",
+      price: 9.9,
+      validFrom: `${inDays(-30)}T05:00`,
+      validTo: `${inDays(1)}T10:29`,
+      weekdays: [1, 2, 3, 4, 5],
       startTime: "05:00",
       endTime: "10:29",
       channels: ["到店专用"],

@@ -6,6 +6,7 @@
  * 2. 无法确定的字段一律用 null，不用 0 —— 0 和"不知道"在审计里是两件事。
  * 3. 每个实体都带 source 标记，便于在报告里说明数据来源与覆盖率。
  */
+import type { Strategy, StrategyTotals } from "../engine/range.mjs";
 
 /** 订单履约渠道，来自 order-list 的 beType */
 export type Channel = "pickup" | "delivery" | "drivethru" | "group" | "unknown";
@@ -256,7 +257,12 @@ export interface Profile {
 /** 完整审计报告 */
 export interface AuditReport {
   generatedAt: string;
+  /** 本次选中的分析区间（页面首屏默认选中它；其余区间由前端引擎就地重算） */
+  range: { key: string; label: string; custom: boolean };
+  /** 选中区间的边界与规模 */
   period: { from: string | null; to: string | null; days: number; orders: number };
+  /** 数据本身覆盖的范围——区间之外还有多少，写清楚才不会误导 */
+  dataSpan: { from: string | null; to: string | null; days: number; orders: number };
   totals: {
     paid: number;
     list: number | null;
@@ -285,6 +291,9 @@ export interface AuditReport {
   /** 所有漏损折算总和（仅含可折算项） */
   leakTotal: number;
   windows: PurchaseWindow[];
+  /** 选中区间内的策略建议（与页面上的 §03 同源） */
+  strategy: Strategy[];
+  strategyTotals: StrategyTotals;
   profile: Profile;
   points: PointsAccount | null;
   coupons: Coupon[];

@@ -18,9 +18,12 @@ import type {
 import type { AttributionSummary } from "./attribution.ts";
 import { totalSaved } from "./attribution.ts";
 import { buildWindows } from "./windows.ts";
+import type { RangeInfo } from "../engine/range.mjs";
 
 export interface ReportInput {
+  /** 已按选中区间过滤的订单（区间之外的不进 totals / profile） */
   orders: Order[];
+  /** 已按选中区间过滤且完成定价的订单 */
   priced: PricedOrder[];
   attribution: AttributionSummary;
   leaks: Leak[];
@@ -33,18 +36,16 @@ export interface ReportInput {
   trace: { traceId: string; toolCalls: number; durationMs: number };
   pointsPerYuan: number;
   demo?: boolean;
+  /** 选中的分析区间 */
+  range: RangeInfo;
+  /** 数据整体覆盖的范围（区间之外还有多少） */
+  dataSpan: { from: string | null; to: string | null; days: number; orders: number };
 }
 
 export function buildReport(input: ReportInput): AuditReport {
   const completed = input.orders.filter((o) => o.status === "completed");
   const cancelled = input.orders.filter((o) => o.status === "cancelled");
   const saved = totalSaved(input.attribution);
-
-  const times = completed.map((o) => o.createdAtMs);
-  const from = times.length > 0 ? new Date(Math.min(...times)) : null;
-  const to = times.length > 0 ? new Date(Math.max(...times)) : null;
-  const days =
-    from && to ? Math.max(1, Math.round((to.getTime() - from.getTime()) / 86_400_000) + 1) : 0;
 
   const totalItems = completed.reduce(
     (acc, o) => acc + o.lines.reduce((a, l) => a + l.quantity, 0),
@@ -57,12 +58,14 @@ export function buildReport(input: ReportInput): AuditReport {
 
   const report: AuditReport = {
     generatedAt: input.now.toISOString(),
+    range: { key: input.range.key, label: input.range.label, custom: input.range.custom },
     period: {
-      from: from ? toDateKey(from) : null,
-      to: to ? toDateKey(to) : null,
-      days,
+      from: input.range.from,
+      to: input.range.to,
+      days: input.range.days,
       orders: completed.length,
     },
+    dataSpan: input.dataSpan,
     totals: {
       paid: money(completed.reduce((a, o) => a + o.paid, 0)),
       list: input.attribution.list,
@@ -89,6 +92,8 @@ export function buildReport(input: ReportInput): AuditReport {
     leaks: input.leaks,
     leakTotal,
     windows: buildWindows(input.coupons, input.campaigns, input.menu, input.now),
+    strategy: [],
+    strategyTotals: { perMonth: 0, oneOff: 0, inRangeAll: 0, count: 0, withAmount: 0 },
     profile: buildProfile(completed, input.attribution),
     points: input.points,
     coupons: input.coupons,
