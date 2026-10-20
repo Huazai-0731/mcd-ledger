@@ -1,0 +1,3747 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<!-- 本文件由 src/render/plan.ts 生成，请勿直接编辑；交互改模板、算法改 src/engine/range.mjs -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>麦麦账本 V2 · 方案卡与待支付确认页 · 可点击原型</title>
+<style>
+/* 内联自 docs/tokens.css（唯一口径），由构建保证同步 */
+/* ============================================================================
+   麦麦账本 · Design Tokens
+   ============================================================================
+   本文件是**唯一色彩与尺度口径**。四个环境共用一套语义名，值以本文件为准。
+
+     环境            作用域                          位置
+     ------------    ----------------------------    ------------------------------
+     原型·浅色        :root                           本文件
+     原型·深色        [data-theme="dark"]             本文件
+     账本·深色        账本页 :root（内联）             src/render/html.ts
+     账本·打印        账本页 @media print（内联）      src/render/html.ts
+
+   为什么账本页不 <link> 本文件：
+     账本页是**单文件交付物**（用户可单独保存、转发、离线打开），外链样式会破坏
+     自包含性。所以账本页内联的是"同一组值"，而不是同一个文件。这是一个已知的
+     双写代价 —— 改色要改两处。消除它需要把账本页也交给模板统一产出（不在本档范围）。
+
+   品牌红收敛后只剩两组（深底一组、浅底一组），不再有第三个值：
+     深底  大号/填充 #E23B2E · 小字 #F4685B（#E23B2E 在深底只有 4.4:1，小字会掉 AA）
+     浅底  大号/填充 #DA291C · 小字 #B0231A
+     金    亮金 #FFC72C 只用于深底；浅底与打印用压深金 #9A6C00（#FFC72C 在白底不可读）
+
+   账本页变量名 ↔ 本文件语义名（改名不必，能对上即可）：
+     --bg     ↔ --app-bg      --panel  ↔ --surface
+     --panel2 ↔ --surface-2   --ink    ↔ --text
+     --ink2   ↔ --text-2      --ink3   ↔ --text-3
+     --red    ↔ --brand       --red-t  ↔ --brand-ink
+     --gold   ↔ --gold
+
+   用法：
+     <link rel="stylesheet" href="tokens.css">
+     <html data-theme="light"> 或 <html data-theme="dark">
+
+   约定（最重要的那一条）：
+     品牌红有两个角色，不能混用 ——
+       --brand    : 大面积填充、≥18px 的大号数字、图标
+       --brand-ink: 任何小于 18px 的红字、链接、券抵扣金额
+     深色底上 #E23B2E 只有 4.4:1，做小字会掉到 AA 以下，所以深色的小字红换成 #F4685B。
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- 背景与表面 ---------- */
+  --app-bg: #f6f4f1;          /* 页面底 */
+  --surface: #ffffff;         /* 卡片 */
+  --surface-2: #f7f5f2;       /* 次级块（合计条、说明块） */
+  --surface-3: #f2eee8;       /* 凹陷块（序号圆、失效卡） */
+  --surface-tint: #fef2f0;    /* 选中态浅底：品牌红 4% */
+  --intent-bg: #1a1614;       /* 意图条（深色块） */
+  --intent-text: #ffffff;
+  --intent-sub: #9a938b;      /* 5.9:1 on --intent-bg */
+  --scrim: rgba(26, 22, 20, 0.38);
+  --bezel: #f2eee8;           /* 手机中框（仅原型外壳用） */
+
+  /* ---------- 文字 ----------
+     设计稿原来的 #8C8681 / #9E9791 在 #F6F4F1 上只有 3.3 / 2.6:1，
+     做 11px 辅助文字是不过 AA 的，这里按实测压深到 5.9 / 4.7:1，
+     层级改由字号承担，不靠灰度。 */
+  --text: #1a1614;            /*  16.4:1 on --app-bg */
+  --text-2: #4a443f;          /*   8.7:1 */
+  --text-3: #635d57;          /*   5.9:1 · 辅助信息、副标题 */
+  --text-4: #736c66;          /*   4.7:1 · 脚注下限 */
+  --text-on-brand: #ffffff;
+
+  /* ---------- 品牌 ---------- */
+  --brand: #da291c;           /* 4.9:1 on white · 大号数字 / 图形 */
+  --brand-fill: #da291c;      /* 实心按钮底：与白字 4.9:1 */
+  --brand-ink: #b0231a;       /* 6.8:1 on white · 小字专用 */
+  --brand-soft: #fef2f0;
+  --gold: #ffc72c;
+  --gold-ink: #3d2b00;        /* 金底上的字 */
+  --gold-deep: #b4791a;
+
+  /* ---------- 语义色 ---------- */
+  --warn: #c0651a;            /* 图标 / 描边 / 徽标底 */
+  --warn-strong: #a85610;     /* 白底上的警示文字：5.3:1 */
+  --warn-text: #8a5a00;
+  --warn-bg: #fff8e8;
+  --warn-border: #f2d9bc;
+  --danger-ink: #b0231a;      /* 撤销这类破坏性次要操作 */
+  --danger-border: #e4b4ae;
+  --success: #14713f;         /* 5.5:1 on --success-bg */
+  --toast-ok: #8ae0ae;        /* 深色 toast 上的成功图标 */
+  --success-bg: #edf6f0;
+  --success-border: #b9dcc7;
+  --neutral-ink: #6b6560;
+
+  /* ---------- 边框 ---------- */
+  --border: #ebe7e2;          /* 卡片描边 */
+  --border-2: #f0ece6;        /* 卡片内分割线 */
+  --border-strong: #dcd6ce;   /* 次按钮描边 */
+  --border-brand: #da291c;
+
+  /* ---------- 圆角 ---------- */
+  --r-xs: 5px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 14px;
+  --r-2xl: 16px;
+  --r-3xl: 18px;
+  --r-4xl: 20px;
+  --r-pill: 999px;
+
+  /* ---------- 阴影 ----------
+     浅色：投影只向下（y 偏移 ≥ 1px、负扩散收住外沿），
+     绝不会在卡片上方形成"压住内容"的暗边。 */
+  --shadow-card: 0 1px 2px rgba(26, 22, 20, 0.05), 0 10px 22px -16px rgba(26, 22, 20, 0.20);
+  --shadow-raised: 0 6px 20px -10px rgba(26, 22, 20, 0.28);
+  --shadow-sheet: 0 -10px 40px -12px rgba(26, 22, 20, 0.28);
+  --shadow-brand: 0 8px 20px -10px rgba(218, 41, 28, 0.6);
+
+  /* ---------- 间距 ----------
+     --gutter-top  正文与导航之间的呼吸位：必须 ≥ --fade-nav，
+                   否则导航下方的渐隐带会压在首张卡片上（浅色更明显）。
+     --fade-nav    导航下缘渐隐带高度，只作用于"滚动中"的内容。 */
+  --gutter-top: 12px;
+  --fade-nav: 9px;
+  --s-1: 4px;
+  --s-2: 6px;
+  --s-3: 8px;
+  --s-4: 10px;
+  --s-5: 12px;
+  --s-6: 14px;
+  --s-7: 16px;
+  --s-8: 20px;
+  --s-9: 24px;
+
+  /* ---------- 字号 / 行高 ---------- */
+  --f-micro: 9.5px;
+  --f-cap: 10.5px;
+  --f-xs: 11px;
+  --f-sm: 12px;
+  --f-base: 12.5px;
+  --f-md: 13px;
+  --f-lg: 15px;
+  --f-xl: 16px;
+  --f-2xl: 17px;
+  --f-3xl: 20px;
+  --f-4xl: 22px;
+  --f-5xl: 26px;
+  --f-6xl: 32px;
+  --f-7xl: 54px;
+  --lh-tight: 1.25;
+  --lh-body: 1.5;
+  --lh-loose: 1.62;
+
+  /* ---------- 动效 ---------- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur: 220ms;
+  --dur-slow: 320ms;
+
+  /* ---------- 布局 ---------- */
+  --vp: 390px;                 /* 设计基准宽；375 / 390 / 430 三档 */
+  --tap: 44px;                 /* 最小命中区 */
+  --cta: 50px;                 /* 主按钮高 */
+}
+
+/* ============================================================================
+   深色主题 —— 与账本页 :root（src/render/html.ts）同一组值
+   ========================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* 背景与表面：与账本的 --bg 同底（#09090A），
+     但卡片抬到 #17171B —— 账本的 #111113 与底色只差 2 级，
+     叠在 0.075 白描边上，整片界面糊成一团黑，卡片边界读不出来。
+     这里按"底 → 卡 → 卡内次级块 → 卡内凹槽"四级重新拉开。
+
+     ⚠ 已知分叉（未回填）：账本页目前仍是 #111113。把这一层的四级梯度
+       搬回账本页属于第二轮整合的内容，本次只做口径登记，不动账本页。 */
+  --app-bg: #09090a;
+  --surface: #17171b;         /* 卡片 · 比底色亮 14 级，边界可读 */
+  --surface-2: #202026;       /* 卡内次级块（合计条、提示条） */
+  --surface-3: #0e0e11;       /* 卡内凹槽（序号圆、失效图标底） */
+  --surface-tint: #2c1a19;    /* 选中态：品牌红 12% 压在新卡面上 */
+  --intent-bg: #232329;       /* 意图条：比卡片再高一档，保证与卡片可区分 */
+  --intent-text: #f3efe6;
+  --intent-sub: #a29c90;
+  --scrim: rgba(0, 0, 0, 0.66);
+  --bezel: #1a1a20;
+
+  /* 文字：与账本三档灰同值，最暗处实测 17.3 / 8.3 / 6.0 */
+  --text: #f3efe6;            /* 17.3:1 on --app-bg */
+  --text-2: #c2bdb2;          /* 10.6:1 */
+  --text-3: #a29c90;          /*  7.3:1 */
+  --text-4: #8f897e;          /*  5.7:1 · 脚注底线 */
+  --text-on-brand: #ffffff;
+
+  /* 品牌：红 #E23B2E 只做填充与大号数字（4.6:1），小字换 #F4685B（6.6:1） */
+  --brand: #e23b2e;           /* 4.6:1 on #111113 · 大号数字 */
+  --brand-fill: #c9281b;      /* 实心按钮底：与白字 5.5:1 */
+  --brand-ink: #f4685b;
+  --brand-soft: #2c1a19;
+  --gold: #ffc72c;
+  --gold-ink: #1a1200;
+  --gold-deep: #ffc72c;
+
+  /* 语义色：深色底上整体提亮一档，底色改为低透明填充 */
+  --warn: #e0a24e;
+  --warn-strong: #e0a24e;
+  --warn-text: #f0c464;
+  --toast-ok: #8ae0ae;       /* 10.9:1 on #1B1710 */
+  --warn-bg: rgba(255, 199, 44, 0.1);
+  --warn-border: rgba(255, 199, 44, 0.28);
+  --danger-ink: #f4685b;
+  --danger-border: rgba(244, 104, 91, 0.42);
+  --success: #3fbe79;         /* 8.0:1 on #111113 */
+  --success-bg: rgba(63, 190, 121, 0.12);
+  --success-border: rgba(63, 190, 121, 0.32);
+  --neutral-ink: #c2bdb2;
+
+  /* 边框：白透明而非灰实色。
+     旧值 0.075 压在 #111113 上几乎等于没画；提到 0.14 后
+     卡片外沿 ≈ #3A3A3E，与卡面 1.6:1、与底色 2.4:1，肉眼可辨。
+     分割线（--border-2）必须比外描边更弱，与浅色同一套层级。 */
+  --border: rgba(255, 255, 255, 0.14);
+  --border-2: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.26);
+  --border-brand: #e23b2e;
+
+  /* 阴影：深色下投影几乎不可见，靠"顶部 1px 内高光 + 外描边"立起层级，
+     投影只做兜底，避免卡片边缘发灰。 */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 20px -14px rgba(0, 0, 0, 0.9);
+  --shadow-raised: 0 10px 30px -16px rgba(0, 0, 0, 0.9);
+  --shadow-sheet: 0 -12px 44px -14px rgba(0, 0, 0, 0.92);
+  --shadow-brand: 0 10px 26px -12px rgba(226, 59, 46, 0.55);
+}
+
+/* ============================================================================
+   账本·打印 —— 浅色口径 + 纯白底（省墨），由 src/render/html.ts 的 @media print 内联
+   此处仅登记口径，供对照；不要在原型里用这些值。
+   ==========================================================================
+   打印环境与浅色唯一的刻意差异是底色 --bg:#fff（省墨、且"不打印背景"时仍是白纸）。
+   品牌红已统一到浅色口径：#DA291C / #B0231A，不再使用独立的第三个红值。
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+  }
+}
+
+</style>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--app-bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:14px;line-height:var(--lh-body);
+  -webkit-font-smoothing:antialiased;
+  transition:background var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+h1,h2,h3,p,ol,ul,dl,dd,dt{margin:0;padding:0}
+ol,ul{list-style:none}
+svg{display:block}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+
+/* ============ 顶部 ============ */
+.top{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:18px 28px;border-bottom:1px solid var(--border);
+  background:var(--app-bg);position:sticky;top:0;z-index:30;
+  backdrop-filter:blur(12px);
+}
+.top-l{display:flex;align-items:center;gap:14px;min-width:0}
+/* 两页互通入口：回到账本诊断页 */
+.back{
+  display:flex;align-items:center;gap:3px;height:32px;padding:0 11px;border-radius:999px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text-2);
+  font-size:12px;font-weight:500;flex:0 0 auto;text-decoration:none;
+  transition:color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease);
+}
+.back:hover{border-color:var(--border-strong);color:var(--text)}
+.back:active{transform:scale(.97)}
+.logo{
+  width:34px;height:34px;border-radius:10px;background:var(--brand);
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  box-shadow:var(--shadow-brand);
+}
+.logo svg{width:20px;height:20px;color:var(--gold)}
+.top h1{font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.top p{font-size:11.5px;color:var(--text-3);margin-top:1px;white-space:nowrap}
+.top-r{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.seg-theme{display:flex;padding:3px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
+.seg-theme button{
+  height:26px;padding:0 13px;border-radius:999px;font-size:11.5px;font-weight:500;
+  color:var(--text-3);transition:all var(--dur) var(--ease);
+}
+.seg-theme button.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tbtn{
+  height:32px;padding:0 14px;border-radius:999px;border:1px solid var(--border-strong);
+  font-size:12px;font-weight:500;color:var(--text-2);background:var(--surface);
+  transition:all var(--dur-fast) var(--ease);
+}
+.tbtn:hover{border-color:var(--text-3);color:var(--text)}
+.tbtn:active{transform:scale(.97)}
+
+/* ============ 舞台 ============ */
+.stage{
+  display:flex;align-items:flex-start;justify-content:center;gap:34px;
+  padding:34px 28px 60px;max-width:1180px;margin:0 auto;
+}
+.device-col{display:flex;flex-direction:column;align-items:center;gap:12px;flex:0 0 auto}
+.device{
+  width:390px;height:844px;position:relative;overflow:hidden;
+  background:var(--app-bg);border-radius:46px;
+  box-shadow:0 0 0 1px var(--border),0 0 0 9px var(--bezel),0 0 0 10px var(--border-2),
+             0 40px 70px -40px rgba(0,0,0,.45);
+  display:flex;flex-direction:column;
+  transition:background var(--dur) var(--ease);
+}
+.device-cap{font-size:11px;color:var(--text-4);text-align:center;max-width:390px;line-height:1.6}
+
+/* 状态栏 */
+.statusbar{
+  height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;font-size:13px;font-weight:600;color:var(--text);position:relative;z-index:12;
+}
+.sb-r{display:flex;align-items:center;gap:5px}
+.sb-r svg{width:16px;height:11px;color:var(--text)}
+
+/* 屏幕 */
+.screens{position:relative;flex:1;overflow:hidden}
+.scr{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transform:translateX(10px);
+  transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease);
+}
+.scr.on{opacity:1;pointer-events:auto;transform:none;z-index:2}
+
+.scr-body{flex:1;overflow-y:auto;padding:var(--gutter-top) 16px 12px;scrollbar-width:none;overscroll-behavior:contain}
+.scr-body::-webkit-scrollbar{display:none}
+.scr-foot{flex:0 0 auto;background:var(--surface);border-top:1px solid var(--border-2);
+  padding:11px 16px max(16px,env(safe-area-inset-bottom))}
+
+/* 导航行：.scr 的固定子项，不再参与滚动。
+   正文从它下方 --gutter-top 处起算，导航下缘的渐隐带只落在空白呼吸位上，
+   滚动时才扫过内容 —— 首屏永远不会被"阴影"压住。 */
+.navrow{
+  position:relative;z-index:6;flex:0 0 auto;
+  height:36px;padding:0 16px;display:flex;align-items:center;gap:8px;
+  background:var(--app-bg);
+}
+.navrow::after{content:"";position:absolute;left:0;right:0;bottom:calc(-1 * var(--fade-nav));
+  height:var(--fade-nav);background:linear-gradient(var(--app-bg),transparent);pointer-events:none}
+.nav-t{font-size:17px;font-weight:600;letter-spacing:-.01em;flex:1;text-align:center;margin-right:-24px}
+.nav-t.left{text-align:left;margin-right:0}
+.nav-back{width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.nav-back svg{width:20px;height:20px;color:var(--text)}
+.nav-store{font-size:11px;color:var(--text-3);flex:0 0 auto}
+.timer{
+  display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:13px;
+  background:var(--brand-soft);color:var(--brand-ink);font-size:12.5px;font-weight:600;
+  font-variant-numeric:tabular-nums;
+}
+.timer svg{width:12px;height:12px;color:currentColor}
+.timer.low{background:var(--warn-bg);color:var(--warn-text)}
+
+/* ============ 通用组件 ============ */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-2xl);
+  padding:16px;box-shadow:var(--shadow-card);
+}
+.stack{display:flex;flex-direction:column;gap:12px}
+.stack.tight{gap:7px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.muted{color:var(--text-3);font-size:11px}
+.divider{height:1px;background:var(--border-2);margin:0}
+.strike{text-decoration:line-through;color:var(--text-4)}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+.chip{
+  display:inline-flex;align-items:center;height:21px;padding:0 7px;border-radius:6px;
+  font-size:10px;font-weight:600;white-space:nowrap;
+}
+.chip-warn{background:var(--warn-bg);color:var(--warn-text)}
+.chip-brand{background:var(--brand-soft);color:var(--brand-ink)}
+.chip-gold{background:var(--gold);color:var(--gold-ink)}
+.chip-neutral{background:var(--surface-3);color:var(--text-3)}
+.chip-ok{background:var(--success-bg);color:var(--success)}
+.chip-gray{background:var(--surface-3);color:var(--text-3)}
+
+/* 按钮 */
+.btn-primary{
+  width:100%;height:50px;border-radius:999px;background:var(--brand-fill);color:var(--text-on-brand);
+  font-size:15px;font-weight:600;letter-spacing:.01em;
+  display:flex;align-items:center;justify-content:center;gap:8px;position:relative;
+  box-shadow:var(--shadow-brand);
+  transition:transform var(--dur-fast) var(--ease),filter var(--dur-fast) var(--ease),opacity var(--dur) var(--ease);
+}
+.btn-primary:hover{filter:brightness(1.06)}
+.btn-primary:active{transform:scale(.985)}
+.btn-primary[disabled]{opacity:.85;cursor:default;transform:none}
+.btn-primary .spin{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.4);border-top-color:var(--text-on-brand);
+  animation:spin .7s linear infinite;flex:0 0 auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-ghost{
+  height:50px;border-radius:999px;border:1px solid var(--border-strong);
+  color:var(--text-2);font-size:13.5px;font-weight:500;background:transparent;
+  display:flex;align-items:center;justify-content:center;transition:all var(--dur-fast) var(--ease);
+}
+.btn-ghost:hover{border-color:var(--text-3);color:var(--text)}
+.btn-ghost:active{transform:scale(.985)}
+/* 撤销是「安全绳」：必须常驻、必须一眼可见，但不能和主 CTA 争红色。
+   描边走中性 --border-strong，只保留红字（--danger-ink 双主题均过 AA）。 */
+.btn-danger{
+  height:50px;border-radius:999px;border:1px solid var(--border-strong);color:var(--danger-ink);
+  font-size:13.5px;font-weight:600;background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease);
+}
+.btn-danger:hover{border-color:var(--danger-border);background:var(--brand-soft)}
+.btn-danger:active{transform:scale(.985)}
+.btn-sm{
+  height:28px;padding:0 11px;border-radius:14px;background:var(--brand-fill);color:var(--text-on-brand);
+  font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;
+}
+.btn-sm[disabled]{background:var(--surface-3);color:var(--text-4)}
+.btn-text{font-size:12.5px;color:var(--text-3);padding:10px;width:100%}
+.btn-row{display:flex;gap:9px}
+.btn-row .btn-primary{width:auto;flex:1}
+.btn-row .btn-ghost,.btn-row .btn-danger{width:104px;flex:0 0 auto;height:50px}
+
+/* 意图条 */
+.intent{
+  background:var(--intent-bg);color:var(--intent-text);border-radius:var(--r-xl);
+  padding:11px 14px;display:flex;flex-direction:column;gap:4px;
+}
+.intent-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.intent-tag{font-size:11px;font-weight:500;color:var(--gold)}
+.intent-sub{font-size:11px;color:var(--intent-sub)}
+.intent-name{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+
+/* 组卡 */
+.grp{display:flex;gap:10px}
+.gcard{
+  flex:1;text-align:left;border-radius:var(--r-lg);padding:10px 11px;
+  border:1px solid var(--border);background:var(--surface);
+  display:flex;flex-direction:column;gap:3px;
+  transition:all var(--dur-fast) var(--ease);
+}
+.gcard:hover{border-color:var(--border-strong)}
+.gcard.on{background:var(--brand-soft);border-color:var(--brand);border-width:1.5px;padding:9.5px 10.5px}
+.gcard[disabled]{opacity:.55;cursor:not-allowed}
+.gcard-top{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%}
+.gcard-k{font-size:10px;font-weight:500;color:var(--text-3)}
+.gcard.on .gcard-k{color:var(--brand-ink)}
+.gcard-v{font-size:10px;color:var(--text-4)}
+.gcard.on .gcard-v{color:var(--brand-ink)}
+.gcard-p{font-size:17px;font-weight:600;letter-spacing:-.02em;margin-top:1px}
+.gcard.on .gcard-p{color:var(--brand-ink)}
+
+/* 价格 */
+.price-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.price-l{font-size:11px;color:var(--text-3)}
+.price-v{font-size:25px;font-weight:700;color:var(--brand);letter-spacing:-.02em;line-height:1.15}
+.price-note{font-size:10.5px;color:var(--text-3)}
+.item{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px}
+.item-n{color:var(--text-2);min-width:0;overflow-wrap:anywhere}
+.item-p{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.item-p.coupon{color:var(--brand-ink)}
+.item.swapped .item-n{color:var(--warn-strong)}
+
+/* 提示条 */
+.tipbar{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:var(--r-md);background:var(--warn-bg)}
+.tipbar svg{width:14px;height:14px;flex:0 0 auto;margin-top:1px;color:var(--gold-deep)}
+.tipbar p{font-size:10.5px;color:var(--warn-text);line-height:1.55}
+.rbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.rchip{
+  height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-2);font-size:11px;font-weight:500;cursor:pointer;
+  transition:color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease);
+}
+.rchip:hover{border-color:var(--border-strong);color:var(--text)}
+.rchip.on{background:var(--brand-fill);border-color:transparent;color:var(--text-on-brand);font-weight:600}
+.rbar-n{font-size:10px;color:var(--text-4);margin-left:auto;font-variant-numeric:tabular-nums}
+.banner.brand{background:var(--brand-soft);border-color:transparent}
+.banner.brand svg{color:var(--brand-ink)}
+.tipbar.brand{background:var(--brand-soft)}
+.tipbar.brand svg{color:var(--brand-ink)}
+.tipbar.brand p{color:var(--brand-ink)}
+/* 方案要点（主卡内联，不另起卡片，省一屏高度） */
+.pts-h{font-size:11px;font-weight:600;color:var(--text-2)}
+.pts-inline{display:flex;flex-direction:column;gap:6px}
+.pi{display:flex;gap:8px;font-size:11px;line-height:1.55;color:var(--text-2)}
+.pi::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--brand);flex:0 0 auto;margin-top:6px}
+
+/* 其他买法：默认折叠，只留一行汇总 —— 主方案要点优先占首屏 */
+.alt-card{padding:0;overflow:hidden}
+.alt-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;text-align:left}
+.alt-toggle .alt-p{font-size:10.5px;color:var(--text-3);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.chev{width:14px;height:14px;color:var(--text-3);transition:transform var(--dur-fast) var(--ease)}
+.chev.up{transform:rotate(90deg)}
+.alt-body{padding:0 14px 4px;border-top:1px solid var(--border-2)}
+
+/* 其他买法 */
+.alt-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.alt-head b{font-size:12px;font-weight:600}
+.alt-head span{font-size:11px;color:var(--text-3)}
+.alt-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  padding:7px 0;text-align:left;border-bottom:1px solid var(--border-2);
+}
+.alt-item:last-child{border-bottom:0;padding-bottom:0}
+.alt-item:hover .alt-n{color:var(--brand-ink)}
+.alt-n{font-size:12px;color:var(--text-2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color var(--dur-fast)}
+.alt-p{display:flex;align-items:center;gap:7px;flex:0 0 auto;white-space:nowrap}
+.alt-p b{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.alt-p span{font-size:10px;color:var(--text-4);white-space:nowrap}
+.alt-item .chev{width:12px;height:12px;color:var(--text-4);flex:0 0 auto}
+
+/* 底栏 */
+.foot-hint{font-size:10px;color:var(--text-4);text-align:center;margin-bottom:8px;line-height:1.5}
+
+/* 提示/警示条 */
+.banner{
+  display:flex;align-items:flex-start;gap:9px;padding:12px;border-radius:var(--r-lg);
+  background:var(--warn-bg);border:1px solid var(--warn-border);
+}
+.banner svg{width:15px;height:15px;flex:0 0 auto;margin-top:1px;color:var(--warn)}
+.banner p{font-size:11px;color:var(--warn-text);line-height:1.6}
+.notice{
+  display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:var(--r-md);
+  background:var(--surface-2);border:1px solid var(--border);
+}
+.notice p{font-size:10.5px;color:var(--text-3);flex:1}
+.notice button{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--text-4)}
+.notice svg{width:12px;height:12px}
+
+/* 订单卡 */
+.ord-card{border:1px solid var(--border);border-radius:var(--r-xl);background:var(--surface);padding:13px 14px;display:flex;flex-direction:column;gap:8px}
+.ord-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ord-head b{font-size:13px;font-weight:600}
+.ord-line{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--text-3)}
+.ord-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:1px}
+.ord-total{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.ord-total.small{font-size:13px;font-weight:600}
+.code-inline{font-size:11px;color:var(--success);font-weight:600}
+
+/* 支付页 */
+.amount-card{display:flex;flex-direction:column;gap:10px}
+.amount-big{font-size:32px;font-weight:700;color:var(--brand);letter-spacing:-.03em;line-height:1.1}
+.amount-side{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:10.5px}
+.amount-side .save{color:var(--brand-ink);font-weight:600}
+.amount-side .strike{font-size:10.5px}
+
+.store-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--border)}
+.store-row svg{width:16px;height:16px;color:var(--neutral-ink);flex:0 0 auto}
+.store-row .t{font-size:12px;font-weight:500}
+.store-row .s{font-size:10.5px;color:var(--text-3)}
+.store-row .chev{width:14px;height:14px;color:var(--text-4);margin-left:auto}
+
+.payway{padding:13px 14px;border-radius:var(--r-xl);background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
+.payway h3{font-size:11px;font-weight:500;color:var(--text-3)}
+.pway{display:flex;align-items:center;gap:9px;width:100%;min-height:32px;text-align:left}
+.pradio{width:16px;height:16px;border-radius:50%;border:1.4px solid var(--border-strong);flex:0 0 auto;position:relative;transition:all var(--dur-fast)}
+.pway.on .pradio{border-color:var(--brand);border-width:5px}
+.pway .nm{font-size:13px;color:var(--text-2);flex:1}
+.pway.on .nm{color:var(--text);font-weight:500}
+.pway .tag{font-size:10px;color:var(--text-4)}
+.payway .note{font-size:10px;color:var(--text-4);line-height:1.5}
+
+.qr-card{display:flex;gap:13px;padding:13px 14px;border-radius:var(--r-xl);background:var(--surface);border:1px solid var(--border)}
+.qr-box{width:96px;height:96px;flex:0 0 auto;border-radius:8px;border:1px solid var(--border-2);padding:6px;background:#fff}
+[data-theme="dark"] .qr-box{background:#F3EFE6;border-color:transparent}
+.qr-box svg{width:100%;height:100%;color:#111}
+.qr-txt{display:flex;flex-direction:column;gap:5px;justify-content:center}
+.qr-txt b{font-size:12px;font-weight:600}
+.qr-txt p{font-size:10.5px;color:var(--text-3);line-height:1.5}
+.qr-warn{font-size:9.5px;color:var(--warn-strong);line-height:1.4}
+
+/* 失效 / 成功 */
+.big-card{border-radius:var(--r-4xl);background:var(--surface);border:1px solid var(--border);padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.fail-icon{width:54px;height:54px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center}
+.fail-icon svg{width:54px;height:54px;color:var(--text-4)}
+.ok-chip{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 8px;border-radius:13px;background:var(--success-bg);color:var(--success);font-size:11.5px;font-weight:600}
+.ok-chip svg{width:13px;height:13px;color:currentColor}
+.pickup{font-size:54px;font-weight:700;letter-spacing:.04em;line-height:1.05;font-variant-numeric:tabular-nums}
+.barcode{width:230px;height:38px;color:var(--text)}
+.kv{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+.kv dt{color:var(--text-3)}
+.kv dd{color:var(--text-2);font-weight:500;text-align:right}
+.kv dd.brand{color:var(--brand-ink)}
+
+/* 卡片面统一：表面色 + 描边 + 阴影走同一套 token。
+   此前只有 .card 带阴影，ord-card / payway / qr-card / big-card / store-row
+   是"裸描边"，深色下这些块读不出边界，和 .card 也不像同一个系统。 */
+.card,.big-card,.ord-card,.payway,.qr-card,.store-row,.notice,.gcard{box-shadow:var(--shadow-card)}
+
+/* toast */
+.toast-wrap{position:absolute;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:40;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{
+  display:flex;align-items:center;gap:8px;padding:10px 13px;border-radius:13px;
+  background:var(--intent-bg);color:var(--intent-text);font-size:11.5px;line-height:1.45;
+  box-shadow:0 12px 30px -12px rgba(0,0,0,.6);opacity:0;transform:translateY(8px);
+  animation:toastIn 220ms var(--ease) forwards;
+}
+.toast.ok svg{color:var(--toast-ok)}
+.toast.warn svg{color:var(--gold)}
+.toast svg{width:14px;height:14px;flex:0 0 auto;color:currentColor}
+.toast.out{animation:toastOut 200ms var(--ease) forwards}
+@keyframes toastIn{to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(6px)}}
+
+/* sheet */
+.sheet-wrap{position:absolute;inset:0;z-index:50}
+.scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;animation:fadeIn 180ms var(--ease) forwards}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;background:var(--surface);
+  border-radius:22px 22px 0 0;padding:8px 18px 22px;
+  box-shadow:var(--shadow-sheet);transform:translateY(100%);
+  animation:sheetIn 260ms var(--ease) forwards;
+  display:flex;flex-direction:column;gap:10px;
+}
+.sheet-grip{width:36px;height:4px;border-radius:2px;background:var(--border-strong);margin:0 auto 6px}
+.sheet h3{font-size:16px;font-weight:600;text-align:center}
+.sheet-sub{font-size:11.5px;color:var(--text-3);text-align:center;line-height:1.55}
+.sheet-amount{font-size:30px;font-weight:700;color:var(--brand);text-align:center;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.sheet-actions{display:flex;gap:9px;margin-top:4px}
+.sheet-actions .btn-ghost,.sheet-actions .btn-danger{flex:1}
+@keyframes fadeIn{to{opacity:1}}
+@keyframes sheetIn{to{transform:none}}
+.sheet .btn-primary{margin-top:2px}
+.paylist{display:flex;flex-direction:column;gap:2px;margin:2px 0 0}
+.pitem{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 4px;border-bottom:1px solid var(--border-2);text-align:left}
+.pitem:last-child{border-bottom:0}
+.pitem .pradio{border-color:var(--border-strong)}
+.pitem.on .pradio{border-color:var(--brand);border-width:5px}
+.pitem .nm{font-size:14px;flex:1}
+.pitem .tag{font-size:10px;color:var(--text-4)}
+.sheet-note{font-size:10px;color:var(--text-4);line-height:1.5;text-align:center;margin-top:4px}
+.paying{display:flex;flex-direction:column;align-items:center;gap:12px;padding:26px 0 30px}
+.paying .spin{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--border-strong);border-top-color:var(--brand);animation:spin .8s linear infinite}
+.paying p{font-size:12px;color:var(--text-3)}
+
+/* ============ 侧栏 ============ */
+.panel{width:322px;flex:0 0 auto;display:flex;flex-direction:column;gap:14px;position:sticky;top:86px}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-2xl);padding:14px;box-shadow:var(--shadow-card)}
+.pcard h2{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.pcard h2 em{font-style:normal;font-size:9.5px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--text-4)}
+.seg2{display:flex;gap:6px}
+.seg2 button{
+  flex:1;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);
+  font-size:11.5px;color:var(--text-3);transition:all var(--dur-fast);
+}
+.seg2 button.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
+.jumps{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.jumps button{
+  height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);
+  font-size:11px;color:var(--text-2);text-align:left;padding:0 9px;
+  display:flex;align-items:center;gap:6px;transition:all var(--dur-fast);
+}
+.jumps button:hover{border-color:var(--border-strong);background:var(--surface)}
+.jumps button.on{border-color:var(--brand);color:var(--brand-ink);background:var(--brand-soft);font-weight:600}
+.jumps b{font-size:9.5px;font-weight:700;color:var(--text-4);font-variant-numeric:tabular-nums}
+.jumps button.on b{color:var(--brand-ink)}
+.state-dl{display:grid;grid-template-columns:78px 1fr;gap:5px 8px;font-size:11px}
+.state-dl dt{color:var(--text-4)}
+.state-dl dd{color:var(--text-2);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logbox{max-height:236px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
+.logbox li{display:flex;gap:7px;font-size:10.5px;line-height:1.45;color:var(--text-2)}
+.logbox time{color:var(--text-4);font-variant-numeric:tabular-nums;flex:0 0 auto;font-size:10px}
+.logbox .dot{width:5px;height:5px;border-radius:50%;background:var(--text-4);flex:0 0 auto;margin-top:5px}
+.logbox li.brand .dot{background:var(--brand)}
+.logbox li.ok .dot{background:var(--success)}
+.logbox li.warn .dot{background:var(--warn)}
+.logbox .empty{color:var(--text-4);font-size:10.5px}
+.pfoot{font-size:10px;color:var(--text-4);line-height:1.6;padding:0 2px}
+
+@media (max-width:1000px){
+  .stage{flex-direction:column;align-items:center;gap:24px;padding:20px 14px 50px}
+  .panel{position:static;width:390px;max-width:100%}
+  .top{padding:14px 16px}
+  .top p{display:none}
+}
+/* 窄屏评审：手机中框跟随视口收窄，内容按 320 最小宽度重排 */
+@media (max-width:520px){
+  .device{width:min(390px,calc(100vw - 24px))}
+  .device-col,.device-cap{max-width:100%}
+  .top{gap:10px}
+  .top-l{flex:1;min-width:0}
+  .top-l>div{min-width:0}
+  .top h1{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-r{gap:6px}
+  .seg-theme button{padding:0 9px}
+  .tbtn{padding:0 10px;font-size:11.5px}
+  .back{padding:0 8px}
+  .back-t{display:none}
+}
+</style>
+
+<style>
+/* ---- 站点增量：只做减法与一条声明，不改原型任何既有样式 ---- */
+.device-cap{display:none}                     /* 评审用的 S1/S4 状态标签，访客不需要 */
+
+/* 右栏摘掉后补一列玩法说明：既是版面平衡，也是首次访问的操作指引 */
+.site-guide{
+  flex:0 0 248px;width:248px;position:sticky;top:88px;
+  padding:18px 20px;border-radius:14px;
+  background:var(--surface);border:1px solid var(--border);
+}
+.site-guide h2{margin:0;font-size:13px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.site-guide ol{margin:10px 0 0;padding-left:17px;font-size:12px;line-height:1.66;color:var(--text-2)}
+.site-guide li{margin-top:7px}
+.site-guide li b{color:var(--text);font-weight:600}
+.site-guide .note{
+  margin:14px 0 0;padding-top:12px;border-top:1px solid var(--border-2);
+  font-size:11px;line-height:1.6;color:var(--text-3);
+}
+@media (max-width:1000px){ .site-guide{display:none} }
+.demo-strip{max-width:1180px;margin:0 auto;padding:0 28px 6px}
+.demo-strip p{
+  margin:0;padding:11px 16px;border-radius:12px;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  color:var(--text-3);font-size:12px;line-height:1.6;text-align:center;
+}
+.demo-strip b{color:var(--text);font-weight:600}
+.demo-branch{max-width:1180px;margin:14px auto 46px;padding:0 28px;font-size:12px;color:var(--text-3)}
+.demo-branch summary{
+  cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;
+  padding:5px 0;color:var(--text-3);font-size:12px;
+}
+.demo-branch summary::-webkit-details-marker{display:none}
+.demo-branch summary::before{content:"▸";color:var(--text-4)}
+.demo-branch[open] summary::before{content:"▾"}
+.demo-branch summary:hover{color:var(--text)}
+.demo-branch .seg2{margin-top:10px}
+.demo-branch p{margin:9px 0 0;color:var(--text-4);line-height:1.62;max-width:62ch}
+@media (max-width:1000px){
+  .demo-strip{padding:0 14px 4px}
+  .demo-branch{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-l">
+    <a class="back" href="ledger.html" aria-label="返回账本诊断页"><span aria-hidden="true">←</span><span class="back-t">账本</span></a>
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V9.4c0-3.2 2.4-5.4 4.6-5.4 1.6 0 2.8.8 3.4 2 .6-1.2 1.8-2 3.4-2 2.2 0 4.6 2.2 4.6 5.4V19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <h1>方案卡 · 待支付确认页</h1>
+      <p>点卡片走完整流程 · 演示数据 · 不会真实下单</p>
+    </div>
+  </div>
+
+</header>
+
+<main class="stage">
+
+  <aside class="site-guide" aria-label="怎么玩">
+    <h2>怎么玩</h2>
+    <ol>
+      <li><b>挑买法</b>：合单 / 拆单两张卡都能点，金额与"再省"即时重算。</li>
+      <li><b>生成订单</b>：点底部主按钮，订单 15 分钟内有效，随时可撤销。</li>
+      <li><b>支付拿码</b>：模拟收银台确认支付，成功后给出取餐码。</li>
+    </ol>
+    <p class="note">演示数据 · 不会真实下单，也不收集支付信息。</p>
+  </aside>
+
+  <div class="device-col">
+    <div class="device" id="device">
+      <div class="statusbar">
+        <span id="clock">14:11</span>
+        <span class="sb-r" aria-hidden="true">
+          <svg viewBox="0 0 17 12" fill="currentColor"><rect y="8" width="3" height="4" rx="1"/><rect x="4.7" y="5.5" width="3" height="6.5" rx="1"/><rect x="9.4" y="3" width="3" height="9" rx="1"/><rect x="14" width="3" height="12" rx="1"/></svg>
+          <svg viewBox="0 0 16 12" fill="none"><path d="M1.6 3.4a9 9 0 0112.8 0M4.2 6.2a5.4 5.4 0 017.6 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="9.8" r="1.3" fill="currentColor"/></svg>
+          <svg viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3.2" stroke="currentColor" stroke-opacity=".35"/><rect x="2" y="2" width="14" height="8" rx="2" fill="currentColor"/><path d="M23 4.2v3.6a2 2 0 000-3.6z" fill="currentColor" fill-opacity=".35"/></svg>
+        </span>
+      </div>
+
+      <div class="screens" id="screens">
+        <section class="scr on" data-scr="plan" aria-label="方案卡"></section>
+        <section class="scr" data-scr="card" aria-label="买卡方案"></section>
+        <section class="scr" data-scr="pay" aria-label="待支付确认页"></section>
+        <section class="scr" data-scr="expired" aria-label="订单已失效"></section>
+        <section class="scr" data-scr="fail" aria-label="支付未完成"></section>
+        <section class="scr" data-scr="success" aria-label="支付成功"></section>
+      </div>
+
+      <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+      <div class="sheet-wrap" id="sheetWrap" hidden>
+        <div class="scrim" data-act="close-sheet"></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+      </div>
+    </div>
+    <p class="device-cap" id="cap">S1 · 方案卡 · 合单主态</p>
+  </div>
+
+</main>
+
+<section class="demo-strip">
+  <p><b>演示数据</b> · 订单为固定种子生成的合成数据，价格取真实菜单；页面不联网、不会真实下单，也不收集任何支付信息。</p>
+</section>
+
+<details class="demo-branch">
+  <summary>看一个分支：支付中途退出</summary>
+  <div class="seg2" role="group" aria-label="场景">
+    <button data-act="scenario" data-val="abort">模拟支付中途退出</button>
+  </div>
+  <p>打开后，支付回调不返回，页面停在「支付未完成」——此时订单仍是待支付的，可以继续付，也可以撤销。默认关闭，走主线。</p>
+</details>
+
+<script type="application/json" id="plan-data">{"spec":"30d","ledger":{"v":1,"now":1792487727630,"nowIso":"2026-10-20T09:15:27.630Z","defaultRange":"30d","rows":[{"ms":1784244660000,"m":451,"id":"10302594648467834568","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1784261340000,"m":729,"id":"10302837782536591887","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1784331840000,"m":464,"id":"10302416538606869125","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1784347560000,"m":726,"id":"10302246543956888997","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":18.37,"list":24.5,"ala":24.5,"cpn":6.13,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":["限时活动券"]},{"ms":1784503440000,"m":444,"id":"10302353183340945696","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.07,"list":13.5,"ala":21.5,"cpn":2.03,"act":5.4,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900003431","大脆鸡扒麦满分组合",1,8.1]],"coupons":["限时活动券"]},{"ms":1784677080000,"m":458,"id":"10302648118108848619","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":14.9,"list":29,"ala":28,"cpn":0,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":[]},{"ms":1784706000000,"m":940,"id":"10302549366082444822","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":13.9,"list":21,"ala":13.9,"cpn":0,"act":7.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1784781300000,"m":755,"id":"10302026897548639627","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1784848980000,"m":443,"id":"10302375910082865834","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":8.32,"list":18.5,"ala":21,"cpn":2.78,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":["限时活动券"]},{"ms":1785020940000,"m":429,"id":"10302162610536409577","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.85,"list":13,"ala":21,"cpn":1.95,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":["限时活动券"]},{"ms":1785039300000,"m":735,"id":"10302332238523925995","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1785050400000,"m":920,"id":"10302770346318588864","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":20,"list":20,"ala":20,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["520689","鲜萃咖啡",2,10]],"coupons":[]},{"ms":1785108000000,"m":440,"id":"10302709549228154718","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":12,"list":12,"ala":20,"cpn":0,"act":0,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1785195480000,"m":458,"id":"10302294887249996984","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":12,"list":12,"ala":20,"cpn":0,"act":0,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1785452700000,"m":425,"id":"10302115564121437671","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":58,"list":58,"ala":56,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",2,14.9]],"coupons":[]},{"ms":1785625860000,"m":431,"id":"10302196120840860515","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":31.8,"list":53,"ala":56,"cpn":0,"act":21.2,"cmb":3,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",2,15.9]],"coupons":[]},{"ms":1785644040000,"m":734,"id":"10302573515089436316","ch":"delivery","st":"麦当劳东莞茶山万润得来速餐厅","paid":58,"list":49,"ala":49,"cpn":0,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",2,24.5]],"coupons":[]},{"ms":1785713100000,"m":445,"id":"10302915593579683542","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.5,"list":17.5,"ala":24.5,"cpn":0,"act":7,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1785799380000,"m":443,"id":"10302230004435775604","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":8.32,"list":18.5,"ala":21,"cpn":2.78,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":["限时活动券"]},{"ms":1785817740000,"m":749,"id":"10302912924067601418","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1785886500000,"m":455,"id":"10302166728460784342","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":8.1,"list":13.5,"ala":21.5,"cpn":0,"act":5.4,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900003431","大脆鸡扒麦满分组合",1,8.1]],"coupons":[]},{"ms":1785971880000,"m":438,"id":"10302732852282113647","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":17.5,"list":17.5,"ala":24.5,"cpn":0,"act":0,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1786076340000,"m":739,"id":"10302289469719388389","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1786164240000,"m":764,"id":"10302627624105664145","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1786336260000,"m":751,"id":"10302306266919836199","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":15,"list":15,"ala":15,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":[]},{"ms":1786490880000,"m":448,"id":"10302517495855811607","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1786509300000,"m":755,"id":"10302553974509779441","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1786575780000,"m":423,"id":"10302329311664899694","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.8,"list":13,"ala":21,"cpn":0,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":[]},{"ms":1786663920000,"m":452,"id":"10302262355809270477","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.87,"list":17.5,"ala":20,"cpn":2.63,"act":7,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",1,10.5]],"coupons":["限时活动券"]},{"ms":1786692360000,"m":926,"id":"10302838910272570240","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.42,"list":21,"ala":13.9,"cpn":3.48,"act":7.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":["限时活动券"]},{"ms":1786780080000,"m":948,"id":"10302337837004839456","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":10,"list":10,"ala":10,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["520689","鲜萃咖啡",1,10]],"coupons":[]},{"ms":1786921320000,"m":422,"id":"10302392335240703237","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.8,"list":13,"ala":21,"cpn":0,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":[]},{"ms":1787010300000,"m":465,"id":"10302144677657934096","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.2,"list":12,"ala":20,"cpn":0,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1787025900000,"m":725,"id":"10302185049277237156","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":18.37,"list":24.5,"ala":24.5,"cpn":6.13,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":["限时活动券"]},{"ms":1787114460000,"m":761,"id":"10302267931711889731","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1787182500000,"m":455,"id":"10302829254202359247","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":21,"list":35,"ala":40,"cpn":0,"act":14,"cmb":5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",2,10.5]],"coupons":[]},{"ms":1787199900000,"m":745,"id":"10302305644368135750","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1787284860000,"m":721,"id":"10302265292146931552","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1787371200000,"m":720,"id":"10302596980767406201","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":15,"list":15,"ala":15,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":[]},{"ms":1787439660000,"m":421,"id":"10302309109859881234","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.8,"list":18,"ala":25,"cpn":0,"act":7.2,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003493","原味板烧鸡腿麦满分组合",1,10.8]],"coupons":[]},{"ms":1787546580000,"m":763,"id":"10302150954641234689","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1787556120000,"m":922,"id":"10302214274337643530","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.9,"list":19,"ala":11.9,"cpn":0,"act":7.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["507368","麦咖啡™热美式中杯",1,11.9]],"coupons":[]},{"ms":1787631420000,"m":737,"id":"10302376377444165587","ch":"delivery","st":"麦当劳东莞松山湖总部二路餐厅","paid":16.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1787700180000,"m":443,"id":"10302788935639450001","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":17.5,"list":17.5,"ala":20,"cpn":0,"act":0,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",1,10.5]],"coupons":[]},{"ms":1787717940000,"m":739,"id":"10302776077169364881","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1787787360000,"m":456,"id":"10302648680193081581","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":26.5,"list":26.5,"ala":28,"cpn":0,"act":0,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1787874540000,"m":469,"id":"10302176202155373302","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1788075120000,"m":932,"id":"10302839724202478694","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":7.5,"list":10,"ala":10,"cpn":2.5,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["520689","鲜萃咖啡",1,10]],"coupons":["限时活动券"]},{"ms":1788218460000,"m":441,"id":"10302856256908274555","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.4,"list":12,"ala":20,"cpn":1.8,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":["限时活动券"]},{"ms":1788392580000,"m":463,"id":"10302447426678314268","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.8,"list":18,"ala":25,"cpn":0,"act":7.2,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003493","原味板烧鸡腿麦满分组合",1,10.8]],"coupons":[]},{"ms":1788583140000,"m":759,"id":"10302132298434759297","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1788678000000,"m":900,"id":"10302565859275164854","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":21,"list":21,"ala":13.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1788738180000,"m":463,"id":"10302874405081252324","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":10.5,"list":17.5,"ala":24.5,"cpn":0,"act":7,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1788822660000,"m":431,"id":"10302450901957133579","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":10.5,"list":17.5,"ala":20,"cpn":0,"act":7,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",1,10.5]],"coupons":[]},{"ms":1789014720000,"m":752,"id":"10302307520562457174","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1789170060000,"m":461,"id":"10302849638394268035","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":18.37,"list":35,"ala":40,"cpn":2.63,"act":14,"cmb":5,"del":0,"cov":1,"status":"completed","items":[["9900003453","吉士蛋麦满分套餐",2,10.5]],"coupons":["限时活动券"]},{"ms":1789274820000,"m":767,"id":"10302045999564852347","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.25,"list":15,"ala":15,"cpn":3.75,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":["限时活动券"]},{"ms":1789284840000,"m":934,"id":"10302894429492210066","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":19,"list":19,"ala":11.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["507368","麦咖啡™热美式中杯",1,11.9]],"coupons":[]},{"ms":1789340760000,"m":426,"id":"10302824388813982939","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.6,"list":11,"ala":18,"cpn":0,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1789513440000,"m":424,"id":"10302338072094611370","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1789601040000,"m":444,"id":"10302588666412212359","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":4.95,"list":11,"ala":18,"cpn":1.65,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":["限时活动券"]},{"ms":1789686420000,"m":427,"id":"10302726925778592741","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1789793220000,"m":767,"id":"10302379069059907758","ch":"delivery","st":"麦当劳东莞茶山万润得来速餐厅","paid":18.75,"list":13,"ala":13,"cpn":3.25,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":["限时活动券"]},{"ms":1789861140000,"m":459,"id":"10302107464474843648","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":22.2,"list":37,"ala":42,"cpn":0,"act":14.8,"cmb":5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",2,11.1]],"coupons":[]},{"ms":1789947420000,"m":457,"id":"10302841365938003838","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.6,"list":11,"ala":18,"cpn":0,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1790033820000,"m":457,"id":"10302767214891725623","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1790119740000,"m":449,"id":"10302116596206336420","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.17,"list":29,"ala":28,"cpn":3.73,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":["限时活动券"]},{"ms":1790223120000,"m":732,"id":"10302880367606385421","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":16.62,"list":19,"ala":19,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",2,9.5]],"coupons":["限时活动券"]},{"ms":1790291640000,"m":434,"id":"10302786099448704195","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":6.6,"list":11,"ala":18,"cpn":0,"act":4.4,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1790309520000,"m":732,"id":"10302679435917200744","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":26,"list":26,"ala":26,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",2,13]],"coupons":[]},{"ms":1790484540000,"m":769,"id":"10302454413423760211","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":24.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1790552580000,"m":463,"id":"10302755470271880125","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1790638680000,"m":458,"id":"10302256443058921223","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":5.85,"list":13,"ala":21,"cpn":1.95,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":["限时活动券"]},{"ms":1790742840000,"m":754,"id":"10302354033900905394","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1790753760000,"m":936,"id":"10302243745158145713","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":21,"list":21,"ala":13.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1790812020000,"m":467,"id":"10302134467833033384","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.2,"list":12,"ala":20,"cpn":0,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":[]},{"ms":1790898240000,"m":464,"id":"10302245605666777050","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1790984460000,"m":461,"id":"10302519329432910656","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":11.17,"list":29,"ala":28,"cpn":3.73,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":["限时活动券"]},{"ms":1791156840000,"m":454,"id":"10302666997485680496","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.4,"list":12,"ala":20,"cpn":1.8,"act":4.8,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900008094","吉士蛋麦满分组合",1,7.2]],"coupons":["限时活动券"]},{"ms":1791175560000,"m":766,"id":"10302846934902945804","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1791242880000,"m":448,"id":"10302431504759730255","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":13.6,"del":0,"cov":1,"status":"completed","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1791415800000,"m":450,"id":"1030246380000765751204635280","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.9,"list":9.9,"ala":23.5,"cpn":0,"act":0,"cmb":null,"del":0,"cov":0,"status":"cancelled","items":[["9900011872","芝芝火腿扒堡组合",1,9.9]],"coupons":[]},{"ms":1791416340000,"m":459,"id":"10302173815407895568","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1791433740000,"m":749,"id":"10302761913259387028","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":7.12,"list":9.5,"ala":9.5,"cpn":2.38,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":["限时活动券"]},{"ms":1791502020000,"m":447,"id":"10302530160329444634","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":17.5,"list":17.5,"ala":24.5,"cpn":0,"act":0,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003423","猪柳麦满分组合",1,10.5]],"coupons":[]},{"ms":1791519240000,"m":734,"id":"10302361313067053937","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":13,"list":13,"ala":13,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":[]},{"ms":1791587400000,"m":430,"id":"10302863438568465304","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11.17,"list":29,"ala":28,"cpn":3.73,"act":14.1,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900013221","一早现磨 超值二件套",1,14.9]],"coupons":["限时活动券"]},{"ms":1791673560000,"m":426,"id":"10302312074984129619","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":8.1,"list":13.5,"ala":21.5,"cpn":0,"act":5.4,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900003431","大脆鸡扒麦满分组合",1,8.1]],"coupons":[]},{"ms":1791692280000,"m":738,"id":"10302198463114823070","ch":"delivery","st":"麦当劳东莞茶山万润得来速餐厅","paid":33.5,"list":24.5,"ala":24.5,"cpn":0,"act":0,"cmb":0,"del":9,"cov":1,"status":"completed","items":[["521884","麦辣鸡腿汉堡",1,24.5]],"coupons":[]},{"ms":1791762000000,"m":460,"id":"10302032381401496591","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11.1,"list":18.5,"ala":21,"cpn":0,"act":7.4,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1791846720000,"m":432,"id":"10302358715378488826","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":10.8,"list":18,"ala":25,"cpn":0,"act":7.2,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900003493","原味板烧鸡腿麦满分组合",1,10.8]],"coupons":[]},{"ms":1791934020000,"m":447,"id":"10302437004740344405","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":11,"list":11,"ala":18,"cpn":0,"act":0,"cmb":7,"del":0,"cov":1,"status":"completed","items":[["9900012729","脆香油条组合",1,6.6]],"coupons":[]},{"ms":1792021560000,"m":466,"id":"10302435963575396263","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":18.5,"list":18.5,"ala":21,"cpn":0,"act":0,"cmb":2.5,"del":0,"cov":1,"status":"completed","items":[["9900003449","火腿扒麦满分套餐",1,11.1]],"coupons":[]},{"ms":1792124760000,"m":746,"id":"10302658874707456874","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.5,"list":9.5,"ala":9.5,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["3010","雪碧",1,9.5]],"coupons":[]},{"ms":1792136460000,"m":941,"id":"10302276716421261584","ch":"drivethru","st":"麦当劳东莞松山湖总部二路餐厅","paid":21,"list":21,"ala":13.9,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["515946","浓浓黑巧（冰/热）",1,13.9]],"coupons":[]},{"ms":1792194180000,"m":463,"id":"10302849205596873044","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15.9,"list":26.5,"ala":28,"cpn":0,"act":10.6,"cmb":1.5,"del":0,"cov":1,"status":"completed","items":[["9900003458","猪柳蛋麦满分套餐",1,15.9]],"coupons":[]},{"ms":1792210500000,"m":735,"id":"10302501900235932493","ch":"pickup","st":"麦当劳东莞松山湖总部二路餐厅","paid":15,"list":15,"ala":15,"cpn":0,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["9900008754","经典麦旋风",1,15]],"coupons":[]},{"ms":1792453380000,"m":463,"id":"10302813559110375869","ch":"drivethru","st":"麦当劳东莞茶山万润得来速餐厅","paid":5.85,"list":13,"ala":21,"cpn":1.95,"act":5.2,"cmb":8,"del":0,"cov":1,"status":"completed","items":[["9900011709","火腿扒麦满分组合",1,7.8]],"coupons":["限时活动券"]},{"ms":1792470960000,"m":756,"id":"10302623178557267320","ch":"pickup","st":"麦当劳东莞茶山万润得来速餐厅","paid":9.75,"list":13,"ala":13,"cpn":3.25,"act":0,"cmb":0,"del":0,"cov":1,"status":"completed","items":[["4437","玉米杯",1,13]],"coupons":["限时活动券"]}],"coupons":[{"id":"coupon-demo-1","name":"芝香脆鸡扒堡早餐两件套","price":9.9,"validFrom":"2026-10-20T05:00","validTo":"2026-10-21T10:29","weekdays":[],"startTime":"05:00","endTime":"10:29","channels":["到店专用"],"tags":["即将到期"],"worth":6.6},{"id":"coupon-demo-2","name":"11.9元麦辣鸡腿堡","price":11.9,"validFrom":"2026-10-20T10:30","validTo":"2026-10-23T23:59","weekdays":[],"startTime":"10:30","endTime":"23:59","channels":["到店专用","外送专用"],"tags":[],"worth":12.6},{"id":"coupon-demo-3","name":"19.9元王牌炸鸡任选2","price":19.9,"validFrom":"2026-10-20T10:30","validTo":"2026-10-23T23:59","weekdays":[1,2,3,4,5],"startTime":"10:30","endTime":"23:59","channels":["到店专用"],"tags":[],"worth":null},{"id":"coupon-demo-4","name":"高达芝士蛋堡早餐两件套","price":9.9,"validFrom":"2026-10-21T05:00","validTo":"2026-10-21T10:29","weekdays":[3],"startTime":"05:00","endTime":"10:29","channels":["到店专用"],"tags":[],"worth":5.1},{"id":"coupon-demo-5","name":"9.9元猪柳蛋麦满分","price":9.9,"validFrom":"2026-09-20T05:00","validTo":"2026-10-21T10:29","weekdays":[1,2,3,4,5],"startTime":"05:00","endTime":"10:29","channels":["到店专用"],"tags":[],"worth":6}],"campaigns":[{"title":"程序员节系列活动：趣味互动赢专属好券","date":"2026-10-23","summary":"10月23日-10月25日 参与趣味互动赢专属好券，还有机会解锁数字徽章","kind":"upcoming"},{"title":"限定主题丝巾 10:45 开售","date":"2026-10-22","summary":"任意餐品消费加 39.9 元可得，10月22日10:45开售","kind":"upcoming"},{"title":"超值 9.9 元早餐两件套","date":"2026-10-20","summary":"周一至周五早餐堡轮流上早班，凭券两件套 9.9 元","kind":"today"}],"menu":{"3010":{"p":9.5,"o":9.5,"d":null},"4437":{"p":13,"o":13,"d":null},"507368":{"p":11.9,"o":19,"d":"促销优惠"},"515946":{"p":13.9,"o":21,"d":"促销优惠"},"520689":{"p":10,"o":10,"d":null},"521884":{"p":24.5,"o":24.5,"d":null},"9900003449":{"p":11.1,"o":18.5,"d":"随单购早餐卡优惠"},"9900011872":{"p":9.9,"o":9.9,"d":null},"9900003431":{"p":8.1,"o":13.5,"d":"随单购早餐卡优惠"},"9900013221":{"p":14.9,"o":29,"d":null},"9900011709":{"p":7.8,"o":13,"d":"随单购早餐卡优惠"},"9900008094":{"p":7.2,"o":12,"d":"随单购早餐卡优惠"},"9900003458":{"p":15.9,"o":26.5,"d":"随单购早餐卡优惠"},"9900003423":{"p":10.5,"o":17.5,"d":"随单购早餐卡优惠"},"9900008754":{"p":15,"o":15,"d":null},"9900003453":{"p":10.5,"o":17.5,"d":"随单购早餐卡优惠"},"9900003493":{"p":10.8,"o":18,"d":"随单购早餐卡优惠"},"9900012729":{"p":6.6,"o":11,"d":"随单购早餐卡优惠"}},"meta":{"demo":true,"traceId":"trace-2026-10-20T09-15-27-613Z","dataFrom":"2026-07-17","dataTo":"2026-10-20"}},"plan":{"ok":true,"reason":null,"spec":"30d","rangeKey":"30d","label":"近 30 天","from":"2026-09-21","to":"2026-10-20","days":30,"orders":34,"basket":[{"code":"4437","name":"玉米杯","count":4,"unit":13,"list":13},{"code":"3010","name":"雪碧","count":4,"unit":9.5,"list":9.5},{"code":"9900003458","name":"猪柳蛋麦满分套餐","count":4,"unit":15.9,"list":26.5}],"seen":[{"code":"4437","name":"玉米杯","unit":13},{"code":"3010","name":"雪碧","unit":9.5},{"code":"9900003458","name":"猪柳蛋麦满分套餐","unit":15.9},{"code":"9900013221","name":"一早现磨 超值二件套","unit":14.9},{"code":"9900003449","name":"火腿扒麦满分套餐","unit":11.1},{"code":"9900012729","name":"脆香油条组合","unit":6.6},{"code":"521884","name":"麦辣鸡腿汉堡","unit":24.5},{"code":"515946","name":"浓浓黑巧（冰/热）","unit":13.9},{"code":"9900011709","name":"火腿扒麦满分组合","unit":7.8},{"code":"9900008094","name":"吉士蛋麦满分组合","unit":7.2},{"code":"9900008754","name":"经典麦旋风","unit":15},{"code":"9900003493","name":"原味板烧鸡腿麦满分组合","unit":10.8},{"code":"9900003423","name":"猪柳麦满分组合","unit":10.5},{"code":"9900011872","name":"芝芝火腿扒堡组合","unit":9.9},{"code":"9900003431","name":"大脆鸡扒麦满分组合","unit":8.1}],"store":{"name":"麦当劳东莞松山湖总部二路餐厅","orders":18},"methods":[{"id":"coupon","name":"常点组合 · 用券","meta":"外带 · 门店自取 · 约 10 分钟","items":[{"n":"玉米杯 ×1","p":13},{"n":"雪碧 ×1","p":9.5},{"n":"猪柳蛋麦满分套餐 ×1","p":15.9}],"coupon":{"name":"券 · 9.9元猪柳蛋麦满分","off":6},"original":49,"total":32.4,"saved":16.6,"badge":"最省","tip":"券与商品绑定，替换这件商品后优惠失效","points":["券「9.9元猪柳蛋麦满分」绑定在猪柳蛋麦满分套餐上，券价 ¥9.9、现价 ¥15.9","一单只能用一张券；剩下的券要靠拆单才能用上"]},{"id":"plain","name":"常点组合 · 单点","meta":"外带 · 门店自取 · 约 10 分钟","items":[{"n":"玉米杯 ×1","p":13},{"n":"雪碧 ×1","p":9.5},{"n":"猪柳蛋麦满分套餐 ×1","p":15.9}],"coupon":null,"original":49,"total":38.4,"saved":10.6,"badge":null,"tip":"菜单现价已含促销，这部分不需要你做任何操作","points":[]}],"best":"coupon","split":{"orders":[{"label":"单 1 · 猪柳蛋麦满分套餐","items":[{"n":"猪柳蛋麦满分套餐 ×1","p":15.9}],"coupon":{"name":"券 · 9.9元猪柳蛋麦满分","off":6},"total":9.9},{"label":"单 2 · 玉米杯 + 雪碧","items":[{"n":"玉米杯 ×1","p":13},{"n":"雪碧 ×1","p":9.5}],"coupon":null,"total":22.5}],"total":32.4,"delta":0,"worthy":false,"secondCoupon":false,"note":"第二张券用不上这些商品，拆开不省，还多一个取餐码"},"card":{"item":{"n":"猪柳蛋麦满分套餐 ×1","p":15.9},"cardFee":{"n":"麦金卡月卡（30 天）×1","p":19},"withCard":34.9,"noCard":26.5,"single":-8.4,"perSave":10.6,"breakEven":2,"perMonth":4,"netMonth":23.4,"verdict":"值","text":"单笔：买卡 ¥34.9 vs 不买卡 ¥26.5（这一单贵 ¥8.40）；按月：回本线 2 次，你月化 4 次，净省 ¥23.40"},"degrade":null,"provenance":["常点商品：区间内 34 笔已完成订单里出现次数最多的 3 个 SKU","价格：账本事实表里的菜单现价 / 划线价，原型不联网，真实下单前须重算","券：「9.9元猪柳蛋麦满分」最多省 ¥6.00","买卡：卡价 ¥19（实测），回本线按「单笔省额」反推"],"confidence":"high","confidenceNote":"这个组合在区间内出现了 4 次，是稳定的老样子"},"strat":{"kind":"window","kindLabel":"时段 × 券","title":"早餐 21 笔里有 15 笔没用券","action":"下单前先翻一遍卡包：芝香脆鸡扒堡早餐两件套 05:00–10:29 正好落在你的早餐时段，把它变成点单前的固定动作","inRange":94.5,"perMonth":94.5,"confidence":"medium"}}</script>
+<script>window.MCD_LEDGER_ENGINE=(function(){/**
+ * 同构引擎：区间筛选 + 聚合 + 策略生成 + 片段渲染。
+ *
+ * 为什么是一个 .mjs？
+ * ------------------------------------------------------------------
+ * 账本页是**单文件、零请求、可离线**的 HTML。时间筛选不能靠"重新跑一遍 CLI"，
+ * 必须在页面里就地重算。而重算的结果又必须与服务端渲染（SSR）的数字**完全一致**，
+ * 否则用户切一次区间就会发现两套账。
+ *
+ * 所以这里只写一份实现：
+ *   · Node 侧  → pipeline 用它解析区间，html.ts 用它渲染首屏
+ *   · 浏览器侧 → 同一份源码被内联进 <script>，切区间时重新调用
+ *
+ * 唯一不允许出现的重复是"两套算法"。因此本文件不 import 任何东西，
+ * 也不做任何 IO，所有输入（订单行、券、菜单价）都由调用方传入。
+ *
+ * 约定：金额一律用 number（元），聚合时逐步 money() 取两位小数，
+ * 与 src/audit/attribution.ts 的口径保持同一套舍入，保证双端数字对得上。
+ */
+
+/* ============================ 0. 基础工具 ============================ */
+
+const ENGINE_VERSION = 1;
+
+/** 两位小数，与 runtime/contract.ts 的 money() 完全一致 */
+function money(n) {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+function yuan(n) {
+  return "¥" + n.toFixed(2);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** SVG 坐标保留 1 位小数，减小体积 */
+function r(n) {
+  return String(Math.round(n * 10) / 10);
+}
+
+function sum(values) {
+  return values.reduce((a, b) => a + b, 0);
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function startOfDay(ms) {
+  const d = new Date(ms);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
+function endOfDay(ms) {
+  const d = new Date(ms);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999).getTime();
+}
+
+/** 本地时间字符串 → 毫秒。手写解析，避免各浏览器对 "YYYY-MM-DD HH:mm" 的解释差异 */
+function parseLocal(s) {
+  if (typeof s !== "string") return null;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+  if (!m) return null;
+  const ms = new Date(
+    Number(m[1]),
+    Number(m[2]) - 1,
+    Number(m[3]),
+    m[4] === undefined ? 0 : Number(m[4]),
+    m[5] === undefined ? 0 : Number(m[5]),
+  ).getTime();
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function dateKey(ms) {
+  const d = new Date(ms);
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+
+function hhmm(minutes) {
+  return pad2(Math.floor(minutes / 60)) + ":" + pad2(minutes % 60);
+}
+
+const WEEKDAY_SHORT = ["日", "一", "二", "三", "四", "五", "六"];
+const CHANNEL_CN = {
+  pickup: "到店自取",
+  delivery: "外送",
+  drivethru: "得来速",
+  group: "团餐",
+  unknown: "其他",
+};
+
+/** 时段划分与 src/audit/report.ts 的 mealPeriod 完全一致：早餐券基本只到 10:29 */
+function mealPeriod(minutes) {
+  if (minutes < 10 * 60 + 30) return "早餐";
+  if (minutes < 14 * 60) return "午餐";
+  if (minutes < 17 * 60) return "下午茶";
+  if (minutes < 21 * 60) return "晚餐";
+  return "夜宵";
+}
+
+function pct(sorted, q) {
+  if (sorted.length === 0) return 0;
+  const i = Math.min(sorted.length - 1, Math.max(0, Math.round((sorted.length - 1) * q)));
+  return sorted[i];
+}
+
+/* ============================ 1. 时间区间 ============================ */
+
+const PRESETS = [
+  { key: "7d", label: "近 7 天", days: 7 },
+  { key: "30d", label: "近 30 天", days: 30 },
+  { key: "90d", label: "近 90 天", days: 90 },
+  { key: "all", label: "全部", days: null },
+];
+
+const DEFAULT_RANGE = "30d";
+
+/**
+ * 决策页原型的相对入口（第一档：两页互通）。
+ * 引擎是双端同构的，不能 import 渲染层，所以这里与 src/render/html.ts 的
+ * PLAN_HREF 各存一份；两者同目录时可直接跳转，报告被单独拷走后为软链。
+ */
+const PLAN_HREF = "prototype-v2.html";
+
+/** 跳到决策页时带的区间参数：自定义区间要原样带上起止日期 */
+function planSpec(range) {
+  return range.key === "custom" ? range.from + ".." + range.to : range.key;
+}
+
+/** 决策页链接：区间 + 策略类型一起带过去，对面才知道该先选哪个买法 */
+function planHref(range, kind) {
+  const q = ["from=ledger", "range=" + encodeURIComponent(planSpec(range))];
+  if (kind) q.push("strat=" + encodeURIComponent(kind));
+  return PLAN_HREF + "?" + q.join("&");
+}
+
+/**
+ * 解析命令行 / URL 传入的区间描述。
+ *   "7d" | "30d" | "90d" | "all" | "2026-09-01..2026-10-01"
+ * 解析不出来时退回默认区间，而不是报错——一个筛选器不该让整份报告打不开。
+ */
+function parseRangeSpec(spec) {
+  if (typeof spec !== "string" || spec === "") return { key: DEFAULT_RANGE };
+  const key = spec.trim();
+  if (PRESETS.some((p) => p.key === key)) return { key };
+  const m = key.match(/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/);
+  if (m) return { key: "custom", from: m[1], to: m[2] };
+  return { key: DEFAULT_RANGE };
+}
+
+/**
+ * 求区间的毫秒边界。
+ * 预设区间用**自然日**而非 24 小时倍数：「近 7 天」= 含今天在内的 7 个自然日，
+ * 这样 00:10 与 23:50 打开页面看到的是同一批订单。
+ */
+function resolveRange(spec, nowMs, rows) {
+  const g = parseRangeSpec(spec);
+  const preset = PRESETS.find((p) => p.key === g.key);
+
+  if (preset) {
+    const days = preset.days;
+    if (days === null) {
+      const times = rows.map((x) => x.ms).filter((v) => Number.isFinite(v));
+      const fromMs = times.length > 0 ? startOfDay(Math.min(...times)) : startOfDay(nowMs);
+      const span = Math.max(1, Math.round((nowMs - fromMs) / 86400000) + 1);
+      return {
+        key: "all",
+        label: "全部",
+        fromMs,
+        toMs: nowMs,
+        from: dateKey(fromMs),
+        to: dateKey(nowMs),
+        days: span,
+        custom: false,
+      };
+    }
+    const fromMs = startOfDay(nowMs) - (days - 1) * 86400000;
+    return {
+      key: preset.key,
+      label: preset.label,
+      fromMs,
+      toMs: nowMs,
+      from: dateKey(fromMs),
+      to: dateKey(nowMs),
+      days,
+      custom: false,
+    };
+  }
+
+  const fromRaw = parseLocal(g.from);
+  const toRaw = parseLocal(g.to);
+  let fromMs = fromRaw === null ? startOfDay(nowMs) : startOfDay(fromRaw);
+  let toMs = toRaw === null ? nowMs : endOfDay(toRaw);
+  if (fromMs > toMs) {
+    const swap = fromMs;
+    fromMs = startOfDay(toMs);
+    toMs = endOfDay(swap);
+  }
+  const days = Math.max(1, Math.round((startOfDay(toMs) - fromMs) / 86400000) + 1);
+  return {
+    key: "custom",
+    label: dateKey(fromMs) + " → " + dateKey(toMs),
+    fromMs,
+    toMs,
+    from: dateKey(fromMs),
+    to: dateKey(toMs),
+    days,
+    custom: true,
+  };
+}
+
+function filterRows(rows, range) {
+  return rows.filter((x) => x.ms >= range.fromMs && x.ms <= range.toMs);
+}
+
+/* ============================ 2. 聚合 ============================ */
+
+/**
+ * 在选定区间内重算一遍汇总。口径与审计层一致：
+ *   · 只有拿到订单详情的订单（cov=1）才参与「省了多少」
+ *   · 组合价值 = 单点合计 − 原价合计，缺一项就整项留白，不补零
+ */
+function summarize(rows, range) {
+  const done = rows.filter((x) => x.status === "completed");
+  const cancelled = rows.length - done.length;
+  const covered = done.filter((x) => x.cov === 1);
+
+  const paid = money(sum(done.map((x) => x.paid)));
+  const attributablePaid = money(sum(covered.map((x) => x.paid)));
+
+  const listVals = covered.map((x) => x.list);
+  const alaVals = covered.map((x) => x.ala);
+  const list =
+    listVals.length > 0 && listVals.every((v) => v !== null) ? money(sum(listVals)) : null;
+  const alaCarte =
+    alaVals.length > 0 && alaVals.every((v) => v !== null) ? money(sum(alaVals)) : null;
+
+  const comboKnown = covered.map((x) => x.cmb).filter((v) => v !== null);
+  const comboMissing = covered.length - comboKnown.length;
+  const combo =
+    alaCarte !== null && list !== null
+      ? money(Math.max(0, alaCarte - list))
+      : comboKnown.length > 0
+        ? money(sum(comboKnown))
+        : null;
+
+  const coupon = money(sum(covered.map((x) => x.cpn)));
+  const activity = money(sum(covered.map((x) => x.act)));
+  const delivery = money(sum(covered.map((x) => x.del)));
+  const coverage = paid > 0 ? attributablePaid / paid : 0;
+  const saved = coverage > 0 ? money(coupon + activity + (combo ?? 0)) : null;
+
+  const mealPeriods = {};
+  const channels = {};
+  const storeMap = new Map();
+  const itemMap = new Map();
+  const weekday = new Array(7).fill(0);
+  const hour = new Array(24).fill(0);
+  let items = 0;
+
+  for (const x of done) {
+    const d = new Date(x.ms);
+    const mp = mealPeriod(x.m);
+    mealPeriods[mp] = (mealPeriods[mp] || 0) + 1;
+    channels[x.ch] = (channels[x.ch] || 0) + 1;
+    weekday[d.getDay()] += 1;
+    hour[d.getHours()] += 1;
+
+    const st = storeMap.get(x.st) || { orders: 0, paid: 0 };
+    st.orders += 1;
+    st.paid = money(st.paid + x.paid);
+    storeMap.set(x.st, st);
+
+    for (const it of x.items || []) {
+      items += it[2];
+      itemMap.set(it[1], (itemMap.get(it[1]) || 0) + it[2]);
+    }
+  }
+
+  const stores = [...storeMap.entries()]
+    .map(([name, v]) => ({ name, orders: v.orders, paid: v.paid }))
+    .sort((a, b) => b.orders - a.orders)
+    .slice(0, 5);
+
+  const topItems = [...itemMap.entries()]
+    .map(([name, quantity]) => ({ name, quantity }))
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 8);
+
+  let maxTicket = null;
+  for (const x of done) {
+    if (maxTicket === null || x.paid > maxTicket.paid) {
+      maxTicket = { orderId: x.id, paid: x.paid, date: dateKey(x.ms) };
+    }
+  }
+
+  return {
+    range,
+    orders: done.length,
+    cancelled,
+    paid,
+    list,
+    alaCarte,
+    coupon,
+    activity,
+    combo,
+    saved,
+    savedRate: saved !== null && paid + saved > 0 ? saved / (paid + saved) : null,
+    lowerBound: comboMissing > 0,
+    delivery,
+    coverage,
+    gap: money(paid - attributablePaid),
+    resolved: done.filter((x) => x.cov === 1).length,
+    unresolved: done.length - done.filter((x) => x.cov === 1).length,
+    items,
+    mealPeriods,
+    channels,
+    stores,
+    topItems,
+    weekday,
+    hour,
+    avgTicket: done.length > 0 ? money(paid / done.length) : 0,
+    maxTicket,
+  };
+}
+
+/* ============================ 3. 策略生成 ============================ */
+
+/**
+ * 策略 = 「基于所选区间的消费结构」×「当前可用的券 / 菜单价 / 活动」→ 一条能执行的动作。
+ *
+ * 硬约束（沿用账本的原则）：
+ *   1. 每条策略必须带**能对回订单的证据**，不允许"猜你想吃"。
+ *   2. 估不出来就留白（amount = null），不编一个好看的数字。
+ *   3. 区间是策略的前提：7 天和 90 天看到的结构不同，结论就该不同。
+ */
+
+const CONF_LABEL = { high: "高置信", medium: "中置信", low: "低置信" };
+const CONF_SCORE = { high: 26, medium: 18, low: 9 };
+const KIND_LABEL = {
+  window: "时段 × 券",
+  price: "单价",
+  delivery: "渠道",
+  expiry: "券库存",
+  timing: "择时",
+};
+
+/** 券的时段是否覆盖 [lo, hi]（分钟） */
+function couponCoversTime(c, lo, hi) {
+  const s = c.startTime ? toMin(c.startTime) : null;
+  const e = c.endTime ? toMin(c.endTime) : null;
+  if (s === null && e === null) return true;
+  const a = s === null ? 0 : s;
+  const b = e === null ? 24 * 60 - 1 : e;
+  return a <= hi && b >= lo;
+}
+
+function toMin(hhmmText) {
+  const m = String(hhmmText).match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+function couponExpired(c, now) {
+  const t = parseLocal(c.validTo);
+  return t !== null && t < now - 3600000;
+}
+
+/** 订单是否落在券的"星期 + 时段"内 */
+function rowInCouponWindow(c, row) {
+  if (c.weekdays && c.weekdays.length > 0) {
+    const wd = new Date(row.ms).getDay();
+    if (c.weekdays.indexOf(wd) < 0) return false;
+  }
+  return couponCoversTime(c, row.m, row.m);
+}
+
+function completed(rows) {
+  return rows.filter((x) => x.status === "completed");
+}
+
+function groupByMeal(rows) {
+  const map = new Map();
+  for (const x of rows) {
+    const k = mealPeriod(x.m);
+    const arr = map.get(k) || [];
+    arr.push(x);
+    map.set(k, arr);
+  }
+  return map;
+}
+
+function dominantWeekday(rows) {
+  const tally = new Map();
+  for (const x of rows) {
+    const wd = new Date(x.ms).getDay();
+    tally.set(wd, (tally.get(wd) || 0) + 1);
+  }
+  let best = null;
+  let bestN = 0;
+  for (const [wd, n] of tally) {
+    if (n > bestN) {
+      best = wd;
+      bestN = n;
+    }
+  }
+  return best;
+}
+
+function makeStrat(o) {
+  const amount = o.perMonth !== null ? o.perMonth : o.inRange;
+  const score = Math.min(70, (amount === null ? 0 : amount) * 1.5) + CONF_SCORE[o.confidence];
+  return {
+    id: o.id,
+    kind: o.kind,
+    kindLabel: KIND_LABEL[o.kind],
+    title: o.title,
+    basis: o.basis,
+    action: o.action,
+    inRange: o.inRange,
+    perMonth: o.perMonth,
+    estimated: o.estimated !== false,
+    confidence: o.confidence,
+    confidenceLabel: CONF_LABEL[o.confidence],
+    score: Math.round(score * 10) / 10,
+  };
+}
+
+function buildStrategies(summary, rows, data) {
+  const ctx = {
+    rows,
+    done: completed(rows),
+    range: summary.range,
+    coupons: data.coupons || [],
+    menu: data.menu || {},
+    campaigns: data.campaigns || [],
+    now: data.now,
+    summary,
+  };
+  const found = [
+    stratWindow(ctx),
+    stratPrice(ctx),
+    stratDelivery(ctx),
+    stratExpiry(ctx),
+    stratTiming(ctx),
+  ].filter((x) => x !== null);
+  return found.sort((a, b) => b.score - a.score).slice(0, 4);
+}
+
+/** 一句话说明策略规模：30 天区间里"月化"与"区间内"本来就相等，不必重复两遍 */
+function strategyCaption(totals) {
+  const parts = [totals.count + " 条策略"];
+  if (Math.abs(totals.perMonth - totals.inRangeAll) > 0.02 && totals.inRangeAll > 0) {
+    parts.push("该区间内已发生 " + yuan(totals.inRangeAll));
+  }
+  if (totals.withAmount < totals.count) parts.push((totals.count - totals.withAmount) + " 条无法折算");
+  return parts.join(" · ");
+}
+
+function strategyTotals(strats) {
+  let perMonth = 0;
+  let oneOff = 0;
+  let inRangeAll = 0;
+  let withAmount = 0;
+  for (const s of strats) {
+    if (s.inRange !== null) inRangeAll = money(inRangeAll + s.inRange);
+    if (s.perMonth !== null) {
+      perMonth = money(perMonth + s.perMonth);
+      withAmount += 1;
+    } else if (s.inRange !== null) {
+      oneOff = money(oneOff + s.inRange);
+      withAmount += 1;
+    }
+  }
+  return { perMonth, oneOff, inRangeAll, count: strats.length, withAmount };
+}
+
+/* ---- 3.1 时段 × 券：券在生效，订单却没用上 ---- */
+function stratWindow(ctx) {
+  const done = ctx.done;
+  if (done.length < 3) return null;
+
+  const buckets = groupByMeal(done);
+  let period = null;
+  let list = [];
+  for (const [k, arr] of buckets) {
+    if (arr.length > list.length) {
+      period = k;
+      list = arr;
+    }
+  }
+  if (period === null || list.length < 3) return null;
+
+  const mins = list.map((x) => x.m).sort((a, b) => a - b);
+  const lo = pct(mins, 0.1);
+  const hi = pct(mins, 0.9);
+  const used = list.filter((x) => (x.coupons || []).length > 0).length;
+  const missed = list.length - used;
+
+  const wd = dominantWeekday(list);
+  const covering = ctx.coupons.filter(
+    (c) =>
+      !couponExpired(c, ctx.now) &&
+      couponCoversTime(c, lo, hi) &&
+      (!c.weekdays || c.weekdays.length === 0 || (wd !== null && c.weekdays.indexOf(wd) >= 0)),
+  );
+
+  const basis = [
+    period + "共 " + list.length + " 笔（占该区间 " + pct120(list.length, done.length) + "），集中在 " +
+      hhmm(lo) + "–" + hhmm(hi),
+  ];
+
+  if (covering.length === 0) {
+    basis.push("卡包里没有一张券的生效时段覆盖这段时间");
+    if (used > 0) basis.push("这 " + used + " 笔用过券，说明券本身可用，是时段对不上");
+    return makeStrat({
+      id: "window",
+      kind: "window",
+      title: period + " " + list.length + " 笔都落在 " + hhmm(lo) + "–" + hhmm(hi) + "，券覆盖不到",
+      basis,
+      action:
+        "两条路：把下单时间挪到券生效之后，或者直接找覆盖 " + hhmm(lo) + "–" + hhmm(hi) +
+        " 的早餐卡 / 时段券——这是结构性缺口，靠单张券补不上",
+      inRange: null,
+      perMonth: null,
+      confidence: "medium",
+    });
+  }
+
+  if (missed === 0) return null;
+
+  const worths = covering.map((c) => c.worth).filter((v) => typeof v === "number" && v > 0);
+  const perOrder = worths.length > 0 ? money(sum(worths) / worths.length) : null;
+  const inRange = perOrder !== null ? money(perOrder * missed) : null;
+  const perMonth = inRange !== null ? money(inRange * (30 / ctx.range.days)) : null;
+  basis.push(
+    "卡包里有 " + covering.length + " 张券的生效时段正好覆盖这段时间：" +
+      covering.slice(0, 2).map((c) => c.name).join("、"),
+  );
+  basis.push(
+    "这 " + missed + " 笔订单没有用券记录（已用 " + used + " 笔）" +
+      (perOrder !== null ? "，单张最多可省 " + yuan(perOrder) : ""),
+  );
+  if (perMonth !== null) basis.push("月化按「同类券可持续领取」推算——券本身是一次性的");
+  return makeStrat({
+    id: "window",
+    kind: "window",
+    title: period + " " + list.length + " 笔里有 " + missed + " 笔没用券",
+    basis,
+    action:
+      "下单前先翻一遍卡包：" + covering[0].name +
+      (covering[0].startTime ? " " + covering[0].startTime + "–" + covering[0].endTime : "") +
+      " 正好落在你的" + period + "时段，把它变成点单前的固定动作",
+    inRange,
+    perMonth,
+    confidence: "medium",
+  });
+}
+
+/* ---- 3.2 单价：常点品的实付单价高于菜单现价 ---- */
+function stratPrice(ctx) {
+  const done = ctx.done;
+  const agg = new Map();
+
+  for (const row of done) {
+    const items = row.items || [];
+    if (items.length === 0) continue;
+    if (!items.every((it) => typeof it[3] === "number" && it[3] > 0)) continue;
+    const totalSale = sum(items.map((it) => it[3] * it[2]));
+    if (!(totalSale > 0)) continue;
+    const net = money(row.paid - (row.del || 0));
+    for (const it of items) {
+      const code = it[0];
+      const cur = agg.get(code) || { name: it[1], qty: 0, alloc: 0 };
+      cur.qty += it[2];
+      cur.alloc += net * ((it[3] * it[2]) / totalSale);
+      agg.set(code, cur);
+    }
+  }
+
+  const gaps = [];
+  for (const [code, v] of agg) {
+    const m = ctx.menu[code];
+    if (!m || typeof m.p !== "number" || v.qty < 2) continue;
+    const unitPaid = money(v.alloc / v.qty);
+    const gap = money(unitPaid - m.p);
+    if (gap < 0.3) continue;
+    gaps.push({ code, name: v.name, qty: v.qty, unitPaid, best: m.p, gap, total: money(gap * v.qty), tag: m.d });
+  }
+  if (gaps.length === 0) return null;
+  gaps.sort((a, b) => b.total - a.total);
+
+  const top = gaps.slice(0, 3);
+  const inRange = money(sum(top.map((g) => g.total)));
+  const perMonth = money(inRange * (30 / ctx.range.days));
+  const head = top[0];
+  const basis = top.map(
+    (g) =>
+      g.name + "：买了 " + g.qty + " 份，平均 " + yuan(g.unitPaid) + "/份，菜单现价 " + yuan(g.best) +
+      (g.tag ? "（" + g.tag + "）" : ""),
+  );
+  basis.push("单价按订单实付总额按行拆分推算，属于估算");
+  return makeStrat({
+    id: "price",
+    kind: "price",
+    title: head.name + (top.length > 1 ? " 等 " + top.length + " 个常点品" : "") + "有更低的买法",
+    basis,
+    action:
+      "点单时先走促销 / 卡权益入口，别在默认价上下单；如果同款在套餐里，换成套餐往往比单点再便宜一截",
+    inRange,
+    perMonth,
+    confidence: "medium",
+  });
+}
+
+/* ---- 3.3 渠道：配送费是硬支出 ---- */
+function stratDelivery(ctx) {
+  const withFee = ctx.done.filter((x) => (x.del || 0) > 0);
+  if (withFee.length === 0) return null;
+  const fee = money(sum(withFee.map((x) => x.del)));
+  if (fee <= 0) return null;
+
+  const deliveryTotal = ctx.done.filter((x) => x.ch === "delivery").length;
+  const perMonth = money(fee * (30 / ctx.range.days));
+  const basis = [
+    "该区间 " + withFee.length + " 笔订单产生了配送费，合计 " + yuan(fee),
+    "平均每笔 " + yuan(money(fee / withFee.length)) + "，这部分不属于优惠，是实打实的支出",
+  ];
+  const pickup = ctx.done.filter((x) => x.ch === "pickup").length;
+  if (pickup > 0) basis.push("同期有 " + pickup + " 笔是到店自取，没有这笔成本");
+
+  return makeStrat({
+    id: "delivery",
+    kind: "delivery",
+    title: withFee.length + " 笔外送付了 " + yuan(fee) + " 配送费",
+    basis,
+    action:
+      "把时间宽裕的那几单改成到店自取；必须外送时优先用「外送专用」券抵扣配送费，而不是让它原价叠加",
+    inRange: fee,
+    perMonth,
+    confidence: "high",
+  });
+}
+
+/* ---- 3.4 券库存：到期前按你的节奏用不用得完 ---- */
+function stratExpiry(ctx) {
+  const now = ctx.now;
+  const soon = ctx.coupons.filter((c) => {
+    const t = parseLocal(c.validTo);
+    if (t === null) return false;
+    const hours = (t - now) / 3600000;
+    return hours > -1 && hours <= 7 * 24;
+  });
+  if (soon.length === 0) return null;
+
+  const weeks = Math.max(ctx.range.days / 7, 0.5);
+
+  // 同一时段（同星期、同时段）的多张券会互相挤占：你只会买一次早餐，
+  // 却可能同时持有 3 张早餐券，所以可用次数要在同组内平摊。
+  const groups = new Map();
+  const keyOf = (c) => (c.startTime || "") + "-" + (c.endTime || "") + "|" + (c.weekdays || []).join(",");
+  for (const c of soon) {
+    const k = keyOf(c);
+    groups.set(k, (groups.get(k) || 0) + 1);
+  }
+
+  const risk = [];
+  for (const c of soon) {
+    const t = parseLocal(c.validTo);
+    const daysLeft = Math.max(0, (t - now) / 86400000);
+    const fit = ctx.done.filter((x) => rowInCouponWindow(c, x)).length / weeks;
+    const share = groups.get(keyOf(c)) || 1;
+    const expected = (fit * (daysLeft / 7)) / share;
+    if (expected < 0.9) risk.push({ coupon: c, expected, daysLeft, share });
+  }
+
+  if (risk.length > 0) {
+    // 金额刻意留白：这些券的面值已经作为「漏损」记在 §04 了，
+    // 策略这一节只回答"怎么办"，不把同一笔钱再算一次。
+    const worths = risk.map((x) => x.coupon.worth).filter((v) => typeof v === "number" && v > 0);
+    const basis = risk
+      .slice(0, 3)
+      .map(
+        (x) =>
+          x.coupon.name + "：还有 " + x.daysLeft.toFixed(1) + " 天到期，按你的节奏预计只能用上 " +
+          x.expected.toFixed(2) + " 次" + (x.share > 1 ? "（同窗口共 " + x.share + " 张，互相挤占）" : ""),
+      );
+    basis.push("可用次数按「该券生效时段内的历史下单频率」外推，同窗口的券按张数平摊");
+    if (worths.length > 0) basis.push("这些券面值合计 " + yuan(money(sum(worths))) + "，已计入 §04 的漏损，这里不重复折算");
+    return makeStrat({
+      id: "expiry",
+      kind: "expiry",
+      title: risk.length + " 张券按你的节奏用不完",
+      basis,
+      action:
+        "到期前优先塞进最近一次同品类订单；确实用不完的话，下次别囤同类券——囤券本身就是一种沉没成本",
+      inRange: null,
+      perMonth: null,
+      confidence: "medium",
+    });
+  }
+
+  const basis = soon
+    .slice(0, 3)
+    .map((c) => c.name + (c.validTo ? "：至 " + String(c.validTo).replace("T", " ") : "：长期有效"));
+  basis.push("按你在这些券生效时段的下单频率，到期前足够用掉");
+  return makeStrat({
+    id: "expiry",
+    kind: "expiry",
+    title: soon.length + " 张券到期前用得完",
+    basis,
+    action: "不用抢在最后一天：跟着你原本的" + mealPeriodOfCoupons(soon, ctx) + "节奏用掉就行",
+    inRange: null,
+    perMonth: null,
+    confidence: "high",
+  });
+}
+
+function mealPeriodOfCoupons(coupons, ctx) {
+  const hit = ctx.done.filter((x) => coupons.some((c) => rowInCouponWindow(c, x)));
+  if (hit.length === 0) return "下单";
+  const buckets = groupByMeal(hit);
+  let best = "下单";
+  let n = 0;
+  for (const [k, arr] of buckets) {
+    if (arr.length > n) {
+      best = k;
+      n = arr.length;
+    }
+  }
+  return best;
+}
+
+/* ---- 3.5 择时：活动日 × 你的节奏 ---- */
+const MEAL_KEYWORDS = {
+  早餐: ["早餐", "早安", "麦满分", "豆浆", "油条", "厚松饼"],
+  午餐: ["午餐", "汉堡", "炸鸡", "套餐", "超值"],
+  下午茶: ["下午茶", "咖啡", "麦咖啡", "甜品", "冰淇淋", "麦旋风"],
+  晚餐: ["晚餐", "汉堡", "炸鸡", "套餐"],
+  夜宵: ["夜宵", "宵夜", "炸鸡"],
+};
+
+function stratTiming(ctx) {
+  const now = ctx.now;
+  const upcoming = ctx.campaigns.filter((c) => {
+    const t = parseLocal(c.date);
+    if (t === null) return false;
+    return t >= startOfDay(now) && t <= startOfDay(now) + 7 * 86400000;
+  });
+  if (upcoming.length === 0) return null;
+
+  const buckets = groupByMeal(ctx.done);
+  let period = null;
+  let n = 0;
+  for (const [k, arr] of buckets) {
+    if (arr.length > n) {
+      period = k;
+      n = arr.length;
+    }
+  }
+  if (period === null) return null;
+
+  const kws = MEAL_KEYWORDS[period] || [];
+  const topNames = ctx.summary.topItems.map((i) => i.name);
+  const hit = upcoming.filter((c) => {
+    const text = String(c.title) + String(c.summary || "");
+    if (kws.some((k) => text.indexOf(k) >= 0)) return true;
+    return topNames.some((name) => {
+      const core = name.slice(0, 4);
+      return core.length >= 3 && text.indexOf(core) >= 0;
+    });
+  });
+  if (hit.length === 0) return null;
+  const c = hit[0];
+
+  return makeStrat({
+    id: "timing",
+    kind: "timing",
+    title: String(c.date).slice(5) + " 的活动正好撞上你的" + period + "习惯",
+    basis: [
+      "活动：" + c.title,
+      c.summary || "",
+      "你在该区间的" + period + "订单最多（" + n + " 笔），活动日落在你的常规下单节奏上",
+    ].filter((x) => x !== ""),
+    action: "那一单先看活动细则再点——活动日叠券往往比平时多省一档，但没必要为了凑活动多买",
+    inRange: null,
+    perMonth: null,
+    confidence: "low",
+  });
+}
+
+function pct120(a, b) {
+  if (!b) return "0%";
+  return ((a / b) * 100).toFixed(0) + "%";
+}
+
+/* ============================ 4. 渲染：概览 ============================ */
+
+function rangeTag(range) {
+  return '<span class="sec-r">' + esc(range.label) + "</span>";
+}
+
+function emptyBlock(title, hint) {
+  return '<div class="empty"><b>' + esc(title) + "</b><span>" + esc(hint) + "</span></div>";
+}
+
+function renderOverview(s, strats, range) {
+  const totals = strategyTotals(strats);
+  const savedText = s.saved === null ? "—" : yuan(s.saved);
+  const rateText = s.savedRate === null ? "—" : (s.savedRate * 100).toFixed(1) + "%";
+  const oppo = totals.perMonth > 0 ? yuan(totals.perMonth) : totals.oneOff > 0 ? yuan(totals.oneOff) : "—";
+  const oppoNote =
+    totals.withAmount === 0
+      ? "该区间没有可量化的改进点"
+      : totals.perMonth > 0
+        ? strategyCaption(totals)
+        : "一次性机会 · " + strategyCaption(totals);
+
+  return `
+        <p class="cover-sub">
+          ${esc(range.from)} <span class="arw">→</span> ${esc(range.to)}
+          <span class="sep"></span>${range.days} 天
+          <span class="sep"></span>${s.orders} 笔完成订单
+          ${s.cancelled > 0 ? `<span class="sep"></span>${s.cancelled} 笔取消` : ""}
+        </p>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="kpi-k">实付总额</div>
+            <div class="kpi-v">${moneyCell(s.paid, 2)}</div>
+            <div class="kpi-s">平均每笔 ${yuan(s.avgTicket)}</div>
+          </div>
+          <div class="kpi kpi-hl">
+            <div class="kpi-k">省下来的钱</div>
+            <div class="kpi-v"><span class="grad" ${countAttrs(s.saved)}>${esc(savedText)}</span></div>
+            <div class="kpi-s">相当于原价的 ${rateText}${s.lowerBound ? ' <b class="tagline">下限</b>' : ""}</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-k">还能再省 / 月</div>
+            <div class="kpi-v gold">${esc(oppo)}</div>
+            <div class="kpi-s">${esc(oppoNote)}</div>
+          </div>
+        </div>`;
+}
+
+/* ============================ 5. 渲染：三层价 ============================ */
+
+function renderFlow(s, range) {
+  const raw = [
+    { label: "单点合计", hint: "把套餐拆成单品、各买一份的价钱", value: s.alaCarte },
+    { label: "划线价", hint: "平台记录的商品原价合计", value: s.list },
+    { label: "实付", hint: "你真正付出的钱", value: s.paid },
+  ];
+  const steps = raw.filter((x) => x.value !== null && x.value > 0);
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 01</span><h2>同一顿饭的三个价格</h2>' +
+    rangeTag(range) +
+    "</div>";
+
+  if (steps.length < 2) {
+    return (
+      '<section class="sec rv" id="flow">' +
+      head +
+      emptyBlock(
+        "这个区间不够画出三层价",
+        "需要至少两种价格口径（单点合计 / 划线价 / 实付）才能比较，换一个更长的区间试试。",
+      ) +
+      "</section>"
+    );
+  }
+
+  const W = 760;
+  const H = 282;
+  const padX = 74;
+  const top = 52;
+  const base = 214;
+  const span = Math.max(...steps.map((x) => x.value), 1);
+  const max = span * 1.04;
+
+  const x = (i) => padX + (i * (W - padX * 2)) / (steps.length - 1);
+  const y = (v) => base - (v / max) * (base - top);
+
+  const pts = steps.map((st, i) => ({ label: st.label, hint: st.hint, value: st.value, cx: x(i), cy: y(st.value) }));
+  const lastPt = pts[pts.length - 1];
+
+  let line = "";
+  let prev = null;
+  for (const pt of pts) {
+    line += prev
+      ? " L " + r(pt.cx) + " " + r(prev.cy) + " L " + r(pt.cx) + " " + r(pt.cy)
+      : "M " + r(pt.cx) + " " + r(pt.cy);
+    prev = pt;
+  }
+  line += " L " + (W - 26) + " " + r(lastPt.cy);
+
+  const guides = pts
+    .map((pt) => '<line class="svg-guide" x1="' + r(pt.cx) + '" y1="' + r(pt.cy) + '" x2="' + (W - 26) + '" y2="' + r(pt.cy) + '"/>')
+    .join("");
+
+  const ticks = pts
+    .map((pt) => '<line class="svg-tick" x1="' + r(pt.cx) + '" y1="' + base + '" x2="' + r(pt.cx) + '" y2="' + (base + 7) + '"/>')
+    .join("");
+
+  const drops = [];
+  let dropPrev = null;
+  for (const pt of pts) {
+    const before = dropPrev;
+    dropPrev = pt;
+    if (!before) continue;
+    const save = before.value - pt.value;
+    if (save <= 0.005) continue;
+    const mx = (before.cx + pt.cx) / 2;
+    const my = before.cy + Math.min(15, (pt.cy - before.cy) * 0.55);
+    drops.push('<text class="svg-save" x="' + r(mx) + '" y="' + r(my) + '" text-anchor="middle">省 ' + yuan(save) + "</text>");
+  }
+
+  const nodes = pts
+    .map(
+      (pt, i) =>
+        '<g class="svg-node" style="--d:' + (0.55 + i * 0.22).toFixed(2) + 's">' +
+        '<circle class="svg-halo" cx="' + r(pt.cx) + '" cy="' + r(pt.cy) + '" r="13"/>' +
+        '<circle class="svg-dot" cx="' + r(pt.cx) + '" cy="' + r(pt.cy) + '" r="' + (i === pts.length - 1 ? 5.5 : 4) + '"/>' +
+        '<text class="svg-val' + (i === pts.length - 1 ? " svg-val-hl" : "") + '" x="' + r(pt.cx) + '" y="' + r(pt.cy - 22) + '" text-anchor="middle">' +
+        yuan(pt.value) +
+        "</text></g>",
+    )
+    .join("");
+
+  const labels = pts
+    .map(
+      (pt) =>
+        '<g><text class="svg-lb" x="' + r(pt.cx) + '" y="' + (base + 30) + '" text-anchor="middle">' +
+        esc(pt.label) + '</text><text class="svg-hint" x="' + r(pt.cx) + '" y="' + (base + 50) + '" text-anchor="middle">' +
+        esc(pt.hint) + "</text></g>",
+    )
+    .join("");
+
+  return `<section class="sec rv" id="flow">
+    ${head}
+    <p class="lead">把三种口径摊开，才看得出“省”到底发生在哪一层。每一段落差都对应一类优惠。</p>
+
+    <div class="chart brackets">
+      <svg class="flowsvg" viewBox="0 0 ${W} ${H}" role="img" aria-label="单点合计、划线价与实付的阶梯对比">
+        <defs>
+          <linearGradient id="fg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#FFE7A8"/>
+            <stop offset=".5" stop-color="#FFC72C"/>
+            <stop offset="1" stop-color="#E8A200"/>
+          </linearGradient>
+        </defs>
+        <line class="svg-base" x1="${padX - 26}" y1="${base}" x2="${W - 26}" y2="${base}"/>
+        ${guides}
+        ${ticks}
+        <path class="svg-line draw" pathLength="100" d="${line}"/>
+        ${drops.join("")}
+        ${nodes}
+        ${labels}
+      </svg>
+    </div>
+  </section>`;
+}
+
+/* ============================ 6. 渲染：归因 ============================ */
+
+function renderAttr(s, range) {
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 02</span><h2>省的钱从哪来</h2>' + rangeTag(range) + "</div>";
+
+  if (s.orders === 0) {
+    return '<section class="sec rv" id="attr">' + head +
+      emptyBlock("这个区间没有完成的订单", "换一个更长的区间，或从自定义里挑一段有消费的日期。") +
+      "</section>";
+  }
+
+  const segs = [
+    { label: "券与折扣", hint: "逐券金额，可对到具体订单", value: s.coupon, cls: "sA" },
+    { label: "活动 / 卡权益", hint: "平台总优惠 − 券优惠", value: s.activity, cls: "sB" },
+  ];
+  if (s.combo !== null) {
+    segs.push({ label: "套餐组合价值", hint: "单点合计 − 原价合计", value: s.combo, cls: "sC" });
+  }
+  const total = segs.reduce((acc, i) => acc + i.value, 0) || 1;
+
+  const spectrum = segs
+    .map(
+      (x, i) =>
+        '<span class="spec-seg ' + x.cls + '" style="flex:' + Math.max(x.value, 0.001).toFixed(3) +
+        ";animation-delay:" + (0.08 * i).toFixed(2) + 's"></span>',
+    )
+    .join("");
+
+  const rows = segs
+    .map(
+      (x) => `<div class="lg-row">
+      <span class="lg-dot ${x.cls}"></span>
+      <span class="lg-l">${esc(x.label)}<i>${esc(x.hint)}</i></span>
+      <span class="lg-lead"></span>
+      <span class="lg-v">${yuan(x.value)}</span>
+      <span class="lg-p">${((x.value / total) * 100).toFixed(0)}%</span>
+    </div>`,
+    )
+    .join("");
+
+  const ghost =
+    s.combo === null
+      ? `<div class="lg-row lg-ghost">
+      <span class="lg-dot dashed"></span>
+      <span class="lg-l">套餐组合价值<i>该区间套餐商品已下架，单品现价无法还原</i></span>
+      <span class="lg-lead"></span>
+      <span class="lg-v">—</span>
+      <span class="lg-p">未计入</span>
+    </div>`
+      : "";
+
+  return `<section class="sec rv" id="attr">
+    ${head}
+    <p class="lead">三项互不重叠，合计等于“省下来的钱”。颜色深浅只表示层次，不代表好坏。</p>
+
+    <div class="spec" role="img" aria-label="优惠构成占比">${spectrum}</div>
+    <div class="legend">${rows}${ghost}</div>
+
+    ${s.lowerBound ? `<p class="note">“省下来的钱”是<strong>下限</strong>：已计入的部分全部来自平台订单记录（原价合计 − 实付），可逐笔核对；未计入的是无法还原的套餐组合价值。</p>` : ""}
+    ${s.delivery > 0 ? `<p class="note">另有 ${yuan(s.delivery)} 配送费计入实付，不属于优惠，未参与归因。</p>` : ""}
+  </section>`;
+}
+
+/* ============================ 7. 渲染：策略 ============================ */
+
+function renderStrategy(strats, s, range) {
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 03</span><h2>下次怎么买</h2>' + rangeTag(range) + "</div>";
+
+  if (s.orders === 0) {
+    return '<section class="sec rv" id="strategy">' + head +
+      emptyBlock("这个区间没有完成的订单", "策略需要订单结构做依据，先选一段有消费的区间。") +
+      "</section>";
+  }
+
+  if (strats.length === 0) {
+    return '<section class="sec rv" id="strategy">' + head +
+      emptyBlock(
+        "这个区间的买法已经接近最优",
+        s.orders + " 笔订单里没有发现可量化的改进点：券用在了有效期内，单价也没有高于菜单现价。",
+      ) +
+      "</section>";
+  }
+
+  const totals = strategyTotals(strats);
+  const headAmount =
+    totals.perMonth > 0
+      ? yuan(totals.perMonth) + '<i>/ 月</i>'
+      : totals.oneOff > 0
+        ? yuan(totals.oneOff) + "<i>/ 一次性</i>"
+        : "—";
+
+  const cards = strats
+    .map((x, i) => {
+      const amount =
+        x.perMonth !== null
+          ? '<span class="strat-v">' + yuan(x.perMonth) + '<i>/ 月</i></span>'
+          : x.inRange !== null
+            ? '<span class="strat-v">' + yuan(x.inRange) + "<i>/ 一次性</i></span>"
+            : '<span class="strat-na">不折算</span>';
+      return `<article class="strat">
+        <span class="strat-n">${String(i + 1).padStart(2, "0")}</span>
+        <div class="strat-b">
+          <h3>${esc(x.title)}<span class="strat-k">${esc(x.kindLabel)}</span></h3>
+          <ul class="strat-e">${x.basis.map((b) => "<li>" + esc(b) + "</li>").join("")}</ul>
+          <p class="strat-a"><b>怎么做</b>${esc(x.action)}</p>
+          <a class="strat-go" data-plan-link="1" data-strat="${esc(x.kind)}" href="${planHref(range, x.kind)}">按这个方案点 →</a>
+        </div>
+        <div class="strat-r">
+          ${amount}
+          <span class="strat-tag" data-conf="${x.confidence}">${esc(x.confidenceLabel)}</span>
+          ${x.inRange !== null && x.perMonth !== null ? '<span class="strat-sub">该区间 ' + yuan(x.inRange) + "</span>" : ""}
+        </div>
+      </article>`;
+    })
+    .join("");
+
+  return `<section class="sec rv" id="strategy">
+    ${head}
+    <p class="lead">不是泛泛的“多领券”，而是从你这段区间的订单结构里挑出还能改的地方。金额是该区间的可优化空间，月化为按同样节奏推算的一个月。</p>
+
+    <div class="strat-head">
+      <b>还可再省 ${headAmount}</b>
+      <span>${strategyCaption(totals)}</span>
+    </div>
+
+    <div class="strats">${cards}</div>
+
+    <p class="note">不同策略可能指向同一笔订单的不同环节（例如既没用券、单价也偏高），合计是<strong>上限估计</strong>；标注“一次性”的是券类机会，不做月化。</p>
+
+    <p class="plan-link"><a data-plan-link="1" href="${planHref(range, null)}">这些方案落成订单是什么样 → 打开方案卡原型</a><span>原型用的是同一份账本数据：区间与策略一并带过去，价格按当前菜单现价估算，真实下单前须重新结算。</span></p>
+  </section>`;
+}
+
+/* ============================ 8. 渲染：画像 ============================ */
+
+function renderBars(title, entries, total) {
+  const max = Math.max(...entries.map((e) => e[1]), 1);
+  return `<div class="mini">
+    <div class="mini-h"><span>${esc(title)}</span><em>占比</em></div>
+    <div class="rows">
+      ${entries
+        .map(
+          ([k, v], i) => `<div class="row">
+        <span class="row-k">${esc(k)}</span>
+        <span class="row-t"><i style="--v:${(v / max).toFixed(3)};--d:${(i * 0.06).toFixed(2)}s"></i></span>
+        <span class="row-v">${v}<em>${total > 0 ? ((v / total) * 100).toFixed(0) + "%" : ""}</em></span>
+      </div>`,
+        )
+        .join("")}
+    </div>
+  </div>`;
+}
+
+function renderProfile(s, range) {
+  const head =
+    '<div class="sec-h"><span class="sec-n">§ 06</span><h2>你的消费画像</h2>' + rangeTag(range) + "</div>";
+
+  if (s.orders === 0) {
+    return '<section class="sec rv" id="profile">' + head +
+      emptyBlock("这个区间没有完成的订单", "画像需要样本，换一个更长的区间。") +
+      "</section>";
+  }
+
+  const total = s.orders || 1;
+  const meal = Object.entries(s.mealPeriods).sort((a, b) => b[1] - a[1]);
+  const channels = Object.entries(s.channels).sort((a, b) => b[1] - a[1]);
+  const wdMax = Math.max(...s.weekday, 1);
+  const hrMax = Math.max(...s.hour, 1);
+
+  return `<section class="sec rv" id="profile">
+    ${head}
+    <p class="lead">不是给你贴标签，只是让前面的结论有依据。</p>
+
+    <div class="cols cols-3">
+      ${renderBars("时段分布", meal, total)}
+      ${renderBars("渠道分布", channels.map(([k, v]) => [CHANNEL_CN[k] || k, v]), total)}
+
+      <div class="mini">
+        <div class="mini-h"><span>一周节奏</span><em>订单数</em></div>
+        <div class="week">
+          ${s.weekday
+            .map(
+              (v, i) => `<div class="wk">
+            <span class="wk-bar" style="--h:${(v === 0 ? 2 : 10 + (v / wdMax) * 90).toFixed(1)}%;--d:${(i * 0.05).toFixed(2)}s"><i>${v}</i></span>
+            <span class="wk-l">${WEEKDAY_SHORT[i] || ""}</span>
+          </div>`,
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="cols cols-wide" style="margin-top:26px">
+      <div class="mini">
+        <div class="mini-h"><span>一天里什么时候下单</span><em>按小时</em></div>
+        <div class="hours">
+          ${s.hour
+            .map(
+              (v, i) =>
+                '<span class="hr' + (v === 0 ? " hr0" : "") + '" style="--h:' +
+                (v === 0 ? 0 : 8 + (v / hrMax) * 92).toFixed(1) + "%;--d:" + (i * 0.014).toFixed(2) + "s" +
+                (v === hrMax && v > 0 ? ";--peak:1" : "") + '" title="' + i + ":00 · " + v + ' 笔"></span>',
+            )
+            .join("")}
+        </div>
+        <div class="hours-x"><span>0</span><span>6</span><span>12</span><span>18</span><span>23</span></div>
+        ${s.maxTicket ? '<p class="mini-f">最贵的一单 ' + yuan(s.maxTicket.paid) + "　·　" + esc(s.maxTicket.date) + "</p>" : ""}
+      </div>
+
+      <div class="mini">
+        <div class="mini-h"><span>最常点</span><em>份数</em></div>
+        ${
+          s.topItems.length === 0
+            ? '<p class="muted" style="padding:12px 0">订单里还没有可识别的商品。</p>'
+            : '<ol class="tops">' +
+              s.topItems
+                .map(
+                  (it, idx) =>
+                    '<li><span class="tops-i">' + String(idx + 1).padStart(2, "0") + '</span><span class="tops-n">' +
+                    esc(it.name) + "</span><b>×" + it.quantity + "</b></li>",
+                )
+                .join("") +
+              "</ol>"
+        }
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================ 9. 渲染：分享 ============================ */
+
+function shareText(s, range) {
+  const saved =
+    s.saved === null
+      ? ""
+      : "，省下 " + yuan(s.saved) + (s.savedRate === null ? "" : "（原价的 " + (s.savedRate * 100).toFixed(0) + "%）");
+  return (
+    "麦麦账本 ｜ " + range.from + " 至 " + range.to + " ｜ " + s.orders + " 笔订单实付 " + yuan(s.paid) + saved + "。"
+  );
+}
+
+function renderShare(s, strats, range) {
+  const totals = strategyTotals(strats);
+  const canSave =
+    totals.perMonth > 0 ? yuan(totals.perMonth) : totals.oneOff > 0 ? yuan(totals.oneOff) : "—";
+  const text = shareText(s, range);
+
+  return `<section class="sec rv" id="share">
+    <div class="sec-h"><span class="sec-n">§ 08</span><h2>带走这张卡</h2>${rangeTag(range)}</div>
+    <p class="lead">截图或复制文案都行。卡上只有汇总数字，不含任何订单明细。</p>
+
+    <div class="share-lay">
+      <div class="tilt">
+        <div class="tilt-inner">
+          <div class="card3d" id="card3d">
+            <div class="card-hd">
+              <span class="card-b">MCD LEDGER</span>
+              <span class="card-p">${esc(range.from)} — ${esc(range.to)}</span>
+            </div>
+            <div class="card-main">
+              <span class="card-l">这段时间省下来的钱</span>
+              <span class="card-n">${s.saved === null ? "—" : yuan(s.saved)}</span>
+              <span class="card-r">原价的 ${s.savedRate === null ? "—" : (s.savedRate * 100).toFixed(0) + "%"}</span>
+            </div>
+            <div class="card-row">
+              <div><b>${yuan(s.paid)}</b><span>实付</span></div>
+              <div><b>${s.orders}</b><span>笔订单</span></div>
+              <div><b class="gold">${canSave}</b><span>还能再省</span></div>
+            </div>
+            <div class="card-f">
+              <span class="card-sign">mcd-ledger · 非官方作品</span>
+              <span class="stamp-mark">对账无误<i>AUDITED</i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="share-act">
+        <p class="share-tip">把鼠标移到卡片上，它会跟着倾斜——这是纯 CSS 3D 变换，没有 WebGL，也不额外加载任何东西。</p>
+        <div class="share-btns">
+          <button class="btn btn-gold" type="button" data-copy="${esc(text)}" data-ok="分享文案已复制">复制分享文案</button>
+          <button class="btn" type="button" data-print="1">打印 / 存为 PDF</button>
+        </div>
+        <pre class="share-pre" aria-label="分享文案预览">${esc(text)}</pre>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================ 10. 组装 ============================ */
+
+function moneyCell(value, dec) {
+  return '<span data-count="' + value.toFixed(2) + '" data-dec="' + dec + '" data-pre="¥">' + yuan(value) + "</span>";
+}
+
+function countAttrs(value) {
+  if (value === null) return "";
+  return 'data-count="' + value.toFixed(2) + '" data-dec="2" data-pre="¥"';
+}
+
+/* ============================ 5. 方案求解 ============================ */
+/**
+ * 把"过去常点什么"变成"下一单怎么买最省"。
+ *
+ * 为什么放在引擎里而不是渲染层：
+ *   方案的每一个数字都随区间变——换区间就是换一批常点商品、换一批可用券、
+ *   换一张回本线。如果这份逻辑只跑在服务端，原型页就只能展示固定数字；
+ *   放在引擎里，浏览器切区间时调用的是同一段代码，不可能对不上。
+ *
+ * 口径声明（重要，别在别处重复解释）：
+ *   — 所有价格来自账本事实表里的菜单现价（menu.p）与划线价（menu.o），
+ *     原型**不联网、不调用 calculate-price**，所以它是"按当前菜单的估算"，
+ *     真实下单前必须重算（界面上 S4 降级态讲的就是这件事）。
+ *   — 券的抵扣额取 TS 侧算好的 worth（券名 × 菜单现价匹配只做一次，不留第二份）。
+ */
+
+/** 券名 → 商品关键词：去掉"11.9元"这类前缀和"券"字 */
+function couponKeyword(name) {
+  const s = String(name || "").replace(/^\s*\d+(\.\d+)?\s*元\s*/, "").replace(/券$/, "").trim();
+  return s.length >= 2 ? s : null;
+}
+
+/** 关键词是否命中商品名：按顺序的覆盖度（"麦辣鸡腿堡" 能命中 "麦辣鸡腿汉堡"） */
+function covers(key, name) {
+  const k = String(key || "");
+  const n = String(name || "");
+  if (!k || !n) return 0;
+  if (n.indexOf(k) >= 0) return 1;
+  let i = 0;
+  let hit = 0;
+  for (const ch of k) {
+    const at = n.indexOf(ch, i);
+    if (at >= 0) {
+      hit += 1;
+      i = at + 1;
+    }
+  }
+  return hit / k.length;
+}
+
+/** 券是否已过期（validTo 为空视为长期有效） */
+function couponAlive(c, nowMs) {
+  if (!c || !c.validTo) return true;
+  const t = Date.parse(String(c.validTo).replace(" ", "T"));
+  if (Number.isNaN(t)) return true;
+  return t >= nowMs;
+}
+
+/** 单张券在这件商品上能省多少：优先用审计层算好的 worth，兜底用券面价差 */
+function couponOff(c, unit) {
+  if (unit === null || unit === undefined) return 0;
+  const price = c && c.price !== null && c.price !== undefined ? c.price : null;
+  const byPrice = price === null ? null : money(unit - price);
+  const raw = c && c.worth !== null && c.worth !== undefined ? c.worth : byPrice;
+  if (raw === null || raw === undefined) return 0;
+  return Math.max(0, Math.min(money(raw), money(unit)));
+}
+
+/** 常点商品：区间内出现次数最多的前 n 个 SKU */
+function topSkus(rows, menu, n) {
+  const freq = new Map();
+  for (const r of rows) {
+    for (const it of r.items || []) {
+      const code = it[0];
+      const qty = it[2] || 1;
+      const unit = it[3];
+      const cur = freq.get(code) || { code, name: it[1], count: 0, qty: 0, unit: null };
+      cur.count += 1;
+      cur.qty += qty;
+      if (cur.unit === null && unit !== null && unit !== undefined) cur.unit = unit;
+      freq.set(code, cur);
+    }
+  }
+  return [...freq.values()]
+    .map((x) => {
+      const m = menu[x.code] || {};
+      const unit = x.unit !== null && x.unit !== undefined ? x.unit : m.p;
+      const list = m.o !== null && m.o !== undefined ? m.o : unit;
+      return { code: x.code, name: x.name, count: x.count, qty: x.qty, unit, list };
+    })
+    .filter((x) => x.unit !== null && x.unit !== undefined)
+    .sort((a, b) => b.count - a.count || b.qty - a.qty || b.unit - a.unit)
+    .slice(0, n);
+}
+
+/** 找更便宜的同类买法：订单里出现过的、名字互相包含且更便宜的 SKU */
+function cheaperAlt(item, seen) {
+  let best = null;
+  for (const s of seen) {
+    if (s.code === item.code) continue;
+    const rel =
+      s.name.indexOf(item.name) >= 0 || item.name.indexOf(s.name) >= 0 ? 1 : covers(item.name, s.name);
+    if (rel < 0.7) continue;
+    if (s.unit >= item.unit) continue;
+    const save = money(item.unit - s.unit);
+    if (!best || save > best.save) best = { code: s.code, name: s.name, unit: s.unit, save };
+  }
+  return best;
+}
+
+/**
+ * 求解一篮子方案。
+ * @returns 见 range.d.mts 的 PlanData
+ */
+function buildPlan(data, spec) {
+  const range = resolveRange(typeof spec === "string" && spec ? spec : DEFAULT_RANGE, data.now, data.rows);
+  const rows = completed(filterRows(data.rows || [], range));
+  const menu = data.menu || {};
+  const coupons = data.coupons || [];
+  const nowMs = data.now;
+  const days = Math.max(1, range.days || 1);
+
+  const out = {
+    ok: false,
+    reason: null,
+    spec: range.key === "custom" ? range.key : range.key,
+    rangeKey: range.key,
+    label: range.label,
+    from: dateKey(range.fromMs),
+    to: dateKey(range.toMs),
+    days,
+    orders: rows.length,
+    basket: [],
+    seen: [],
+    store: null,
+    methods: [],
+    best: null,
+    split: null,
+    card: null,
+    degrade: null,
+    provenance: [],
+  };
+
+  if (rows.length === 0) {
+    out.reason = "这个区间还没有已完成订单，换一个区间再试";
+    return out;
+  }
+
+  // ① 常点商品（方案的主语）
+  const basket = topSkus(rows, menu, 3);
+  if (basket.length === 0) {
+    out.reason = "这个区间的订单里没有可定价的商品，换一个区间再试";
+    return out;
+  }
+
+  // ② 见过的全部 SKU（用于找"更便宜的买法"和售罄替代）
+  const seen = topSkus(rows, menu, 40);
+
+  const listTotal = money(sum(basket.map((b) => b.list)));
+  const curTotal = money(sum(basket.map((b) => b.unit)));
+  const promoSave = money(listTotal - curTotal);
+
+  // ③ 可用券 × 常点商品的命中
+  const hits = [];
+  for (const c of coupons) {
+    if (!couponAlive(c, nowMs)) continue;
+    const kw = couponKeyword(c.name);
+    if (!kw) continue;
+    let best = null;
+    let bestScore = 0;
+    for (const b of basket) {
+      const s = covers(kw, b.name);
+      if (s > bestScore) {
+        bestScore = s;
+        best = b;
+      }
+    }
+    if (!best || bestScore < 0.7) continue;
+    const off = couponOff(c, best.unit);
+    if (off <= 0) continue;
+    hits.push({ coupon: c, item: best, off });
+  }
+  hits.sort((a, b) => b.off - a.off);
+
+  const topCount = basket[0] ? basket[0].count : 0;
+  out.confidence = topCount >= 4 ? "high" : topCount >= 2 ? "medium" : "low";
+  out.confidenceNote =
+    out.confidence === "high"
+      ? "这个组合在区间内出现了 " + topCount + " 次，是稳定的老样子"
+      : out.confidence === "medium"
+        ? "这个组合在区间内只出现 " + topCount + " 次，参考为主"
+        : "区间内订单太少，每件都只出现过 1 次 —— 这是「最近点过」，还算不上老样子";
+
+  out.ok = true;
+  out.basket = basket.map((b) => ({
+    code: b.code,
+    name: b.name,
+    count: b.count,
+    unit: money(b.unit),
+    list: money(b.list),
+  }));
+  out.seen = seen.map((s) => ({ code: s.code, name: s.name, unit: money(s.unit) }));
+
+  // 常去门店：区间内订单数最多的那家
+  const storeCount = new Map();
+  for (const r of rows) {
+    if (!r.st) continue;
+    storeCount.set(r.st, (storeCount.get(r.st) || 0) + 1);
+  }
+  const storeTop = [...storeCount.entries()].sort((a, b) => b[1] - a[1])[0];
+  out.store = storeTop ? { name: storeTop[0], orders: storeTop[1] } : null;
+
+  const itemsOf = (list) => list.map((b) => ({ n: b.name + " ×1", p: money(b.unit) }));
+  const meta = "外带 · 门店自取 · 约 10 分钟";
+
+  // ④ 买法一：单点现价（不用券）
+  out.methods.push({
+    id: "plain",
+    name: "常点组合 · 单点",
+    meta,
+    items: itemsOf(basket),
+    coupon: null,
+    original: listTotal,
+    total: curTotal,
+    saved: promoSave,
+    badge: null,
+    tip:
+      promoSave > 0
+        ? "菜单现价已含促销，这部分不需要你做任何操作"
+        : "这几件商品当前没有促销价，省钱的唯一入口是券",
+    points: [],
+  });
+
+  // ⑤ 买法二：合单用券（一单只能用一张券，取抵扣最大的那张）
+  if (hits.length > 0) {
+    const h = hits[0];
+    const total = money(curTotal - h.off);
+    out.methods.push({
+      id: "coupon",
+      name: "常点组合 · 用券",
+      meta,
+      items: itemsOf(basket),
+      coupon: { name: "券 · " + h.coupon.name, off: h.off },
+      original: listTotal,
+      total,
+      saved: money(listTotal - total),
+      badge: null,
+      tip: "券与商品绑定，替换这件商品后优惠失效",
+      points: [
+        "券「" + h.coupon.name + "」绑定在" + h.item.name + "上，券价 ¥" + h.coupon.price + "、现价 ¥" + money(h.item.unit),
+        "一单只能用一张券；剩下的券要靠拆单才能用上",
+      ],
+    });
+
+    /*
+     * ⑥ 拆单：一单只能用一张券，所以"第二张券"只能靠第二单用掉。
+     *   注意这里**不要求第二张券一定命中**——算出来不省也是结论，
+     *   界面要能回答"我拆开到底图什么"，答案是"图不到，别拆"。
+     */
+    const second = hits.find((x) => x.item.code !== h.item.code) || null;
+    const rest = basket.filter((b) => b.code !== h.item.code);
+    if (rest.length > 0 && h.item.code !== null) {
+      const o1Total = money(h.item.unit - h.off);
+      const o2List = money(sum(rest.map((b) => b.unit)));
+      const o2Total = money(o2List - (second ? second.off : 0));
+      const total = money(o1Total + o2Total);
+      const singleTotal = out.methods[out.methods.length - 1].total;
+      const delta = money(singleTotal - total);
+      out.split = {
+        orders: [
+          {
+            label: "单 1 · " + h.item.name,
+            items: [{ n: h.item.name + " ×1", p: money(h.item.unit) }],
+            coupon: { name: "券 · " + h.coupon.name, off: h.off },
+            total: o1Total,
+          },
+          {
+            label: "单 2 · " + rest.map((b) => b.name).join(" + "),
+            items: rest.map((b) => ({ n: b.name + " ×1", p: money(b.unit) })),
+            coupon: second ? { name: "券 · " + second.coupon.name, off: second.off } : null,
+            total: o2Total,
+          },
+        ],
+        total,
+        delta,
+        worthy: delta >= 5,
+        secondCoupon: !!second,
+        note: !second
+          ? "第二张券用不上这些商品，拆开不省，还多一个取餐码"
+          : delta >= 5
+            ? "多省 ¥" + delta.toFixed(2) + " · 代价是多 1 个取餐码"
+            : delta > 0
+              ? "只多省 ¥" + delta.toFixed(2) + "，不足 ¥5，不值得多跑一趟"
+              : "拆开并不更省，还会多一个取餐码，建议合单",
+      };
+    }
+  }
+
+  // ⑦ 买法三：更便宜的同类买法（组合/套餐替代单品）
+  for (const b of basket) {
+    const alt = cheaperAlt(b, seen);
+    if (!alt || alt.save < 0.5) continue;
+    const items = basket.map((x) =>
+      x.code === b.code
+        ? { n: alt.name + " ×1 · 替代" + b.name, p: money(alt.unit), swapped: true }
+        : { n: x.name + " ×1", p: money(x.unit) },
+    );
+    const total = money(curTotal - alt.save);
+    out.methods.push({
+      id: "alt:" + b.code,
+      name: "换成" + alt.name,
+      meta,
+      items,
+      coupon: null,
+      original: listTotal,
+      total,
+      saved: money(listTotal - total),
+      badge: "更便宜",
+      tip: "同类商品里更低的买法，餐品会变，介意口感就别换",
+      points: [alt.name + " ¥" + money(alt.unit) + " vs " + b.name + " ¥" + money(b.unit) + "，每件省 ¥" + alt.save.toFixed(2)],
+    });
+    break; // 只推最划算的一处替换，多了就变成菜单浏览
+  }
+
+  // ⑧ 买卡：只有"随单购权益价"的商品才谈得上买卡（否则是帮商家卖卡）
+  const cardItem = basket.find((b) => {
+    const d = (menu[b.code] || {}).d;
+    return typeof d === "string" && d.indexOf("随单购") >= 0 && b.list > b.unit;
+  });
+  if (cardItem) {
+    const perSave = money(cardItem.list - cardItem.unit);
+    const cardFee = 19; // 麦金卡月卡 ¥19（2026-10 实测）
+    const breakEven = Math.ceil(cardFee / perSave);
+    const perMonth = (cardItem.count * 30) / days;
+    const netMonth = money(perSave * perMonth - cardFee);
+    const single = money(cardItem.list - (cardItem.unit + cardFee)); // >0 = 这一单买卡就更省
+    out.card = {
+      item: { n: cardItem.name + " ×1", p: money(cardItem.unit) },
+      cardFee: { n: "麦金卡月卡（30 天）×1", p: cardFee },
+      withCard: money(cardItem.unit + cardFee),
+      noCard: money(cardItem.list),
+      single,
+      perSave,
+      breakEven,
+      perMonth: Math.round(perMonth * 10) / 10,
+      netMonth,
+      verdict: netMonth > 0 ? "值" : "不值",
+      text:
+        "单笔：买卡 ¥" + money(cardItem.unit + cardFee) + " vs 不买卡 ¥" + money(cardItem.list) +
+        (single > 0 ? "（这一单就省 ¥" + single.toFixed(2) + "）" : "（这一单贵 ¥" + (-single).toFixed(2) + "）") +
+        "；按月：回本线 " + breakEven + " 次，你月化 " + (Math.round(perMonth * 10) / 10) + " 次，净省 ¥" + netMonth.toFixed(2),
+    };
+  }
+
+  // ⑨ 售罄降级（S4）：最贵的那件换成同类替代，价差超阈值会要求重新确认
+  const priciest = basket.slice().sort((a, b) => b.unit - a.unit)[0];
+  const alt = priciest ? cheaperAlt(priciest, seen) : null;
+  if (priciest && alt) {
+    const delta = money(alt.unit - priciest.unit);
+    const prevTotal =
+      (out.methods.find((m) => m.id === "coupon") || out.methods[0]).total;
+    out.degrade = {
+      from: priciest.name,
+      to: alt.name,
+      delta,
+      items: basket.map((x) =>
+        x.code === priciest.code
+          ? { n: alt.name + " ×1 · 替代" + priciest.name, p: money(alt.unit), swapped: true }
+          : { n: x.name + " ×1", p: money(x.unit) },
+      ),
+      prevTotal,
+      total: money(prevTotal + delta),
+      threshold: 0.5,
+    };
+  }
+
+  // ⑩ 最省方案
+  const ranked = out.methods.slice().sort((a, b) => a.total - b.total);
+  out.best = ranked[0] ? ranked[0].id : null;
+  if (ranked[0]) ranked[0].badge = "最省";
+  out.methods = ranked;
+
+  // ⑪ 数字从哪来（评审时最常被问的一栏）
+  out.provenance = [
+    "常点商品：区间内 " + rows.length + " 笔已完成订单里出现次数最多的 " + basket.length + " 个 SKU",
+    "价格：账本事实表里的菜单现价 / 划线价，原型不联网，真实下单前须重算",
+    hits.length > 0
+      ? "券：" +
+        hits
+          .slice(0, 2)
+          .map((h) => "「" + h.coupon.name + "」最多省 ¥" + h.off.toFixed(2))
+          .join("、")
+      : "券：当前没有券能命中这几件商品",
+    out.card ? "买卡：卡价 ¥19（实测），回本线按「单笔省额」反推" : "买卡：常点商品里没有随单购权益价，不做推荐",
+  ];
+
+  return out;
+}
+
+/**
+ * 账本里的某条策略 → 原型里应该默认选中哪个买法。
+ * 这是"从诊断跳到决策"要带的那个参数：点「时段 × 券」进来，就该先看到用券的方案。
+ */
+function planFocus(plan, kind) {
+  if (!plan || !plan.ok) return null;
+  const best = plan.best || (plan.methods[0] ? plan.methods[0].id : null);
+  const alt = plan.methods.find((m) => String(m.id).indexOf("alt:") === 0);
+  const has = (id) => plan.methods.some((m) => m.id === id);
+  switch (kind) {
+    case "window":
+    case "expiry":
+    case "timing":
+      return has("coupon") ? "coupon" : best;
+    case "price":
+      return alt ? alt.id : best;
+    case "delivery":
+      return best;
+    default:
+      return best;
+  }
+}
+
+/**
+ * 一次算出整个页面的"区间视图"。
+ * 服务端首屏与浏览器切换区间走的是同一个函数——这是双端数字一致的根本保证。
+ */
+function buildView(data, spec) {
+  const range = resolveRange(spec, data.now, data.rows);
+  const rows = filterRows(data.rows, range);
+  const summary = summarize(rows, range);
+  const strats = buildStrategies(summary, rows, data);
+  return {
+    spec: typeof spec === "string" ? spec : DEFAULT_RANGE,
+    range,
+    summary,
+    strats,
+    totals: strategyTotals(strats),
+    html: {
+      cover: renderOverview(summary, strats, range),
+      flow: renderFlow(summary, range),
+      attr: renderAttr(summary, range),
+      strategy: renderStrategy(strats, summary, range),
+      profile: renderProfile(summary, range),
+      share: renderShare(summary, strats, range),
+    },
+  };
+}
+
+return {ENGINE_VERSION,money,yuan,esc,parseLocal,dateKey,mealPeriod,PRESETS,DEFAULT_RANGE,parseRangeSpec,resolveRange,filterRows,summarize,buildStrategies,strategyCaption,strategyTotals,renderOverview,renderFlow,renderAttr,renderStrategy,renderProfile,shareText,renderShare,buildPlan,planFocus,buildView};})();</script>
+<script>
+/* =========================================================================
+   状态
+   ========================================================================= */
+const S = {
+  theme:'light',
+  scenario:'normal',      // normal | stockout
+  screen:'plan',
+  spec:'30d',             // 区间：与账本页同源，切区间即重算方案
+  strat:null,             // 从账本跳进来时带的策略类型
+  fromLedger:false,       // 是否来自账本页的某条策略
+  srcOpen:false,          // 「这些数字怎么算的」是否展开
+  group:'single',         // single | split
+  altOpen:false,          // 其他买法是否展开
+  planId:'plain',         // 当前选中的买法 id（= PLAN.methods[].id）
+  degrade:false,
+  buyCard:true,
+  orders:[],
+  remaining:900,
+  notice:null,
+  payTarget:null,
+  payMethod:'wechat',
+  log:[],
+  toasts:[],
+};
+const CAPS = {
+  'plan:single': 'S1 · 方案卡 · 合单主态',
+  'plan:split': 'S2 · 方案卡 · 拆单对比',
+  'plan:degrade': 'S4 · 方案卡 · 重校验降级',
+  'card': 'S3 · 方案卡 · 买卡双栏',
+  'pay:1': 'S5 · 待支付确认页 · 主态',
+  'pay:2': 'S6 · 待支付 · 拆单 2 单',
+  'expired': 'S7 · 待支付 · 已过期',
+  'fail': 'S9 · 待支付 · 支付未完成',
+  'success': 'S8 · 支付成功 · 取餐码',
+};
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const money = (n) => '¥' + Number(n).toFixed(2);
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const clockNow = () => new Date().toTimeString().slice(0, 8);
+const mmss = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+
+/* =========================================================================
+   图标
+   ========================================================================= */
+const I = {
+  back: '<svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  clock: '<svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.1" stroke="currentColor" stroke-width="1.3"/><path d="M6 3.2V6l2 1.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  warn: '<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.6L14 13.2H1L7.5 1.6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.5 5.8v3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="11.1" r=".75" fill="currentColor"/></svg>',
+  info: '<svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.1" stroke="currentColor" stroke-width="1.4"/><path d="M7 4.2v3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="10.1" r=".8" fill="currentColor"/></svg>',
+  store: '<svg viewBox="0 0 16 16" fill="none"><path d="M8 14.4s5-4.1 5-8a5 5 0 10-10 0c0 3.9 5 8 5 8z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/><circle cx="8" cy="6.3" r="1.9" stroke="currentColor" stroke-width="1.35"/></svg>',
+  chev: '<svg class="chev" viewBox="0 0 14 14" fill="none"><path d="M5.2 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check: '<svg viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6.5" fill="currentColor"/><path d="M3.6 6.6l2 2 3.8-3.9" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: '<svg viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  fail: '<svg viewBox="0 0 54 54" fill="none"><circle cx="27" cy="27" r="27" fill="var(--surface-3)"/><circle cx="27" cy="27" r="13" stroke="currentColor" stroke-width="2"/><path d="M27 20.5v7l4.8 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13 41L41 13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  barcode: '<svg class="barcode" viewBox="0 0 230 38" fill="none"><g fill="currentColor"><rect x="4" width="3" height="38"/><rect x="11" width="2" height="38"/><rect x="17" width="5" height="38"/><rect x="26" width="2" height="38"/><rect x="32" width="4" height="38"/><rect x="41" width="2" height="38"/><rect x="47" width="3" height="38"/><rect x="55" width="5" height="38"/><rect x="64" width="2" height="38"/><rect x="70" width="4" height="38"/><rect x="79" width="2" height="38"/><rect x="85" width="3" height="38"/><rect x="93" width="2" height="38"/><rect x="99" width="5" height="38"/><rect x="108" width="2" height="38"/><rect x="114" width="4" height="38"/><rect x="123" width="3" height="38"/><rect x="131" width="2" height="38"/><rect x="137" width="5" height="38"/><rect x="146" width="2" height="38"/><rect x="152" width="3" height="38"/><rect x="160" width="4" height="38"/><rect x="169" width="2" height="38"/><rect x="175" width="5" height="38"/><rect x="184" width="2" height="38"/><rect x="190" width="3" height="38"/><rect x="198" width="4" height="38"/><rect x="207" width="2" height="38"/><rect x="213" width="5" height="38"/><rect x="222" width="2" height="38"/><rect x="228" width="3" height="38"/></g></svg>',
+};
+
+/* =========================================================================
+   数据来源
+   -------------------------------------------------------------------------
+   这一页不再是写死的数字。构建时把账本的**事实表**注入进来
+   （<script id="plan-data">），页面用与服务端同一份引擎（MCD_LEDGER_ENGINE）
+   现场求解：切区间 → 换一批常点商品 → 换一批可用券 → 价格和结论跟着变。
+   所有价格来自菜单现价/划线价，原型不联网；真实下单前必须重算（S4 讲的就是它）。
+   ========================================================================= */
+const RAW = (function () {
+  const el = document.getElementById('plan-data');
+  if (!el) return null;
+  try { return JSON.parse(el.textContent); } catch (e) { return null; }
+})();
+const E = window.MCD_LEDGER_ENGINE || null;
+const LEDGER = RAW && RAW.ledger ? RAW.ledger : null;
+let PLAN = RAW && RAW.plan ? RAW.plan : null;
+let STRAT = RAW && RAW.strat ? RAW.strat : null;   // 从账本带过来的那条策略（会随区间重算）
+const RANGES = [
+  { key: '7d', label: '近 7 天' },
+  { key: '30d', label: '近 30 天' },
+  { key: '90d', label: '近 90 天' },
+  { key: 'all', label: '全部' },
+];
+
+/** 用引擎重算；没有引擎时退回构建期算好的那份 */
+function recompute(keepPlan) {
+  if (E && LEDGER) {
+    PLAN = E.buildPlan(LEDGER, S.spec);
+    /* 策略也按当前区间重算：账本在 90 天时点进来的，横幅就该是 90 天那条 */
+    try {
+      const v = E.buildView(LEDGER, S.spec);
+      STRAT = (S.strat ? (v.strats || []).find((x) => x.kind === S.strat) : null) || (v.strats || [])[0] || STRAT;
+    } catch (e) { /* 引擎算不出来时沿用注入的那条 */ }
+  }
+  if (!PLAN || !PLAN.ok) return;
+  const ids = PLAN.methods.map((m) => m.id);
+  if (!keepPlan || ids.indexOf(S.planId) < 0) {
+    S.planId = (S.strat && E && E.planFocus ? E.planFocus(PLAN, S.strat) : null) || PLAN.best || (PLAN.methods[0] ? PLAN.methods[0].id : 'plain');
+  }
+  if (S.group === 'split' && !PLAN.split) S.group = 'single';
+}
+
+function method(id) {
+  if (!PLAN || !PLAN.ok) return null;
+  return PLAN.methods.find((m) => m.id === id) || PLAN.methods[0] || null;
+}
+
+function planData() {
+  if (!PLAN || !PLAN.ok) {
+    return { name: '没有可算的方案', meta: '', items: [], coupon: null, total: 0, original: 0, saved: 0, badge: null, tip: PLAN ? PLAN.reason : '缺少账本数据', points: [] };
+  }
+  const m = method(S.planId) || PLAN.methods[0];
+  if (S.degrade && PLAN.degrade) {
+    const d = PLAN.degrade;
+    return {
+      name: m.name, meta: '重校验后已替换 1 项', items: d.items, coupon: m.coupon,
+      total: d.total, original: m.original, saved: money(m.original - d.total), badge: '已替换',
+      prevTotal: d.prevTotal, delta: d.delta,
+      tip: '替换的是' + d.from + '，券绑定的商品没动，优惠不受影响',
+      points: [
+        '把' + d.from + '换成了' + d.to + '，价差 ' + (d.delta >= 0 ? '+' : '-') + money(Math.abs(d.delta)),
+        '价差绝对值 ≤ ¥' + d.threshold.toFixed(2) + ' 阈值时方案继续，超出会中断并要求你重新确认',
+      ],
+    };
+  }
+  return { ...m };
+}
+
+function splitData() {
+  if (!PLAN || !PLAN.split) return [];
+  return PLAN.split.orders;
+}
+
+/** 买卡建议：没有随单购权益价的商品就不给建议（避免变成帮商家卖卡） */
+function cardData() {
+  return PLAN && PLAN.card ? PLAN.card : null;
+}
+
+function storeName() {
+  return (PLAN && PLAN.store ? PLAN.store.name : null) || (RAW && RAW.storeName ? RAW.storeName : '常去门店');
+}
+
+/* =========================================================================
+   日志 / 提示
+   ========================================================================= */
+function logEvent(text, kind = '') {
+  S.log.unshift({ t: clockNow(), text, kind });
+  if (S.log.length > 40) S.log.pop();
+  renderLog();
+}
+function renderLog() {
+  const el = $('#log');
+  if (!el) return; // 站点版：没有评审面板
+  if (!S.log.length) { el.innerHTML = '<li class="empty">还没有操作</li>'; return; }
+  el.innerHTML = S.log.map((l) =>
+    `<li class="${l.kind}"><span class="dot"></span><time>${l.t}</time><span>${l.text}</span></li>`).join('');
+}
+function syncToastOffset() {
+  const foot = document.querySelector('.scr.on .scr-foot');
+  $('#toastWrap').style.bottom = ((foot ? foot.offsetHeight : 0) + 12) + 'px';
+}
+function toast(text, kind = '') {
+  syncToastOffset();
+  const wrap = $('#toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + kind;
+  el.innerHTML = (kind === 'ok' ? I.check : kind === 'warn' ? I.warn : I.info) + `<span>${text}</span>`;
+  wrap.appendChild(el);
+  S.toasts.push(text);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, 2600);
+}
+
+/* =========================================================================
+   屏幕切换
+   ========================================================================= */
+function setScreen(id) {
+  S.screen = id;
+  $$('.scr').forEach((s) => s.classList.toggle('on', s.dataset.scr === id));
+  $$('#jumps button').forEach((b) => b.classList.toggle('on', jumpIdFor() === b.dataset.val));
+  const body = $('.scr.on .scr-body');
+  if (body) body.scrollTop = 0;
+  renderPanel();
+}
+
+function jumpIdFor() {
+  if (S.screen === 'plan') return S.degrade ? 's4' : S.group === 'split' ? 's2' : 's1';
+  if (S.screen === 'card') return 's3';
+  if (S.screen === 'pay') return S.orders.length > 1 ? 's6' : 's5';
+  if (S.screen === 'expired') return 's7';
+  if (S.screen === 'fail') return 's9';
+  if (S.screen === 'success') return 's8';
+  return '';
+}
+
+/* =========================================================================
+   渲染：方案卡
+   ========================================================================= */
+function navrow({ title, back, timer, chip }) {
+  const right = timer
+    ? `<span class="timer ${timer <= 120 ? 'low' : ''}" id="timerChip">${I.clock}<span id="timerText">${mmss(timer)}</span></span>`
+    : chip || (back ? '' : '<span class="nav-store">' + storeName() + '</span>');
+  return `<div class="navrow">
+    ${back ? `<button class="nav-back" data-act="back-plan" aria-label="返回">${I.back}</button>` : ''}
+    <div class="nav-t ${back || chip ? '' : 'left'}" ${chip ? 'style="margin-right:0"' : ''}>${title}</div>
+    ${right}
+  </div>`;
+}
+
+function renderPlan() {
+  const p = planData();
+  const split = S.group === 'split' && !S.degrade && !!(PLAN && PLAN.split);
+  const canSplit = !S.degrade && !!(PLAN && PLAN.split);
+  const out = [];
+  const nav = navrow({ title: '今天中午 · 方案' });
+
+  out.push(rangeBar());
+  if (S.fromLedger) out.push(ledgerBanner());
+
+  if (S.notice) {
+    out.push(`<div class="notice" style="margin-bottom:12px">
+      <p>${S.notice}</p>
+      <button data-act="dismiss-notice" aria-label="关闭提示">${I.close}</button>
+    </div>`);
+  }
+
+  if (S.degrade && PLAN && PLAN.degrade) {
+    const d = PLAN.degrade;
+    const more = d.delta > 0 ? '多付 ' + money(d.delta) : '少付 ' + money(-d.delta);
+    out.push(`<div class="banner" style="margin-bottom:12px;align-items:flex-start">
+      ${I.warn}
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <p style="font-weight:600">${d.from} 刚刚售罄，已换成${d.to}</p>
+        <p style="color:var(--warn-text)">${more}，仍在可接受范围内，方案继续</p>
+      </div>
+    </div>`);
+  }
+
+  out.push(`<div class="intent">
+    <div class="intent-top">
+      <span class="intent-tag">${S.degrade ? '照旧 · 已调整' : '照旧 · 常点组合'}</span>
+      <span class="intent-sub">${S.degrade ? '重校验于 ' + clockNow() : (PLAN ? PLAN.label + ' · ' + PLAN.orders + ' 笔' : '')}</span>
+    </div>
+    <div class="intent-name">${S.degrade ? p.name : '常点组合'}</div>
+    ${PLAN && PLAN.ok ? `<div style="margin-top:6px;font-size:11px;line-height:1.5;color:var(--intent-sub)">${PLAN.basket.map((b2) => b2.name + ' ×' + b2.count).join(' · ')}</div>` : ''}
+  </div>`);
+
+  out.push(`<div class="grp" style="margin-top:10px">
+    <button class="gcard ${!split ? 'on' : ''}" data-act="group" data-val="single">
+      <span class="gcard-top"><span class="gcard-k">合单 · 1 单</span><span class="gcard-v">用 1 张券</span></span>
+      <span class="gcard-p num">${money(p.total)}</span>
+    </button>
+    <button class="gcard ${split ? 'on' : ''}" data-act="group" data-val="split" ${canSplit ? '' : 'disabled'}>
+      <span class="gcard-top"><span class="gcard-k">拆单 · 2 单</span><span class="gcard-v">${PLAN && PLAN.split ? (PLAN.split.secondCoupon ? '用 2 张券' : '第 2 张券用不上') : '没有第二张可用券'}</span></span>
+      <span class="gcard-p num">${PLAN && PLAN.split ? money(PLAN.split.total) : '—'}</span>
+    </button>
+  </div>`);
+
+  out.push(split ? splitBlock() : mainBlock(p));
+  /* 降级态只保留「处理这次变化」这一条主线，其他买法先收起，避免分心 */
+  if (S.degrade) out.push(`<button class="btn-text" data-act="revert-degrade" style="margin-top:6px">回到原方案（不替换）</button>`);
+
+  if (!split && !S.degrade) {
+    const alts = (PLAN ? PLAN.methods : []).filter((m) => m.id !== S.planId);
+    const lowest = alts.length ? Math.min.apply(null, alts.map((m) => m.total)) : 0;
+    out.push(`<div class="card alt-card" style="margin-top:10px">
+    <button class="alt-toggle" data-act="toggle-alt" aria-expanded="${S.altOpen}">
+      <span class="alt-n">其他买法</span>
+      <span class="alt-p"><span>${alts.length} 种已算过${alts.length ? ' · 最低 ' + money(lowest) : ''}</span>
+        <svg class="chev ${S.altOpen ? 'up' : ''}" viewBox="0 0 14 14" fill="none"><path d="M5.2 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+    ${S.altOpen ? `<div class="alt-body">
+      ${alts.map((m) => `<button class="alt-item" data-act="pick-plan" data-val="${m.id}">
+        <span class="alt-n">${m.name}</span>
+        <span class="alt-p"><b>${money(m.total)}</b><span>${m.total > p.total ? '贵 ' + money(m.total - p.total) : m.coupon ? '用券省 ' + money(m.coupon.off) : '省 ' + money(m.saved)}</span>${I.chev}</span>
+      </button>`).join('')}
+      ${cardData() ? `<button class="alt-item" data-act="open-card" style="border-bottom:0">
+        <span class="alt-n">或：买麦金卡再下单（${cardData().item.n.replace(' ×1', '')}）</span>
+        <span class="alt-p"><b>${money(cardData().withCard)}</b><span>${cardData().single > 0 ? '省 ' + money(cardData().single) : '这次贵 ' + money(-cardData().single)}</span>${I.chev}</span>
+      </button>` : ''}
+    </div>` : ''}
+  </div>`);
+  }
+
+  /* 数字从哪来：评审时最常被问的一栏，放在最后不影响首屏 */
+  if (PLAN && PLAN.ok) out.push(srcCard());
+
+  if (PLAN && PLAN.best && S.planId !== PLAN.best) {
+    out.push(`<button class="btn-text" data-act="restore" style="margin-top:6px">恢复推荐方案（${money(method(PLAN.best).total)}）</button>`);
+  }
+
+  const foot = [];
+  foot.push(`<div class="foot-hint">${
+    S.degrade ? '方案对象不可变：卡上显示多少，下单就是多少'
+      : split ? '两单会依次生成，均需单独确认支付'
+      : '生成后 15 分钟内未支付将自动失效，可随时撤销'
+  }</div>`);
+  foot.push(`<button class="btn-primary" data-act="make-order">
+    <span>${S.degrade ? '按新方案生成待支付订单' : split ? '生成 2 张待支付订单' : '生成待支付订单'}</span>
+  </button>`);
+
+  const scr = $('[data-scr="plan"]');
+  scr.innerHTML = `${nav}<div class="scr-body">${out.join('')}</div><div class="scr-foot">${foot.join('')}</div>`;
+  renderPanel();
+}
+
+/* 区间切换：与账本页同源。点一下 → 引擎重算 → 常点商品、券、价格全变 */
+function rangeBar() {
+  return `<div class="rbar">
+    ${RANGES.map((r) => `<button class="rchip ${S.spec === r.key ? 'on' : ''}" data-act="range" data-val="${r.key}">${r.label}</button>`).join('')}
+    ${PLAN && PLAN.ok ? `<span class="rbar-n">${PLAN.from} → ${PLAN.to}</span>` : ''}
+  </div>`;
+}
+
+/* 从账本某条策略跳进来时，先交代"为什么是这张卡" */
+function ledgerBanner() {
+  const st = STRAT;
+  if (!st) return '';
+  const amount = st.perMonth !== null && st.perMonth !== undefined ? '月化 ¥' + Number(st.perMonth).toFixed(2)
+    : st.inRange !== null && st.inRange !== undefined ? '区间 ¥' + Number(st.inRange).toFixed(2) : '不计金额';
+  return `<div class="banner brand" style="margin-bottom:10px;align-items:flex-start">
+    ${I.info}
+    <div style="display:flex;flex-direction:column;gap:3px">
+      <p style="font-weight:600">来自账本：${st.title}</p>
+      <p style="color:var(--brand-ink)">${st.kindLabel || ''} · ${amount}${st.action ? ' · ' + st.action : ''}</p>
+    </div>
+  </div>`;
+}
+
+/* 数字从哪来 */
+function srcCard() {
+  return `<div class="card" style="margin-top:10px;padding:0;overflow:hidden">
+    <button class="alt-toggle" data-act="toggle-src" aria-expanded="${S.srcOpen}">
+      <span class="alt-n">这些数字怎么算的</span>
+      <span class="alt-p"><span>${PLAN.confidence === 'high' ? '样本充足' : PLAN.confidence === 'medium' ? '样本一般' : '样本偏少'}</span>
+        <svg class="chev ${S.srcOpen ? 'up' : ''}" viewBox="0 0 14 14" fill="none"><path d="M5.2 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+    ${S.srcOpen ? `<div class="alt-body" style="padding-bottom:10px">
+      <div class="pi" style="margin:10px 0 6px">${PLAN.confidenceNote}</div>
+      ${PLAN.provenance.map((t) => `<div class="pi">${t}</div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
+function itemRows(p) {
+  return p.items.map((it) => `<div class="item ${it.swapped ? 'swapped' : ''}">
+      <span class="item-n">${it.n}${it.sub ? `<span class="muted" style="display:block">${it.sub}</span>` : ''}</span>
+      <span class="item-p">${money(it.p)}</span>
+    </div>`).join('');
+}
+
+function mainBlock(p) {
+  return `<div class="card" style="margin-top:10px;display:flex;flex-direction:column;gap:9px">
+    <div class="row" style="align-items:flex-start">
+      <div style="min-width:0;flex:1">
+        <div style="font-size:16px;font-weight:600;letter-spacing:-.01em">${p.name}</div>
+        <div class="muted" style="margin-top:2px">${p.meta}</div>
+      </div>
+      ${p.badge ? `<span class="chip ${p.badge === '已替换' ? 'chip-warn' : p.badge === '最省' ? 'chip-gold' : 'chip-neutral'}">${p.badge}</span>` : ''}
+    </div>
+    <div class="divider"></div>
+    <div class="stack tight">${itemRows(p)}</div>
+    ${p.coupon ? `<div class="item">
+      <span class="item-n" style="color:var(--brand-ink)">${p.coupon.name}</span>
+      <span class="item-p coupon">-${money(p.coupon.off)}</span>
+    </div>` : ''}
+    <div class="tipbar">${I.info}<p>${p.tip}</p></div>
+    ${p.points && p.points.length ? `<div class="pts-inline">${p.points.map((t) => `<div class="pi">${t}</div>`).join('')}</div>` : ''}
+    <div class="divider"></div>
+    <div class="price-row">
+      <div>
+        <div class="price-l">整单原价 <span class="strike">${money(p.original)}</span></div>
+        ${p.delta ? `<div class="price-note" style="color:var(--warn-strong);margin-top:2px">原方案 ${money(p.prevTotal)} · 现多付 ${money(p.delta)}</div>`
+          : `<div class="price-note" style="margin-top:2px">价格锁定至 ${lockTime()}</div>`}
+      </div>
+      <div style="text-align:right">
+        <div class="price-l">实付</div>
+        <div class="price-v num">${money(p.total)}</div>
+      </div>
+    </div>
+    <div class="price-note" style="text-align:right">${p.saved > 0 ? `已省 ${money(p.saved)}` : '未使用券'}</div>
+  </div>`;
+}
+
+function splitBlock() {
+  const [o1, o2] = splitData();
+  const order = (o) => `<div style="display:flex;flex-direction:column;gap:7px">
+      <div class="row"><b style="font-size:13px">${o.label}</b><b style="font-size:13px;color:var(--brand-ink)">${money(o.total)}</b></div>
+      ${o.items.map((i) => `<div class="row" style="font-size:12px"><span style="color:var(--text-2)">${i.n}</span><span style="color:var(--text-3)">${money(i.p)}</span></div>`).join('')}
+      ${o.coupon
+        ? `<div class="row" style="font-size:12px"><span style="color:var(--brand-ink)">${o.coupon.name}</span><span style="color:var(--brand-ink);font-weight:500">-${money(o.coupon.off)}</span></div>`
+        : `<div class="row" style="font-size:12px"><span style="color:var(--text-3)">没有可用的第二张券</span><span style="color:var(--text-3)">-¥0.00</span></div>`}
+    </div>`;
+  return `<div class="stack" style="margin-top:12px;gap:10px">
+    <div class="tipbar">${I.info}<p>一单只能用 1 张券。${PLAN.split.secondCoupon
+      ? (PLAN.split.delta > 0 ? '拆成 2 单可多省 ' + money(PLAN.split.delta) + '。' : '拆成 2 单并不更省。')
+      : '第二张券用不上这些商品，拆开只会多一个取餐码。'}</p></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      ${order(o1)}
+      <div class="divider"></div>
+      ${order(o2)}
+    </div>
+    <div class="row" style="background:var(--surface-2);border-radius:var(--r-md);padding:10px 12px">
+      <span style="display:flex;align-items:baseline;gap:7px"><span class="muted">合计</span><b class="num" style="font-size:20px;font-weight:700">${money(PLAN.split.total)}</b></span>
+      <span style="font-size:10px;color:var(--brand-ink);font-weight:600">${PLAN.split.note}</span>
+    </div>
+    <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:5px;border-color:var(--warn-border)">
+      <div style="font-size:11px;font-weight:600;color:var(--warn-strong)">拆单的代价</div>
+      <div class="price-note" style="line-height:1.55">· ${splitData().length} 个取餐码，需分${splitData().length}次取餐</div>
+      <div class="price-note" style="line-height:1.55">· 两单分别支付，第 2 单失败不会影响第 1 单</div>
+    </div>
+  </div>`;
+}
+
+function lockTime() {
+  const d = new Date(Date.now() + 15 * 60000);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+/* =========================================================================
+   渲染：买卡（S3）
+   ========================================================================= */
+function renderCard() {
+  const C = cardData();
+  if (!C) {
+    const scr0 = $('[data-scr="card"]');
+    scr0.innerHTML = `${navrow({ title: '今天中午 · 方案', back: true })}
+      <div class="scr-body"><div class="card" style="margin-top:12px;padding:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">当前没有买卡建议</div>
+        <div class="price-note" style="line-height:1.6">常点商品里没有"随单购权益价"，买卡不会更便宜。
+        只有菜单价本身绑定了会员权益时，买卡才谈得上回本——否则这就是在帮商家卖卡。</div>
+      </div></div>
+      <div class="scr-foot"><button class="btn-primary" data-act="back-plan">回到方案</button></div>`;
+    return;
+  }
+  const total = S.buyCard ? C.withCard : C.noCard;
+  const items = S.buyCard
+    ? [C.item, C.cardFee]
+    : [{ n: C.item.n, p: C.noCard }];
+  const scr = $('[data-scr="card"]');
+  scr.innerHTML = `${navrow({ title: '今天中午 · 方案', back: true })}
+  <div class="scr-body">
+    <div class="intent">
+      <div class="intent-top"><span class="intent-tag">想吃这个 · 常点</span><span class="intent-sub">${S.buyCard ? '含麦金卡月卡' : '按无卡价'}</span></div>
+      <div class="intent-name">${C.item.n.replace(' ×1', '')}</div>
+    </div>
+    <div class="grp" style="margin-top:12px">
+      <button class="gcard ${!S.buyCard ? 'on' : ''}" data-act="card-buy" data-val="no">
+        <span class="gcard-top"><span class="gcard-k">不买卡</span><span class="gcard-v">按无卡价</span></span>
+        <span class="gcard-p num">${money(C.noCard)}</span>
+      </button>
+      <button class="gcard ${S.buyCard ? 'on' : ''}" data-act="card-buy" data-val="yes">
+        <span class="gcard-top"><span class="gcard-k">买卡 · ¥${C.cardFee.p}/月</span><span class="gcard-v">${C.single > 0 ? '这单省 ' + money(C.single) : '这单贵 ' + money(-C.single)}</span></span>
+        <span class="gcard-p num">${money(C.withCard)}</span>
+      </button>
+    </div>
+    <div class="card" style="margin-top:12px;display:flex;flex-direction:column;gap:11px">
+      <div style="font-size:13px;font-weight:600">结算明细</div>
+      <div class="stack tight">
+        ${items.map((i) => `<div class="item"><span class="item-n">${i.n}</span><span class="item-p">${money(i.p)}</span></div>`).join('')}
+      </div>
+      <div class="divider"></div>
+      <div class="row"><span class="muted">此单实付${S.buyCard ? ' · 卡价已计入' : ''}</span><b class="num" style="font-size:22px;font-weight:700;color:var(--brand)">${money(total)}</b></div>
+      <div class="price-note">麦金卡与商品在同一张单里，价格完全透明</div>
+    </div>
+    <div class="card" style="margin-top:10px;background:var(--warn-bg);border-color:transparent;padding:12px;display:flex;flex-direction:column;gap:5px">
+      <div style="font-size:11px;font-weight:600;color:var(--warn-text)">这张卡值不值</div>
+      <div class="price-note" style="line-height:1.55">${C.text}</div>
+      <div style="font-size:11.5px;font-weight:600;color:var(--warn-text)">结论：按月${C.verdict}（净省 ¥${C.netMonth.toFixed(2)}/月）；只买这一次则${C.single > 0 ? '划算' : '不划算'}</div>
+    </div>
+    <div class="card" style="margin-top:10px;padding:12px 14px;display:flex;align-items:stretch">
+      <div style="flex:1"><div style="font-size:9.5px;color:var(--text-4)">有效期</div><div style="font-size:11.5px;font-weight:500;margin-top:2px">30 天</div></div>
+      <div style="width:1px;background:var(--border-2);margin:0 12px"></div>
+      <div style="flex:1"><div style="font-size:9.5px;color:var(--text-4)">结算</div><div style="font-size:11.5px;font-weight:500;margin-top:2px">同单计入</div></div>
+      <div style="width:1px;background:var(--border-2);margin:0 12px"></div>
+      <div style="flex:1"><div style="font-size:9.5px;color:var(--text-4)">撤销</div><div style="font-size:11.5px;font-weight:500;margin-top:2px">卡费随单作废</div></div>
+    </div>
+  </div>
+  <div class="scr-foot">
+    <div class="foot-hint">卡与商品同单结算 · 生成后可撤销，卡费随单作废</div>
+    <button class="btn-primary" data-act="make-card">生成待支付订单（${S.buyCard ? '含麦金卡' : '不含卡'}）</button>
+  </div>`;
+}
+
+/* =========================================================================
+   渲染：待支付（S5 / S6）
+   ========================================================================= */
+function renderPay() {
+  if (!S.orders.length) { setScreen('plan'); renderPlan(); return; }
+  const multi = S.orders.length > 1;
+  const total = S.orders.reduce((a, o) => a + o.total, 0);
+  const allPaid = S.orders.every((o) => o.status === 'paid');
+  const next = S.orders.find((o) => o.status === 'pending');
+  const out = [];
+  const nav = navrow({ title: multi ? '待支付 · 2 单' : '待支付', back: true, timer: S.remaining });
+
+  if (multi) {
+    out.push(`<div class="row" style="margin-bottom:12px;align-items:flex-end">
+      <div><div class="muted">2 单合计</div><div class="num" style="font-size:28px;font-weight:700;color:var(--brand);letter-spacing:-.02em">${money(total)}</div></div>
+      <span style="font-size:10.5px;color:var(--brand-ink);font-weight:600">${PLAN && PLAN.split ? PLAN.split.note : ''}</span>
+    </div>`);
+    out.push('<div class="stack">' + S.orders.map((o, idx) => ordCard(o, idx)).join('') + '</div>');
+    out.push(`<div class="card" style="margin-top:10px;padding:12px;background:var(--surface-2);border-color:transparent;display:flex;flex-direction:column;gap:5px">
+      <div class="price-note" style="line-height:1.55">· 两单独立支付、独立撤销，互不影响</div>
+      <div class="price-note" style="line-height:1.55">· 第 2 单失败不会让第 1 单变成孤儿单</div>
+    </div>`);
+    out.push(`<div class="card" style="margin-top:10px;padding:14px;display:flex;flex-direction:column;gap:8px">
+      <div class="muted" style="font-weight:500">金额构成</div>
+      <div class="kv"><dt>商品小计</dt><dd>${money(S.orders.reduce((a2, o) => a2 + o.original, 0))}</dd></div>
+      <div class="kv"><dt>券抵扣 · ${S.orders.filter((o) => o.coupon).length} 张</dt><dd class="brand">-${money(S.orders.reduce((a2, o) => a2 + (o.coupon ? o.coupon.off : 0), 0))}</dd></div>
+      <div class="divider"></div>
+      <div class="kv"><dt>两单实付</dt><dd style="font-weight:700;font-size:15px">${money(total)}</dd></div>
+    </div>`);
+  } else {
+    const o = S.orders[0];
+    out.push(`<div class="card amount-card">
+      <div class="row"><span class="muted">实付金额</span><span class="muted">待支付 · 15 分钟内有效</span></div>
+      <div class="row" style="align-items:flex-end">
+        <div class="amount-big num">${money(o.total)}</div>
+        <div class="amount-side">
+          <span class="save">${o.coupon ? '已省 ' + money(o.coupon.off) : '未使用券'}</span>
+          <span class="strike">原价 ${money(o.original)}</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="row"><span class="price-note" style="color:var(--text-4)">订单号 · 尾号 ${o.tail}</span><span class="chip chip-warn">待支付</span></div>
+      <div class="stack tight">
+        ${o.items.map((i) => `<div class="item"><span class="item-n">${i.n}</span><span class="item-p">${money(i.p)}</span></div>`).join('')}
+        ${o.coupon ? `<div class="item"><span class="item-n" style="color:var(--brand-ink)">${o.coupon.name}（已锁定）</span><span class="item-p coupon">-${money(o.coupon.off)}</span></div>` : ''}
+      </div>
+      <div class="price-note">共 ${o.items.length} 件商品${o.coupon ? ' · 用券 1 张' : ''} · 外带自取</div>
+    </div>`);
+    out.push(`<div class="store-row" style="margin-top:10px">${I.store}
+      <div><div class="t">${storeName()} · 外带自取</div><div class="s">支付成功后生成取餐码</div></div>
+      ${I.chev}
+    </div>`);
+    out.push(paywayCard());
+    out.push(qrCard());
+  }
+
+  const foot = [];
+  foot.push(`<div class="foot-hint">未支付不产生费用 · 撤销后订单立即失效</div>`);
+  const cta = multi
+    ? (next ? `支付第 ${S.orders.indexOf(next) + 1} 单 ${money(next.total)}` : '全部已支付')
+    : `去支付 ${money(S.orders[0].total)}`;
+  foot.push(`<div class="btn-row">
+    <button class="btn-danger" data-act="${multi ? 'cancel-all' : 'cancel'}">${multi ? '撤销全部' : '撤销订单'}</button>
+    <button class="btn-primary" data-act="pay" ${next ? '' : 'disabled'}>${cta}</button>
+  </div>`);
+  if (multi) foot.push(`<div class="foot-hint" style="margin:8px 0 0">按顺序支付更省心；也可以单独支付任意一单</div>`);
+
+  const scr = $('[data-scr="pay"]');
+  scr.innerHTML = `${nav}<div class="scr-body">${out.join('')}</div><div class="scr-foot">${foot.join('')}</div>`;
+}
+
+function ordCard(o, idx) {
+  const paid = o.status === 'paid';
+  return `<div class="ord-card">
+    <div class="ord-head">
+      <b>第 ${idx + 1} 单 · ${o.short}</b>
+      <span class="chip ${paid ? 'chip-ok' : 'chip-warn'}">${paid ? '已支付' : '待支付'}</span>
+    </div>
+    ${o.items.map((i) => `<div class="ord-line"><span>${i.n}</span><span>${money(i.p)}</span></div>`).join('')}
+    ${o.coupon
+      ? `<div class="ord-line"><span style="color:var(--brand-ink)">${o.coupon.name}</span><span style="color:var(--brand-ink)">-${money(o.coupon.off)}</span></div>`
+      : `<div class="ord-line"><span style="color:var(--text-3)">没有可用的券</span><span style="color:var(--text-3)">-¥0.00</span></div>`}
+    <div class="ord-foot">
+      <span class="price-note" style="color:var(--text-4)">${paid ? `取餐码 <b class="code-inline">${o.code}</b>` : '取餐码 支付后生成'}</span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <b class="ord-total">${money(o.total)}</b>
+        ${paid ? '' : `<button class="btn-sm" data-act="pay" data-order="${o.id}">去支付</button>`}
+      </span>
+    </div>
+  </div>`;
+}
+
+function paywayCard() {
+  const m = S.payMethod;
+  return `<div class="payway" style="margin-top:10px">
+    <h3>支付方式 · 付款在麦当劳支付页完成</h3>
+    <button class="pway ${m === 'wechat' ? 'on' : ''}" data-act="paymethod" data-val="wechat">
+      <span class="pradio"></span><span class="nm">微信支付</span><span class="tag">系统默认</span>
+    </button>
+    <button class="pway ${m === 'alipay' ? 'on' : ''}" data-act="paymethod" data-val="alipay">
+      <span class="pradio"></span><span class="nm">支付宝</span><span class="tag"></span>
+    </button>
+    <p class="note">这里只做展示与唤起，本产品不收集支付信息</p>
+  </div>`;
+}
+
+function qrCard() {
+  return `<div class="qr-card" style="margin-top:10px">
+    <div class="qr-box">${qrSvg()}</div>
+    <div class="qr-txt">
+      <b>扫码支付</b>
+      <p>可用另一台设备扫码，或在 App 内支付</p>
+      <p class="qr-warn">含订单号，一次性凭证，请勿截图分享</p>
+    </div>
+  </div>`;
+}
+
+function qrSvg() {
+  const N = 25, cell = 100 / N;
+  let s = 7;
+  const rnd = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+  const inFinder = (x, y) => (x < 7 && y < 7) || (x >= N - 7 && y < 7) || (x < 7 && y >= N - 7);
+  let r = '';
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    if (inFinder(x, y)) continue;
+    if (rnd() > 0.52) r += `<rect x="${(x * cell).toFixed(2)}" y="${(y * cell).toFixed(2)}" width="${cell.toFixed(2)}" height="${cell.toFixed(2)}"/>`;
+  }
+  const finder = (px, py) => `<rect x="${px * cell}" y="${py * cell}" width="${7 * cell}" height="${7 * cell}" fill="none" stroke="currentColor" stroke-width="${cell}"/><rect x="${(px + 2) * cell}" y="${(py + 2) * cell}" width="${3 * cell}" height="${3 * cell}"/>`;
+  return `<svg viewBox="0 0 100 100" fill="currentColor" shape-rendering="crispEdges">${r}${finder(0, 0)}${finder(N - 7, 0)}${finder(0, N - 7)}</svg>`;
+}
+
+/* =========================================================================
+   渲染：过期（S7）
+   ========================================================================= */
+function renderExpired() {
+  if (!S.orders.length) { setScreen('plan'); renderPlan(); return; }
+  const o = S.orders[0] || { total: 0, original: 0, items: [], tail: '6218' };
+  const scr = $('[data-scr="expired"]');
+  scr.innerHTML = `${navrow({ title: '待支付', back: true, chip: '<span class="chip chip-gray">已失效</span>' })}
+  <div class="scr-body">
+    <div class="card big-card" style="align-items:flex-start;text-align:left;flex-direction:row;gap:14px;align-items:center">
+      <div class="fail-icon">${I.fail}</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:17px;font-weight:600">订单已失效</div>
+        <div class="price-note" style="line-height:1.55">${expireStamp()} 生成 · 15 分钟未支付</div>
+        <div class="price-note" style="color:var(--text-4)">原订单已由系统置为「订单已取消」</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+      <div class="row"><span class="muted">原订单内容</span><span class="price-note" style="color:var(--text-4)">已失效</span></div>
+      <div class="stack tight">
+        ${(o.items || []).map((i) => `<div class="item"><span class="item-n" style="color:var(--text-3)">${i.n}</span><span class="item-p" style="color:var(--text-4)">${money(i.p)}</span></div>`).join('')}
+      </div>
+      <div class="divider"></div>
+      <div class="row"><span class="muted">实付金额</span><span class="strike" style="font-size:18px;font-weight:600">${money(o.total)}</span></div>
+    </div>
+    <div class="card" style="margin-top:10px;padding:13px 14px;display:flex;flex-direction:column;gap:6px">
+      <div style="font-size:11px;font-weight:600">为什么不能直接复用这张单</div>
+      <div class="price-note" style="line-height:1.55">· 15 分钟内价格、库存、券状态都可能变，复用旧单会给出错误的承诺</div>
+      <div class="price-note" style="line-height:1.55">· 重新生成 = 重新跑 calculate-price → create-order，拿新的 expirePayTime</div>
+      <div class="price-note" style="line-height:1.55">· 旧单已由系统置为已取消，不会重复扣费</div>
+    </div>
+  </div>
+  <div class="scr-foot">
+    <div class="foot-hint">重新结算后价格可能变化，会先在方案卡上展示</div>
+    <button class="btn-primary" data-act="resettle">重新结算并生成</button>
+    <button class="btn-ghost" data-act="back-plan" style="width:100%;margin-top:8px">返回方案卡</button>
+  </div>`;
+}
+function expireStamp() {
+  const d = new Date(Date.now() - 15 * 60000);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+/* =========================================================================
+   渲染：支付未完成（S9）
+   —— 用户在 payH5Url 付款页中断或按返回，回调没有回来。订单还在、倒计时还在走。
+      这一屏只回答两个问题：钱到底扣了没有、现在该点哪个按钮。
+   ========================================================================= */
+function renderPayFail() {
+  if (!S.orders.length) { setScreen('plan'); renderPlan(); return; }
+  const o = S.orders[0] || { total: 0, original: 0, items: [], tail: '6218', coupon: null };
+  const scr = $('[data-scr="fail"]');
+  scr.innerHTML = `${navrow({ title: '待支付', back: true, timer: S.remaining })}
+  <div class="scr-body">
+    <div class="card" style="display:flex;gap:13px;align-items:center">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--warn-bg);color:var(--warn-strong);display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+        <svg viewBox="0 0 24 24" width="25" height="25" fill="none"><circle cx="12" cy="12" r="9.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.2V12l3.5 2.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+        <div style="font-size:17px;font-weight:600">支付未完成</div>
+        <div class="price-note" style="line-height:1.55">付款页已关闭，没有收到支付结果</div>
+        <div class="price-note" style="color:var(--warn-strong);font-weight:600">订单仍有效 · 剩 <span id="failLeft">${mmss(S.remaining)}</span> 可付款</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px;display:flex;flex-direction:column;gap:9px">
+      <div class="row"><span class="muted">这一单</span><span class="price-note" style="color:var(--text-4)">尾号 ${o.tail} · 未支付</span></div>
+      <div class="stack tight">
+        ${(o.items || []).map((i) => `<div class="item"><span class="item-n" style="color:var(--text-2)">${i.n}</span><span class="item-p">${money(i.p)}</span></div>`).join('')}
+        ${o.coupon ? `<div class="item"><span class="item-n" style="color:var(--brand-ink)">${o.coupon.name}（仍锁定）</span><span class="item-p coupon">-${money(o.coupon.off)}</span></div>` : ''}
+      </div>
+      <div class="divider"></div>
+      <div class="row"><span class="muted">应支付</span><b class="num" style="font-size:20px;font-weight:700;color:var(--brand)">${money(o.total)}</b></div>
+    </div>
+    <div class="card" style="margin-top:10px;padding:13px 14px;display:flex;flex-direction:column;gap:9px">
+      <div class="pts-h">先确认钱扣了没有</div>
+      <div style="font-size:11.5px;line-height:1.6;color:var(--text-2)"><b style="display:block;color:var(--text);margin-bottom:2px">如果已经扣款</b>别重复支付。系统会自动核对，成功后这里直接变取餐码。</div>
+      <div class="divider"></div>
+      <div style="font-size:11.5px;line-height:1.6;color:var(--text-2)"><b style="display:block;color:var(--text);margin-bottom:2px">如果没扣款</b>点「继续支付」回到付款页。价格和券仍锁在这张单上，不会变。</div>
+    </div>
+  </div>
+  <div class="scr-foot">
+    <div class="foot-hint">倒计时结束仍未支付即自动失效，可随时撤销</div>
+    <div class="btn-row">
+      <button class="btn-danger" data-act="cancel">撤销订单</button>
+      <button class="btn-primary" data-act="pay">继续支付 ${money(o.total)}</button>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   渲染：成功（S8）
+   ========================================================================= */
+function renderSuccess() {
+  if (!S.orders.length) { setScreen('plan'); renderPlan(); return; }
+  const multi = S.orders.length > 1;
+  const first = S.orders[0];
+  const out = [];
+  const nav = navrow({ title: '订单详情', back: false });
+
+  if (!multi) {
+    out.push(`<div class="card big-card">
+      <span class="ok-chip">${I.check}支付成功</span>
+      <div class="price-note" style="margin-top:2px">取餐码</div>
+      <div class="pickup num">${first.code}</div>
+      <div class="divider" style="width:100%"></div>
+      <div style="font-size:12px;font-weight:500">${storeName()} · 外带自取</div>
+      <div class="price-note">请到取餐台出示此码 · 预计 10 分钟内出餐</div>
+      ${I.barcode}
+    </div>`);
+  } else {
+    out.push(`<div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="row"><span class="ok-chip">${I.check}2 单均已支付</span><span class="price-note">共 2 个取餐码</span></div>
+      ${S.orders.map((o, i) => `<div class="row" style="align-items:flex-end">
+        <div><div class="price-note">第 ${i + 1} 单 · ${o.short}</div><div class="pickup num" style="font-size:38px">${o.code}</div></div>
+        <span class="price-note" style="text-align:right">${money(o.total)}<br>已支付</span>
+      </div>${i === 0 ? '<div class="divider"></div>' : ''}`).join('')}
+      <div class="price-note">两单各自出码，需分两次取餐</div>
+    </div>`);
+  }
+
+  const total = S.orders.reduce((a, o) => a + o.total, 0);
+  out.push(`<div class="card" style="margin-top:12px;display:flex;flex-direction:column;gap:9px">
+    <div class="muted" style="font-weight:500">订单信息</div>
+    <div class="kv"><dt>实付金额</dt><dd style="font-weight:600">${money(total)}</dd></div>
+    <div class="kv"><dt>支付方式</dt><dd>${S.payMethod === 'wechat' ? '微信支付' : '支付宝'}</dd></div>
+    <div class="kv"><dt>支付时间</dt><dd>${new Date().toISOString().slice(0, 10)} ${clockNow().slice(0, 5)}</dd></div>
+    <div class="kv"><dt>已使用券</dt><dd class="brand">${multi ? '2 张（各 1 张）' : first.coupon ? first.coupon.name.replace('券 · ', '') : '未使用'}</dd></div>
+    <div class="kv"><dt>订单号</dt><dd>…${multi ? S.orders.map((o) => o.tail).join(' / ') : first.tail}</dd></div>
+  </div>`);
+
+  const scr = $('[data-scr="success"]');
+  scr.innerHTML = `${nav}<div class="scr-body">${out.join('')}</div>
+  <div class="scr-foot">
+    <div class="foot-hint">取餐码在支付成功后生成，请勿提前到店</div>
+    <div class="btn-row">
+      <button class="btn-ghost" data-act="again">再来一单</button>
+      <button class="btn-primary" data-act="save-code">保存取餐码</button>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   侧栏
+   ========================================================================= */
+function renderPanel() {
+  if (!$('#scrTag')) return; // 站点版：没有评审面板
+  const jump = jumpIdFor();
+  $$('#jumps button').forEach((b) => b.classList.toggle('on', b.dataset.val === jump));
+  $('#scrTag').textContent = S.screen;
+  const p = planData();
+  $('#stPlan').textContent = S.screen === 'card'
+    ? `买卡 ${S.buyCard ? money((cardData() || { withCard: 0 }).withCard) : money((cardData() || { noCard: 0 }).noCard)}`
+    : `${p.name} · ${S.group === 'split' ? '拆单' : '合单'}${S.degrade ? ' · 降级' : ''}`;
+  $('#stOrders').textContent = S.orders.length
+    ? S.orders.map((o) => o.status === 'paid' ? `已支付 ${o.code}` : o.status === 'pending' ? '待支付' : o.status === 'cancelled' ? '已撤销' : '已失效').join(' / ')
+    : '无';
+  $('#stTimer').textContent = S.screen === 'pay' ? mmss(S.remaining) : '—';
+  $('#stMoney').textContent = S.screen === 'card' ? money(S.buyCard ? (cardData() || { withCard: 0 }).withCard : (cardData() || { noCard: 0 }).noCard)
+    : S.orders.length ? money(S.orders.reduce((a, o) => a + o.total, 0)) : money(p.total);
+  const key = S.screen === 'plan' ? (S.degrade ? 'plan:degrade' : S.group === 'split' ? 'plan:split' : 'plan:single')
+    : S.screen === 'pay' ? (S.orders.length > 1 ? 'pay:2' : 'pay:1') : S.screen === 'card' ? 'card' : S.screen;
+  $('#cap').textContent = CAPS[key] || key;
+}
+
+/* =========================================================================
+   订单
+   ========================================================================= */
+let seq = 0;
+function newId() {
+  seq += 1;
+  return '10302915700006619810534162' + String(10 + (seq % 80));
+}
+function createOrders(kind) {
+  if (kind === 'split') {
+    S.orders = splitData().map((o) => ({
+      ...o, id: newId(), tail: newId().slice(-4), short: o.label.replace('单 1 · ', '').replace('单 2 · ', ''),
+      status: 'pending', code: null, original: o.items.reduce((a, i) => a + i.p, 0),
+    }));
+  } else if (kind === 'card') {
+    const C = cardData();
+    if (!C) return;
+    const t = S.buyCard ? C.withCard : C.noCard;
+    const items = S.buyCard ? [C.item, C.cardFee] : [{ n: C.item.n, p: C.noCard }];
+    const id = newId();
+    S.orders = [{ id, tail: id.slice(-4), short: C.item.n.replace(' ×1', ''), items, coupon: null, total: t, original: t, status: 'pending', code: null }];
+  } else {
+    const p = planData();
+    const id = newId();
+    S.orders = [{
+      id, tail: id.slice(-4), short: p.name, items: p.items, coupon: p.coupon,
+      total: p.total, original: p.original, status: 'pending', code: null,
+    }];
+  }
+  S.remaining = 900;
+}
+
+const CODES = ['A127', 'B043'];
+function markPaid(order) {
+  order.status = 'paid';
+  const idx = S.orders.indexOf(order);
+  order.code = CODES[idx] || 'C' + (120 + idx);
+}
+
+/* =========================================================================
+   计时
+   ========================================================================= */
+let timer = null;
+function startTimer() {
+  stopTimer();
+  timer = setInterval(() => {
+    if (S.screen !== 'pay' && S.screen !== 'fail') return;
+    S.remaining = Math.max(0, S.remaining - 1);
+    const t = $('#timerText'), chip = $('#timerChip'), fl = $('#failLeft');
+    if (t) t.textContent = mmss(S.remaining);
+    if (fl) fl.textContent = mmss(S.remaining);
+    if (chip) chip.classList.toggle('low', S.remaining <= 120);
+    const hint = document.querySelector('[data-scr="fail"] .foot-hint');
+    if (S.remaining % 5 === 0) renderPanel();
+    if (S.remaining === 0) expireOrders();
+  }, 1000);
+}
+function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+
+function expireOrders() {
+  stopTimer();
+  S.orders.forEach((o) => { if (o.status === 'pending') o.status = 'expired'; });
+  logEvent('expirePayTime 到达 · 订单失效', 'warn');
+  toast('订单已失效，未产生任何费用', 'warn');
+  setScreen('expired');
+}
+
+/* =========================================================================
+   动作
+   ========================================================================= */
+function setBusy(btn, text) {
+  if (!btn) return;
+  if (text === null) {
+    if (btn.dataset.orig) btn.innerHTML = btn.dataset.orig;
+    btn.disabled = false;
+    delete btn.dataset.orig;
+    return;
+  }
+  btn.dataset.orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spin"></span><span>${text}</span>`;
+}
+
+async function makeOrder(btn, kind) {
+  const split = kind === 'split';
+  setBusy(btn, split ? '正在依次生成订单…' : '正在校验价格…');
+  logEvent(split ? 'calculate-price ×2 · 串行' : 'calculate-price 重校验');
+  await wait(split ? 1250 : 950);
+
+  if (!split && kind === 'single' && S.scenario === 'stockout' && !S.degrade && !!(PLAN && PLAN.degrade)) {
+    setBusy(btn, null);
+    S.degrade = true;
+    S.scenario = 'normal';
+    renderPlan();
+    syncScenarioUI();
+    logEvent('60006 商品已售罄 → 同类替代，价差 +¥0.50', 'warn');
+    toast('1 项商品已不可售，已替换同类并保留价差说明', 'warn');
+    return;
+  }
+
+  createOrders(kind);
+  logEvent(split ? 'create-order ×2 成功 · 待支付' : 'create-order 成功 · 待支付', 'ok');
+  renderPay();
+  startTimer();
+  setScreen('pay');
+  toast(split ? '已生成 2 张待支付订单，15 分钟内有效' : '已生成待支付订单，15 分钟内有效', 'ok');
+}
+
+function openSheet(html) {
+  $('#sheet').innerHTML = html;
+  $('#sheetWrap').hidden = false;
+}
+function closeSheet() { $('#sheetWrap').hidden = true; $('#sheet').innerHTML = ''; }
+
+function cancelSheet() {
+  const multi = S.orders.length > 1;
+  openSheet(`<div class="sheet-grip"></div>
+    <h3>${multi ? '撤销这 2 张订单？' : '撤销这张订单？'}</h3>
+    <p class="sheet-sub">撤销后订单立即失效，不会产生任何费用；占用的券会释放回账户。</p>
+    <div class="sheet-actions">
+      <button class="btn-ghost" data-act="close-sheet">再想想</button>
+      <button class="btn-danger" data-act="do-cancel">确认撤销</button>
+    </div>`);
+}
+
+function doCancel() {
+  const n = S.orders.length;
+  S.orders.forEach((o) => { if (o.status === 'pending') o.status = 'cancelled'; });
+  stopTimer();
+  closeSheet();
+  S.notice = `上一张${n > 1 ? '（组）' : ''}待支付订单已撤销 · 未产生费用`;
+  S.orders = [];
+  S.remaining = 900;
+  logEvent(`cancel-order(reasonCode=3) ×${n} · 订单已取消`, 'brand');
+  renderPlan();
+  setScreen('plan');
+  toast('订单已撤销，未产生任何费用', 'ok');
+}
+
+function paySheet(order) {
+  S.payTarget = order.id;
+  const m = S.payMethod;
+  openSheet(`<div class="sheet-grip"></div>
+    <h3>确认支付</h3>
+    <p class="sheet-sub">订单 · 尾号 ${order.tail}${S.orders.length > 1 ? ' · 第 ' + (S.orders.indexOf(order) + 1) + ' 单' : ''}</p>
+    <div class="sheet-amount num">${money(order.total)}</div>
+    <div class="paylist">
+      <button class="pitem ${m === 'wechat' ? 'on' : ''}" data-act="sheet-method" data-val="wechat">
+        <span class="pradio"></span><span class="nm">微信支付</span><span class="tag">推荐</span>
+      </button>
+      <button class="pitem ${m === 'alipay' ? 'on' : ''}" data-act="sheet-method" data-val="alipay">
+        <span class="pradio"></span><span class="nm">支付宝</span><span class="tag"></span>
+      </button>
+    </div>
+    <button class="btn-primary" data-act="do-pay">确认支付 ${money(order.total)}</button>
+    <p class="sheet-note">确认后跳转麦当劳支付页（payH5Url）完成付款，本产品不收集支付信息</p>`);
+}
+
+async function doPay() {
+  const order = S.orders.find((o) => o.id === S.payTarget);
+  if (!order || order.status !== 'pending') return;
+  const sheet = $('#sheet');
+  sheet.innerHTML = `<div class="sheet-grip"></div><div class="paying"><span class="spin"></span><p>支付确认中…</p></div>`;
+  logEvent('payH5Url 唤起支付 · 等待回调');
+  await wait(1150);
+
+  if (S.scenario === 'abort') {
+    S.scenario = 'normal';
+    syncScenarioUI();
+    closeSheet();
+    renderPayFail();
+    setScreen('fail');
+    logEvent('支付回调未返回 · 订单仍待支付', 'warn');
+    toast('没有收到支付结果，订单仍然有效', 'warn');
+    return;
+  }
+
+  markPaid(order);
+  closeSheet();
+  const allPaid = S.orders.every((o) => o.status === 'paid');
+  logEvent(`支付成功 · ${order.code}`, 'ok');
+  if (allPaid) {
+    stopTimer();
+    renderSuccess();
+    setScreen('success');
+    toast(S.orders.length > 1 ? '2 单均已支付，2 个取餐码已生成' : '支付成功，取餐码已生成', 'ok');
+  } else {
+    renderPay();
+    const n = S.orders.filter((o) => o.status === 'paid').length;
+    toast(`第 ${n} 单已支付，继续支付第 ${n + 1} 单`, 'ok');
+  }
+}
+
+function jumpTo(id) {
+  stopTimer();
+  closeSheet();
+  S.orders = [];
+  S.degrade = false;
+  S.notice = null;
+  S.group = 'single';
+  S.planId = (PLAN && PLAN.best) || 'plain';
+  S.buyCard = true;
+  S.remaining = 900;
+  S.altOpen = false;
+
+  if (id === 's1') { setScreen('plan'); renderPlan(); logEvent('直达 S1 · 合单主态'); }
+  if (id === 's2') { S.group = 'split'; renderPlan(); setScreen('plan'); logEvent('直达 S2 · 拆单对比'); }
+  if (id === 's3') { renderCard(); setScreen('card'); logEvent('直达 S3 · 买卡双栏'); }
+  if (id === 's4') { S.degrade = true; renderPlan(); setScreen('plan'); logEvent('直达 S4 · 重校验降级', 'warn'); }
+  if (id === 's5') { S.group = 'single'; createOrders('single'); renderPay(); setScreen('pay'); startTimer(); logEvent('直达 S5 · 待支付主态'); }
+  if (id === 's6') { S.group = 'split'; createOrders('split'); renderPay(); setScreen('pay'); startTimer(); logEvent('直达 S6 · 拆单 2 单'); }
+  if (id === 's7') { S.group = 'single'; createOrders('single'); S.orders.forEach((o) => (o.status = 'expired')); renderExpired(); setScreen('expired'); logEvent('直达 S7 · 已过期', 'warn'); }
+  if (id === 's9') { S.group = 'single'; createOrders('single'); renderPayFail(); setScreen('fail'); startTimer(); logEvent('直达 S9 · 支付未完成', 'warn'); }
+  if (id === 's8') { S.group = 'single'; createOrders('single'); S.orders.forEach((o) => markPaid(o)); renderSuccess(); setScreen('success'); logEvent('直达 S8 · 支付成功', 'ok'); }
+  renderPanel();
+}
+
+function syncScenarioUI() {
+  $$('[data-act="scenario"]').forEach((b) => b.classList.toggle('on', b.dataset.val === S.scenario));
+}
+
+/* =========================================================================
+   事件委托
+   ========================================================================= */
+document.addEventListener('click', async (e) => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  const act = el.dataset.act;
+  const val = el.dataset.val;
+
+  switch (act) {
+    case 'theme': {
+      S.theme = val;
+      document.documentElement.dataset.theme = val;
+      $$('[data-act="theme"]').forEach((b) => b.classList.toggle('on', b.dataset.val === val));
+      logEvent(`切换主题 · ${val === 'dark' ? '深色' : '浅色'}`);
+      break;
+    }
+    case 'reset': {
+      jumpTo('s1');
+      S.log = [];
+      renderLog();
+      S.notice = null;
+      logEvent('原型已重置');
+      toast('已回到 S1');
+      break;
+    }
+    case 'scenario': {
+      S.scenario = val;
+      syncScenarioUI();
+      logEvent(`场景 · ${val === 'stockout' ? '提交时售罄' : '价格正常'}`);
+      toast(val === 'stockout' ? '下一次生成订单会触发重校验降级' : '已恢复价格正常场景');
+      break;
+    }
+    case 'jump': jumpTo(val); break;
+
+    case 'range': {
+      S.spec = val;
+      recompute(false);
+      try { history.replaceState(null, '', '?range=' + encodeURIComponent(val) + (S.strat ? '&strat=' + encodeURIComponent(S.strat) : '') + (S.fromLedger ? '&from=ledger' : '')); } catch (e) {}
+      if (S.screen === 'plan') renderPlan(); else jumpTo('s1');
+      logEvent('切换区间 · ' + (RANGES.find((r) => r.key === val) || {}).label + (PLAN && PLAN.ok ? ' · 常点：' + PLAN.basket.map((x) => x.name).join('/') : ''));
+      toast('已按' + ((RANGES.find((r) => r.key === val) || {}).label || val) + '重算方案');
+      break;
+    }
+    case 'toggle-src': {
+      S.srcOpen = !S.srcOpen;
+      renderPlan();
+      break;
+    }
+    case 'group': {
+      S.group = val;
+      renderPlan();
+      logEvent(val === 'split' ? '切换方案组 · 拆单 2 单' : '切换方案组 · 合单 1 单');
+      break;
+    }
+    case 'toggle-alt': {
+      S.altOpen = !S.altOpen;
+      renderPlan();
+      if (S.altOpen) {
+        requestAnimationFrame(() => {
+          const card = $('.alt-card');
+          if (card) card.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        });
+      }
+      logEvent(S.altOpen ? '展开其他买法' : '收起其他买法');
+      break;
+    }
+    case 'pick-plan': {
+      S.planId = val;
+      S.group = 'single';
+      S.degrade = false;
+      renderPlan();
+      renderPanel();
+      logEvent(`切换主方案 · ${planData().name}`);
+      toast(`已切换为「${planData().name}」`);
+      break;
+    }
+    case 'restore': {
+      S.planId = (PLAN && PLAN.best) || 'plain';
+      S.group = 'single';
+      renderPlan();
+      renderPanel();
+      logEvent('恢复推荐方案');
+      break;
+    }
+    case 'dismiss-notice': { S.notice = null; renderPlan(); break; }
+
+    case 'make-order': await makeOrder(el, S.group === 'split' ? 'split' : 'single'); break;
+    case 'revert-degrade': {
+      S.degrade = false;
+      renderPlan();
+      renderPanel();
+      logEvent('放弃降级，回到原方案');
+      toast('已回到原方案，可重新生成');
+      break;
+    }
+    case 'open-card': {
+      renderCard();
+      setScreen('card');
+      logEvent('打开买卡方案 · S3');
+      break;
+    }
+    case 'card-buy': {
+      S.buyCard = val === 'yes';
+      renderCard();
+      renderPanel();
+      const C = cardData();
+      logEvent(`买卡选择 · ${S.buyCard ? '买卡 ' + money((C || { withCard: 0 }).withCard) : '不买卡 ' + money((C || { noCard: 0 }).noCard)}`);
+      break;
+    }
+    case 'make-card': await makeOrder(el, 'card'); break;
+    case 'back-plan': {
+      stopTimer();
+      renderPlan();
+      setScreen('plan');
+      logEvent('返回方案卡');
+      break;
+    }
+
+    case 'paymethod': {
+      S.payMethod = val;
+      renderPay();
+      logEvent(`支付方式 · ${val === 'wechat' ? '微信支付' : '支付宝'}`);
+      break;
+    }
+    case 'pay': {
+      const order = el.dataset.order ? S.orders.find((o) => o.id === el.dataset.order) : S.orders.find((o) => o.status === 'pending');
+      if (order) { paySheet(order); logEvent(`申请支付 · 尾号 ${order.tail}`); }
+      break;
+    }
+    case 'sheet-method': {
+      S.payMethod = val;
+      $$('#sheet .pitem').forEach((b) => b.classList.toggle('on', b.dataset.val === val));
+      break;
+    }
+    case 'close-sheet': closeSheet(); break;
+    case 'cancel': case 'cancel-all': cancelSheet(); logEvent('点击撤销 · 二次确认'); break;
+    case 'do-cancel': doCancel(); break;
+    case 'do-pay': await doPay(); break;
+
+    case 'resettle': {
+      const btn = el;
+      setBusy(btn, '正在重新结算…');
+      logEvent('重新跑 calculate-price');
+      await wait(1000);
+      createOrders('single');
+      renderPay();
+      setBusy(btn, null);
+      startTimer();
+      setScreen('pay');
+      toast('已重新结算并生成新订单，价格以本页为准', 'ok');
+      logEvent('create-order 成功 · 新的 expirePayTime', 'ok');
+      break;
+    }
+    case 'again': {
+      S.orders = [];
+      S.group = 'single';
+      S.planId = (PLAN && PLAN.best) || 'plain';
+      S.degrade = false;
+      S.remaining = 900;
+      renderPlan();
+      setScreen('plan');
+      logEvent('再来一单 · 回到方案卡');
+      break;
+    }
+    case 'save-code': toast('取餐码已保存到相册（原型示意）', 'ok'); logEvent('保存取餐码'); break;
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeSheet();
+});
+
+/* 时钟 */
+function tickClock() {
+  const d = new Date();
+  $('#clock').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+tickClock();
+setInterval(tickClock, 30000);
+
+/* 初始化：URL 参数决定初始状态
+   ?range=30d           与账本页同一套区间
+   ?strat=window        从账本某条策略进来，默认选中对应买法
+   ?from=ledger         显示"来自账本"横幅 */
+(function init() {
+  const q = new URLSearchParams(location.search);
+  S.spec = q.get('range') || (RAW && RAW.spec) || '30d';
+  S.strat = q.get('strat') || (RAW && RAW.strat ? RAW.strat.kind : null);
+  S.fromLedger = q.get('from') === 'ledger' || !!(RAW && RAW.strat);
+  recompute(false);
+})();
+
+renderPlan();
+renderPanel();
+renderLog();
+logEvent(PLAN && PLAN.ok
+  ? '原型就绪 · ' + PLAN.label + ' · ' + PLAN.orders + ' 笔 · 推荐 ' + (method(PLAN.best) || {}).name
+  : '原型就绪 · 该区间无可算方案');
+
+/* 供自动化校验读取（非产品逻辑） */
+window.__proto = {
+  state: S,
+  go: jumpTo,
+  screen: () => S.screen,
+  log: () => S.log.slice(),
+  toasts: () => S.toasts.slice(),
+  resetLog: () => { S.log = []; S.toasts = []; renderLog(); },
+};
+</script>
+</body>
+</html>

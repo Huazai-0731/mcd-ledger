@@ -37,5 +37,6 @@ rm -rf ~/.workbuddy/skills/mcd-ledger && cp -r skill/mcd-ledger ~/.workbuddy/ski
 ## 硬约束
 
 - **`scripts/docs/tokens.css` 必须跟着 `docs/tokens.css` 同步**：`src/render/plan.ts:1800` 按相对路径读它，缺失或过期都会让决策页样式/构建失败。
+- **`scripts/build-site.mjs` 不进 Skill**：它把 `docs/` 的两个交付物派生成 `web/` 发布站点，而 Skill 包不带 `docs/*.html`，放进去也跑不起来——保持「仓库有、Skill 无」是有意为之。
 - Skill 副本里**不允许出现**任何真实账号数据（`.cache/`、`.trace/`、真实 audit 产物一律不进包）。
 - `SKILL.md` 的 `version` 与仓库 `package.json` 的 `version` 保持同号。

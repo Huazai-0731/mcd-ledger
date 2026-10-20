@@ -46,6 +46,7 @@ const PROFILES = {
       ".pcard": null,
     },
     scenarios: true,
+    themeSwitch: true,
   },
   ledger: {
     selectors: {
@@ -58,6 +59,21 @@ const PROFILES = {
     rangeSwitch: true,
   },
   generic: { selectors: {}, scenarios: false },
+  // 线上站点版（web/）：评审面板与顶栏开关都已摘除，只留产品流程本身
+  site: {
+    selectors: {
+      ".scr": null,
+      ".scr-body": null,
+      '[data-act="scenario"]': 1,
+      ".demo-strip": 1,
+      ".demo-branch": 1,
+      ".panel": 0,
+      '[data-act="theme"]': 0,
+      '[data-act="reset"]': 0,
+    },
+    scenarios: false,
+    flow: true,
+  },
 };
 
 async function assertSelectors(page, selectors, results) {
@@ -66,6 +82,76 @@ async function assertSelectors(page, selectors, results) {
     const ok = expected === null ? count >= 1 : count === expected;
     results.push({ check: `selector ${sel}`, expected: expected ?? ">=1", actual: count, pass: ok });
   }
+}
+
+/**
+ * 站点版核心流程回归。
+ *
+ * 这里不是点一遍截图看热闹：线上版把评审用的「直达界面 / 重置原型 / 场景用尽」入口
+ * 全摘了，流程只能靠真实按钮推进，任何一处断链都表现为「点了不跳」。所以每一步都
+ * 断言**屏幕真的切过去了**，而不是断言「点了没报错」。
+ *
+ * 覆盖：主线（下单 → 支付 → 取餐码 → 再来一单）、撤销（二次确认）、支付中途退出分支。
+ */
+async function runFlow(page, results, outDir) {
+  const screen = () =>
+    evaluate(page, "document.querySelector('.scr.on') ? document.querySelector('.scr.on').dataset.scr : ''");
+  const act = (sel) =>
+    evaluate(page, `(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return 'missing'; b.click(); return 'ok'; })()`);
+  const sheetOpen = () => evaluate(page, "!document.getElementById('sheetWrap').hidden");
+  const waitScreen = async (want, ms = 6000) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < ms) {
+      if ((await screen()) === want) return true;
+      await sleep(120);
+    }
+    return false;
+  };
+  const step = (name, pass, actual) =>
+    results.push({ check: `流程 · ${name}`, expected: "通过", actual: pass ? "通过" : String(actual), pass });
+
+  step("初始停在方案卡", await waitScreen("plan", 3000), await screen());
+
+  // —— 主线：生成订单 → 支付 → 取餐码
+  await act('[data-act="make-order"]');
+  step("生成订单进入待支付", await waitScreen("pay"), await screen());
+  await screenshot(page, resolve(outDir, "10-flow-pay.png"));
+
+  await act('[data-act="pay"]');
+  await sleep(300);
+  step("支付弹层打开", await sheetOpen(), "未打开");
+  await act('[data-act="do-pay"]');
+  step("确认支付进入成功页", await waitScreen("success"), await screen());
+  step(
+    "成功页给出取餐码入口",
+    await evaluate(page, "!!document.querySelector('[data-act=\"save-code\"]')"),
+    "缺失",
+  );
+  await screenshot(page, resolve(outDir, "11-flow-success.png"));
+
+  await act('[data-act="again"]');
+  step("再来一单回到方案卡", await waitScreen("plan"), await screen());
+
+  // —— 撤销：二次确认后订单失效
+  await act('[data-act="make-order"]');
+  await waitScreen("pay");
+  await act('[data-act="cancel"]');
+  await sleep(400);
+  step("撤销先出二次确认", await sheetOpen(), "未打开");
+  await act('[data-act="do-cancel"]');
+  step("确认撤销回到方案卡", await waitScreen("plan"), await screen());
+
+  // —— 折叠分支：支付中途退出
+  await evaluate(page, "document.querySelector('.demo-branch').open = true");
+  await act('[data-act="scenario"][data-val="abort"]');
+  await sleep(200);
+  await act('[data-act="make-order"]');
+  await waitScreen("pay");
+  await act('[data-act="pay"]');
+  await sleep(300);
+  await act('[data-act="do-pay"]');
+  step("支付中途退出落到未完成态", await waitScreen("fail"), await screen());
+  await screenshot(page, resolve(outDir, "12-flow-fail.png"));
 }
 
 async function main() {
@@ -113,8 +199,8 @@ async function main() {
         });
         await screenshot(page, resolve(outDir, `02-scenario-${val}.png`));
       }
-      // 双主题往返
-      for (const theme of ["dark", "light"]) {
+      // 双主题往返（站点版没有主题开关，跳过）
+      for (const theme of profile.themeSwitch ? ["dark", "light"] : []) {
         await evaluate(
           page,
           `(() => { const b = document.querySelector('[data-act="theme"][data-val="${theme}"]'); if (b) b.click(); })()`
@@ -135,6 +221,10 @@ async function main() {
         results.push({ check: "切换时间区间后区块仍在", expected: ">=1", actual: secCount, pass: secCount >= 1 });
         await screenshot(page, resolve(outDir, "02-range-switch.png"));
       }
+    }
+
+    if (profile.flow) {
+      await runFlow(page, results, outDir);
     }
 
     const newErrors = page.consoleErrors.slice(baseErrors);

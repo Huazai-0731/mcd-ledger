@@ -399,3 +399,27 @@ mcd-ledger/
 3. CSS 过渡中间色（`.nav a` 0.2s color 过渡）：审计前注入 `transition:none!important`。
 
 **复现基线**：决策页 6 组合 ×0 违规；账本页 373 处文本 ×0 违规；原型结构断言 15/15、0 控制台异常、0 外部请求（离线）。
+
+### 1.10 在线 Demo 上线（追加会话 3：2026-10-20 21:40–22:10）
+
+线上地址：**https://mcd-ledger.app.workbuddy.host/?sharecode=5CJJI3OU5Z**（发布目录 `web/`，入口 `index.html`）
+
+| 文件 | 来源 | 处理 |
+| --- | --- | --- |
+| `web/index.html` | 手写 | 入口页：主张 + 两个入口 + 三步玩法 + 演示声明 + 仓库链接 |
+| `web/ledger.html` | `docs/demo-report.html` | 只改互链 |
+| `web/plan.html` | `docs/prototype-v2.html` | 摘评审装置 + 补玩法列 + 折叠分支 |
+
+**派生脚本** `scripts/build-site.mjs`（`npm run build:site`）：对 `docs/` 只读，标记找不到就抛错退出。
+
+**摘掉（非核心操作）**：右侧「直达界面」9 态跳板、「场景模拟」、当前状态/事件日志、顶栏主题切换与「重置原型」、手机下方状态标签。
+
+**为什么「提交时售罄」不在线上**：demo 数据下 `PLAN.degrade` 为 `null`，点它会照常生成订单——留在线上是误导。只保留实测可达的 `abort`（支付中途退出）分支，做成默认折叠。
+
+**踩到的真坑**：面板摘掉后 `renderLog()` / `renderPanel()` 往已删除的节点写内容，抛 `TypeError`，表现为「点生成订单什么都不发生」。`build-site.mjs` 的 `guardPanelless()` 补了空值保护，并在模板结构变化时抛错。**结论：线上版不能只靠肉眼验收**——`npm run verify:site` 每一步断言屏幕真的切过去了。
+
+**新增回归**：`verify-ui.mjs` 增加 `site` profile（结构 7 项 + 流程 9 步：下单→支付→取餐码→再来一单→撤销二次确认→支付中途退出）；`npm run build:site / verify:site / audit:site`。
+
+**验收**：线上入口→方案卡→下单→支付→成功→返回账本，0 控制台异常；对比度 入口 37 / 方案卡 55 / 账本 373 处文本全 0 违规；三页外部请求 0。
+
+**分享链接的机制**：链接带 `?sharecode=`，首访种 `__wb_rsc` Cookie，站内相对跳转靠它放行——所以站内链接必须是相对路径，别把 sharecode 写死。

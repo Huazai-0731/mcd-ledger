@@ -21,3 +21,7 @@ mcd-ledger-*.html
 mcd-ledger-*.csv
 audit-*.html
 audit-*.csv
+
+# 发布记账（WorkBuddy 应用标记，本机有效，不进仓库）
+.wbapp_*.genie
+.workbuddy/applications.yaml
