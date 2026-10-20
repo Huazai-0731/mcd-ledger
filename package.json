@@ -1,0 +1,38 @@
+{
+  "name": "mcd-ledger",
+  "version": "0.1.0",
+  "description": "麦麦账本 · 你的麦当劳消费审计官：把每一笔麦当劳消费算清楚——省了多少、漏了多少、下次何时买最划算",
+  "type": "module",
+  "bin": {
+    "mcd-ledger": "./src/cli.ts"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "audit": "node src/cli.ts audit",
+    "demo": "node src/cli.ts demo",
+    "doctor": "node src/cli.ts doctor",
+    "bench": "node src/cli.ts bench",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "src",
+    "viewer",
+    "README.md",
+    "MCP_INTEGRATION.md"
+  ],
+  "keywords": [
+    "mcdonalds",
+    "mcp",
+    "skill",
+    "ledger",
+    "audit",
+    "workbuddy"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.8.0"
+  }
+}

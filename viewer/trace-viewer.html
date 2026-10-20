@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mcd-ledger · Trace Viewer</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--line:#2a313b;--tx:#e6edf3;--tx2:#9aa4b1;--tx3:#6b7480;--ok:#3fb950;--bad:#f85149;--yellow:#ffc72c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.6;padding:32px 20px}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:20px;font-weight:600;letter-spacing:-.01em}
+.sub{color:var(--tx2);font-size:13px;margin:6px 0 24px}
+.drop{border:1px dashed var(--line);border-radius:12px;padding:36px;text-align:center;color:var(--tx2);background:var(--card);transition:.15s}
+.drop.hover{border-color:var(--yellow);color:var(--tx)}
+.drop b{color:var(--tx)}
+textarea{width:100%;height:120px;margin-top:14px;background:#0b0f14;border:1px solid var(--line);border-radius:8px;color:var(--tx);padding:12px;font-family:ui-monospace,Consolas,monospace;font-size:12px;resize:vertical}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat .n{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.stat .l{font-size:11.5px;color:var(--tx3);margin-top:2px}
+.row{display:grid;grid-template-columns:56px 1fr 64px 70px 92px;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px}
+.row.head{color:var(--tx3);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.row:hover{background:#11161d}
+.idx{color:var(--tx3);font-variant-numeric:tabular-nums}
+.tool{font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+.spark{height:6px;background:#1d242e;border-radius:3px;overflow:hidden}
+.spark i{display:block;height:100%;background:var(--yellow);border-radius:3px}
+.ms{text-align:right;color:var(--tx2);font-variant-numeric:tabular-nums;font-size:12px}
+.badge{font-size:11px;padding:1px 7px;border-radius:4px;text-align:center}
+.badge.ok{background:#12261a;color:var(--ok)}
+.badge.bad{background:#2a1414;color:var(--bad)}
+.note{padding:8px 12px;font-size:12.5px;color:var(--tx3);border-left:2px solid var(--line);margin:4px 0 4px 12px}
+.err{color:var(--bad);font-size:12px;grid-column:2 / -1;padding-left:0}
+.empty{color:var(--tx3);padding:30px 0;text-align:center}
+@media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:36px 1fr 56px;gap:8px}.row .ms,.row .badge{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>mcd-ledger · Trace Viewer</h1>
+  <p class="sub">把审计生成的 <code>.trace/*.jsonl</code> 拖进来，看每一笔 MCP 调用的耗时与结果。没有 trace 的 Agent 出问题只能靠嘴解释。</p>
+
+  <div class="drop" id="drop">
+    <b>拖入 trace.jsonl</b>，或 <label style="color:var(--yellow);cursor:pointer;text-decoration:underline">选择文件<input type="file" id="file" accept=".jsonl,.txt,.json" hidden></label>
+    <textarea id="paste" placeholder="也可以直接粘贴 jsonl 内容…"></textarea>
+  </div>
+
+  <div id="out"><div class="empty">等待数据</div></div>
+</div>
+
+<script>
+const drop = document.getElementById('drop');
+const file = document.getElementById('file');
+const paste = document.getElementById('paste');
+const out = document.getElementById('out');
+
+['dragenter','dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('hover'); }));
+['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('hover'); }));
+drop.addEventListener('drop', ev => {
+  const f = ev.dataTransfer.files[0];
+  if (f) f.text().then(render);
+});
+file.addEventListener('change', () => { if (file.files[0]) file.files[0].text().then(render); });
+paste.addEventListener('input', () => { if (paste.value.trim()) render(paste.value); });
+
+function render(text) {
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  const calls = [];
+  const notes = [];
+  let meta = null;
+
+  for (const line of lines) {
+    let obj;
+    try { obj = JSON.parse(line); } catch { continue; }
+    if (obj.type === 'meta') meta = obj;
+    else if (obj.type === 'call') calls.push(obj);
+    else if (obj.type === 'note') notes.push(obj);
+  }
+
+  const totalMs = calls.reduce((s, c) => s + (c.durationMs || 0), 0);
+  const fails = calls.filter(c => !c.ok).length;
+  const maxMs = Math.max(1, ...calls.map(c => c.durationMs || 0));
+
+  const byTool = {};
+  for (const c of calls) {
+    byTool[c.tool] = byTool[c.tool] || { n: 0, ms: 0 };
+    byTool[c.tool].n++;
+    byTool[c.tool].ms += c.durationMs || 0;
+  }
+
+  const head = `<div class="stats">
+    <div class="stat"><div class="n">${calls.length}</div><div class="l">工具调用</div></div>
+    <div class="stat"><div class="n">${(totalMs / 1000).toFixed(2)}s</div><div class="l">调用总耗时</div></div>
+    <div class="stat"><div class="n" style="color:${fails ? 'var(--bad)' : 'var(--ok)'}">${fails}</div><div class="l">失败次数</div></div>
+    <div class="stat"><div class="n">${Object.keys(byTool).length}</div><div class="l">涉及工具</div></div>
+  </div>
+  ${meta ? `<p class="note">模式：${meta.mode === 'demo' ? '合成数据' : '真实调用'} · 命令：${meta.command} · 开始于 ${meta.startedAt} · v${meta.version}</p>` : ''}`;
+
+  if (calls.length === 0) {
+    out.innerHTML = head + '<div class="empty">这份 trace 里没有工具调用记录</div>';
+    return;
+  }
+
+  const rows = calls.map((c, i) => `
+    <div class="row">
+      <div class="idx">${String(i + 1).padStart(2, '0')}</div>
+      <div class="tool">${escapeHtml(c.tool)}</div>
+      <div class="spark"><i style="width:${Math.max(2, (c.durationMs / maxMs) * 100)}%"></i></div>
+      <div class="ms">${c.durationMs}ms</div>
+      <div class="badge ${c.ok ? 'ok' : 'bad'}">${c.ok ? 'OK' : 'FAIL'}</div>
+      ${c.error ? `<div class="err">${escapeHtml(c.error)}</div>` : ''}
+    </div>`).join('');
+
+  const noteRows = notes.map(n => `<p class="note">${escapeHtml(n.event)}：${escapeHtml(n.detail)}</p>`).join('');
+
+  out.innerHTML = head
+    + '<div class="row head"><div>#</div><div>tool</div><div>耗时分布</div><div style="text-align:right">耗时</div><div style="text-align:center">结果</div></div>'
+    + rows
+    + (noteRows ? `<div style="margin-top:18px"><div class="l" style="color:var(--tx3);font-size:11.5px;margin-bottom:6px">事件记录</div>${noteRows}</div>` : '');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+}
+</script>
+</body>
+</html>

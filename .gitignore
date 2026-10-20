@@ -1,0 +1,20 @@
+node_modules/
+dist/
+out/
+.cache/
+.trace/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+
+# 本地选题规划文档（含内部策略分析，不进公开仓库）
+docs/proposals-*
+
+# 运行产物（含个人订单数据，不要提交）
+mcd-ledger-*.html
+mcd-ledger-*.csv
+audit-*.html
+audit-*.csv

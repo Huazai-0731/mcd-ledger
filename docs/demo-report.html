@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>麦麦账本 · 2026-07-17 至 2026-10-18</title>
+<style>
+:root{
+  --ink:#17181a; --ink2:#5b6068; --ink3:#8b9099;
+  --line:#e6e2d9; --paper:#fbfaf6; --card:#ffffff;
+  --yellow:#ffc72c; --red:#da291c; --green:#1f7a45;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#efece4;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased;padding:28px 16px}
+.sheet{max-width:900px;margin:0 auto;background:var(--paper);border-radius:14px;padding:44px 48px 36px;border:1px solid var(--line)}
+h1{font-size:30px;line-height:1.25;letter-spacing:-.02em;font-weight:700;margin:10px 0 8px}
+h2{font-size:15px;font-weight:700;letter-spacing:.02em;margin-bottom:6px}
+.brand{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.brand .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);margin:0 4px 2px}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-bottom:22px;border-bottom:2px solid var(--ink)}
+.sub{color:var(--ink2);font-size:13.5px}
+.stamp{text-align:center;border:1px solid var(--line);border-radius:10px;padding:10px 16px;background:#fff}
+.stamp-n{display:block;font-size:22px;font-weight:700;line-height:1.2}
+.stamp-l{font-size:11px;color:var(--ink3);letter-spacing:.08em}
+.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0 8px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px}
+.kpi.accent{background:#fffbee;border-color:#f0dfa8}
+.kpi-l{font-size:12px;color:var(--ink3);letter-spacing:.06em}
+.kpi-v{font-size:31px;font-weight:700;letter-spacing:-.02em;line-height:1.25;margin:4px 0 2px}
+.kpi-v.warn{color:var(--red)}
+.kpi-s{font-size:12px;color:var(--ink2)}
+.block{padding:26px 0;border-bottom:1px solid var(--line)}
+.note{font-size:12.5px;color:var(--ink2);margin-bottom:14px;max-width:660px}
+.empty{font-size:13px;color:var(--ink3);padding:14px 0}
+.wf-row{display:grid;grid-template-columns:150px 1fr 92px;gap:14px;align-items:center;margin-bottom:10px}
+.wf-l{font-size:13px;color:var(--ink2)}
+.wf-l span{display:block;font-size:11px;color:var(--ink3)}
+.wf-bar{height:14px;background:#f0ede5;border-radius:3px;overflow:hidden}
+.wf-bar i{display:block;height:100%;background:#c9c4b6;border-radius:3px}
+.wf-row.paid .wf-bar i{background:var(--ink)}
+.wf-row.paid .wf-l{color:var(--ink);font-weight:600}
+.wf-v{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.attr{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.attr-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.attr-item.attr-na{background:#faf8f3;border-style:dashed}
+.attr-item.attr-na .attr-hint{line-height:1.55}
+.attr-top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);margin-bottom:8px}
+.attr-top b{font-size:16px;color:var(--ink)}
+.attr-bar{height:6px;background:#f0ede5;border-radius:3px;overflow:hidden;margin-bottom:7px}
+.attr-bar i{display:block;height:100%;background:var(--yellow);border-radius:3px}
+.attr-item:nth-child(2) .attr-bar i{background:#f0a03c}
+.attr-item:nth-child(3) .attr-bar i{background:#e0703c}
+.attr-hint{font-size:11px;color:var(--ink3)}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+.tbl th{text-align:left;font-weight:600;color:var(--ink3);font-size:11px;letter-spacing:.06em;padding:8px 4px;border-bottom:1px solid var(--line)}
+.tbl td{padding:8px 4px;border-bottom:1px solid #f2efe8;color:var(--ink2)}
+.tbl .r{text-align:right;font-variant-numeric:tabular-nums}
+.leak{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;padding:14px 16px;margin-bottom:10px}
+.leak-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.leak-h b{font-size:14px}
+.leak-amt{font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
+.leak-amt i{font-style:normal;font-size:10px;color:var(--ink3);margin-left:5px;border:1px solid var(--line);padding:0 4px;border-radius:3px;vertical-align:middle}
+.leak-na{font-size:12px;color:var(--ink3);white-space:nowrap}
+.leak ul{margin:8px 0 0;padding-left:16px;font-size:12.5px;color:var(--ink2)}
+.leak li{margin-bottom:3px}
+.leak-a{margin-top:9px;font-size:12.5px;color:var(--green);background:#f4faf6;border-radius:6px;padding:7px 10px}
+.win-row{display:grid;grid-template-columns:82px 96px 1fr 76px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #f2efe8}
+.win-d b{display:block;font-size:13.5px}
+.win-d span{font-size:11px;color:var(--ink3)}
+.win-t{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.win-o{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11px;background:#fffbee;border:1px solid #f0dfa8;color:#7a5a12;padding:1px 7px;border-radius:4px}
+.tag.more{background:#f4f2ec;border-color:var(--line);color:var(--ink3)}
+.win-s{text-align:right;font-size:12px;font-weight:600;color:var(--green);white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.mini-t{font-size:12px;color:var(--ink3);letter-spacing:.04em;margin-bottom:10px}
+.bar-row{display:grid;grid-template-columns:72px 1fr 76px;gap:10px;align-items:center;margin-bottom:6px}
+.bar-k{font-size:12px;color:var(--ink2)}
+.bar-t{height:8px;background:#f0ede5;border-radius:4px;overflow:hidden}
+.bar-t i{display:block;height:100%;background:var(--ink);border-radius:4px;opacity:.75}
+.bar-v{font-size:11.5px;color:var(--ink3);text-align:right;font-variant-numeric:tabular-nums}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.heat-c{text-align:center}
+.heat-b{display:block;border-radius:5px;padding:9px 0;font-size:12px;font-weight:600;color:#fff}
+.heat-l{font-size:11px;color:var(--ink3);display:block;margin-top:3px}
+.tops{list-style:none;counter-reset:i}
+.tops li{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);padding:6px 0;border-bottom:1px solid #f2efe8;counter-increment:i}
+.tops li::before{content:counter(i);color:var(--ink3);font-size:11px;margin-right:8px}
+.tops li span{flex:1}
+.tops li b{font-weight:600;color:var(--ink)}
+.quality{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 22px 18px;margin-top:26px;border-bottom:1px solid var(--line)}
+.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 14px}
+.qgrid>div{text-align:center;border-right:1px solid var(--line)}
+.qgrid>div:last-child{border-right:none}
+.qn{display:block;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.ql{display:block;font-size:11px;color:var(--ink3);margin-top:2px}
+.deg{margin:10px 0 0;padding-left:16px;font-size:12px;color:var(--ink2)}
+.deg li{margin-bottom:4px}
+.trace{font-size:11.5px;color:var(--ink3);margin-top:10px}
+.trace code{background:#f4f2ec;padding:1px 6px;border-radius:4px;font-size:11px}
+.share-wrap{border-bottom:none;padding-bottom:8px}
+.share{width:320px;background:linear-gradient(160deg,#1d1f22 0%,#2b2e33 100%);color:#fff;border-radius:16px;padding:26px 24px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.share-b{font-size:11px;letter-spacing:.18em;color:var(--yellow);text-transform:uppercase}
+.share-per{font-size:11px;color:#9aa0a8;margin-top:4px}
+.share-main{margin:26px 0 20px}
+.share-n{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.share-l{font-size:12px;color:#b9bfc7;margin-top:4px}
+.share-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid rgba(255,255,255,.14);padding-top:14px}
+.share-row b{display:block;font-size:14px}
+.share-row span{font-size:10.5px;color:#9aa0a8}
+.share-f{margin-top:18px;font-size:10px;color:#71767d;letter-spacing:.04em}
+.ft{margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+.ft-strong{font-size:12px;font-weight:600;color:var(--ink2)}
+.src{margin:6px 0 12px;padding-left:16px;font-size:11.5px;color:var(--ink3);columns:2;column-gap:24px}
+.ft-note{font-size:11px;color:var(--ink3);line-height:1.7}
+@media (max-width:760px){
+  .sheet{padding:26px 20px}
+  .hero,.attr,.grid2,.qgrid{grid-template-columns:1fr}
+  .qgrid>div{border-right:none;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .win-row{grid-template-columns:1fr 1fr;row-gap:6px}
+  .src{columns:1}
+  h1{font-size:23px}
+  .kpi-v{font-size:26px}
+}
+@media print{
+  body{background:#fff;padding:0}
+  .sheet{border:none;border-radius:0;box-shadow:none;max-width:none}
+  .block{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<main class="sheet">
+
+  <header class="hd">
+    <div class="hd-l">
+      <div class="brand">麦麦账本 <span class="dot"></span> McLedger</div>
+      <h1>你的麦当劳消费对账单</h1>
+      <p class="sub">2026-07-17 至 2026-10-18　·　共 94 天　·　26 笔完成订单</p>
+    </div>
+    <div class="hd-r">
+      <div class="stamp">
+        <span class="stamp-n">26</span>
+        <span class="stamp-l">笔订单</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="kpi">
+      <div class="kpi-l">实付总额</div>
+      <div class="kpi-v">¥335.21</div>
+      <div class="kpi-s">平均每笔 ¥12.89</div>
+    </div>
+    <div class="kpi accent">
+      <div class="kpi-l">省下来的钱</div>
+      <div class="kpi-v">¥242.69</div>
+      <div class="kpi-s">相当于原价的 42.0%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-l">漏掉的钱</div>
+      <div class="kpi-v warn">¥30.30</div>
+      <div class="kpi-s">3 项可改进点</div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>同一顿饭的三个价格</h2>
+    <p class="note">把三种口径摊开，才看得出"省"到底发生在哪一层。</p>
+    <div class="wf">
+      <div class="wf-row ">
+        <div class="wf-l">单点合计<span>拆开单点要花多少</span></div>
+        <div class="wf-bar"><i style="width:100.0%"></i></div>
+        <div class="wf-v">¥577.90</div>
+      </div><div class="wf-row ">
+        <div class="wf-l">划线价<span>菜单标价合计</span></div>
+        <div class="wf-bar"><i style="width:84.8%"></i></div>
+        <div class="wf-v">¥490.00</div>
+      </div><div class="wf-row paid">
+        <div class="wf-l">实付<span>你实际付出</span></div>
+        <div class="wf-bar"><i style="width:58.0%"></i></div>
+        <div class="wf-v">¥335.21</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>省的钱从哪来</h2>
+    <p class="note">三项互不重叠：促销直降、套餐组合价值、券与账户权益。合计等于「省下来的钱」。</p>
+    <div class="attr"><div class="attr-item">
+      <div class="attr-top"><span>券优惠</span><b>¥12.49</b></div>
+      <div class="attr-bar"><i style="width:5.1%"></i></div>
+      <div class="attr-hint">逐券金额，可对到订单　·　占比 5%</div>
+    </div><div class="attr-item">
+      <div class="attr-top"><span>活动 / 卡权益</span><b>¥142.30</b></div>
+      <div class="attr-bar"><i style="width:58.6%"></i></div>
+      <div class="attr-hint">总优惠 − 券优惠　·　占比 59%</div>
+    </div><div class="attr-item">
+      <div class="attr-top"><span>套餐组合价值</span><b>¥87.90</b></div>
+      <div class="attr-bar"><i style="width:36.2%"></i></div>
+      <div class="attr-hint">单点合计 − 原价合计　·　占比 36%</div>
+    </div></div>
+  
+  <table class="tbl"><thead><tr><th>优惠类型</th><th class="r">金额</th><th class="r">涉及订单</th></tr></thead><tbody>
+    <tr><td>活动 / 卡权益</td><td class="r">¥142.30</td><td class="r">17</td></tr><tr><td>限时活动券</td><td class="r">¥12.49</td><td class="r">3</td></tr>
+  </tbody></table>
+  
+  </section>
+
+  <section class="block">
+    <h2>漏掉的钱</h2>
+    <p class="note">只列有证据的项。已下架商品导致的归因缺口不折算金额——账本选择不估算，而不是编一个数字。</p>
+    <div class="leak">
+    <div class="leak-h"><b>1860.4 积分已过期作废</b><span class="leak-amt">¥18.60<i>估算</i></span></div>
+    <ul><li>累计 3860.2 积分，已用 1840，过期 1860.4</li><li>可用余额 320.5，本月将过期 120</li></ul>
+    <div class="leak-a">建议：把积分余额设成每月固定检查项；临近过期时优先兑换无门槛券，而不是攒着等大件</div>
+  </div><div class="leak">
+    <div class="leak-h"><b>2 张券将在 48 小时内到期</b><span class="leak-amt">¥11.70<i>估算</i></span></div>
+    <ul><li>芝香脆鸡扒堡早餐两件套（¥9.9） · 05:00–10:29 · 至 2026-10-20 10:29</li><li>高达芝士蛋堡早餐两件套（¥9.9） · 05:00–10:29 · 至 2026-10-21 10:29</li></ul>
+    <div class="leak-a">建议：到期前用掉，或优先用在小额订单上——小额单用券的边际收益最高</div>
+  </div><div class="leak">
+    <div class="leak-h"><b>1 笔订单被取消</b><span class="leak-na">不折算</span></div>
+    <ul><li>2026-10-08 07:32:04 · 麦当劳东莞茶山万润得来速餐厅 · ¥9.90</li></ul>
+    <div class="leak-a">建议：取消多集中在同一门店时，先确认出餐时长再下单，比反复取消更省时间</div>
+  </div>
+  </section>
+
+  <section class="block">
+    <h2>接下来 7 天，什么时候买最划算</h2>
+    <div class="win">
+    <div class="win-row">
+      <div class="win-d"><b>今天</b><span>2026-10-20 周二</span></div>
+      <div class="win-t">05:00–10:29</div>
+      <div class="win-o"><span class="tag">芝香脆鸡扒堡早餐两件套 ¥9.9</span><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag more">+1</span></div>
+      <div class="win-s">省 ¥19.20</div>
+    </div><div class="win-row">
+      <div class="win-d"><b>明天</b><span>2026-10-21 周三</span></div>
+      <div class="win-t">10:30–23:59</div>
+      <div class="win-o"><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag">高达芝士蛋堡早餐两件套 ¥9.9</span></div>
+      <div class="win-s">省 ¥17.70</div>
+    </div><div class="win-row">
+      <div class="win-d"><b>周四</b><span>2026-10-22 周四</span></div>
+      <div class="win-t">10:30–23:59</div>
+      <div class="win-o"><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag">限定主题丝巾 10:45 开售</span></div>
+      <div class="win-s">省 ¥12.60</div>
+    </div><div class="win-row">
+      <div class="win-d"><b>周五</b><span>2026-10-23 周五</span></div>
+      <div class="win-t">10:30–23:59</div>
+      <div class="win-o"><span class="tag">11.9元麦辣鸡腿堡 ¥11.9</span><span class="tag">19.9元王牌炸鸡任选2 ¥19.9</span><span class="tag">程序员节系列活动：趣味互动赢专属好券</span></div>
+      <div class="win-s">省 ¥12.60</div>
+    </div>
+  </div>
+  </section>
+
+  <section class="block">
+    <h2>你的消费画像</h2>
+    <div class="grid2">
+      <div class="mini">
+    <div class="mini-t">时段分布</div>
+    <div class="bar-row">
+      <span class="bar-k">早餐</span>
+      <span class="bar-t"><i style="width:100.0%"></i></span>
+      <span class="bar-v">16 · 62%</span>
+    </div><div class="bar-row">
+      <span class="bar-k">午餐</span>
+      <span class="bar-t"><i style="width:50.0%"></i></span>
+      <span class="bar-v">8 · 31%</span>
+    </div><div class="bar-row">
+      <span class="bar-k">下午茶</span>
+      <span class="bar-t"><i style="width:12.5%"></i></span>
+      <span class="bar-v">2 · 8%</span>
+    </div>
+  </div>
+      <div class="mini">
+    <div class="mini-t">渠道分布</div>
+    <div class="bar-row">
+      <span class="bar-k">到店自取</span>
+      <span class="bar-t"><i style="width:100.0%"></i></span>
+      <span class="bar-v">21 · 81%</span>
+    </div><div class="bar-row">
+      <span class="bar-k">得来速</span>
+      <span class="bar-t"><i style="width:23.8%"></i></span>
+      <span class="bar-v">5 · 19%</span>
+    </div>
+  </div>
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div class="mini">
+    <div class="mini-t">一周节奏</div>
+    <div class="heat">
+      <div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.90)">5</span><span class="heat-l">日</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.90)">5</span><span class="heat-l">一</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.28)">1</span><span class="heat-l">二</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.74)">4</span><span class="heat-l">三</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.74)">4</span><span class="heat-l">四</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.74)">4</span><span class="heat-l">五</span></div><div class="heat-c"><span class="heat-b" style="background:rgba(218,41,28,0.59)">3</span><span class="heat-l">六</span></div>
+    </div>
+  </div>
+      <div class="mini">
+    <div class="mini-t">最常点</div>
+    <ol class="tops">
+      <li><span>猪柳蛋麦满分套餐</span><b>×4</b></li><li><span>大脆鸡扒麦满分组合</span><b>×4</b></li><li><span>麦辣鸡腿汉堡</span><b>×3</b></li><li><span>火腿扒麦满分组合</span><b>×3</b></li><li><span>脆香油条组合</span><b>×3</b></li><li><span>一早现磨 超值二件套</span><b>×2</b></li><li><span>雪碧</span><b>×2</b></li><li><span>玉米杯</span><b>×2</b></li>
+    </ol>
+  </div>
+    </div>
+  </section>
+
+  <section class="block quality">
+    <h2>这份账本有多可信</h2>
+    <div class="qgrid">
+      <div><span class="qn">100%</span><span class="ql">金额可精确归因</span></div>
+      <div><span class="qn">26</span><span class="ql">笔订单完整还原</span></div>
+      <div><span class="qn">演示</span><span class="ql">合成数据</span></div>
+      <div><span class="qn">0.0s</span><span class="ql">审计耗时</span></div>
+    </div>
+    
+    
+    <p class="trace">trace：<code>trace-2026-10-20T02-19-34-408Z</code>　·　把 trace.jsonl 拖进 viewer 可逐步回放这次审计</p>
+  </section>
+
+  <section class="block share-wrap">
+    <h2>分享卡</h2>
+    <p class="note">截图这一块即可分享。数字来自本机审计结果，不含订单明细。</p>
+    <div class="share">
+      <div class="share-b">麦麦账本</div>
+      <div class="share-per">2026-07-17 — 2026-10-18</div>
+      <div class="share-main">
+        <div class="share-n">¥242.69</div>
+        <div class="share-l">这段时间省下来的钱</div>
+      </div>
+      <div class="share-row">
+        <div><b>¥335.21</b><span>实付</span></div>
+        <div><b>26</b><span>笔订单</span></div>
+        <div><b>¥30.30</b><span>还漏掉</span></div>
+      </div>
+      <div class="share-f">mcd-ledger · 非官方作品</div>
+    </div>
+  </section>
+
+  <footer class="ft">
+    <p class="ft-strong">数据来源：麦当劳 MCP Server（mcp.mcd.cn）</p>
+    <ul class="src"><li>麦当劳 MCP Server · order-list（历史订单）</li><li>麦当劳 MCP Server · query-meals（门店菜单与划线价）</li><li>麦当劳 MCP Server · query-my-coupons（卡包券）</li><li>麦当劳 MCP Server · query-my-account（积分账户）</li><li>麦当劳 MCP Server · campaign-calendar（活动日历）</li><li>麦当劳 MCP Server · now-time-info（基准时间）</li></ul>
+    <p class="ft-note">本项目为非官方作品，由开发者独立完成，与麦当劳无隶属关系。输出仅供参考，不构成财务、税务或投资建议；餐品价格与供应状态以麦当劳官方渠道实时结果为准。本页由 mcd-ledger v0.1.0 于 2026-10-20 02:19:34 生成。</p>
+  </footer>
+
+</main>
+</body>
+</html>
