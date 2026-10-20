@@ -1,5 +1,4 @@
 node_modules/
-dist/
 out/
 .cache/
 .trace/
@@ -9,6 +8,10 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# dist/ 下只保留打包好的 Skill 分发件，其余忽略
+dist/*
+!dist/mcd-ledger.zip
 
 # 本地选题规划文档（含内部策略分析，不进公开仓库）
 docs/proposals-*

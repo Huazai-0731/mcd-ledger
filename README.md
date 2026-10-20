@@ -55,6 +55,20 @@ node src/cli.ts audit
 
 > 「用 mcd-ledger 帮我审计一下最近三个月的麦当劳消费」
 
+### 作为 WorkBuddy Skill 安装
+
+仓库内置了打包好的 Skill（`skill/mcd-ledger/`，分发件 `dist/mcd-ledger.zip`，约 150 KB，零运行时依赖）。两种用法：
+
+```bash
+# ① 解压即用：把 zip 里的 mcd-ledger/ 放进 ~/.workbuddy/skills/，重启会话后生效
+unzip dist/mcd-ledger.zip -d ~/.workbuddy/skills/
+
+# ② 从仓库源码重新打包（改了代码后）
+python scripts/package_skill.py skill/mcd-ledger dist   # 或任意 skill-creator 的打包脚本
+```
+
+Skill 内部自带完整源码与两份参考（MCP 实测硬约束、报告口径解读），安装后对 WorkBuddy 说「审计我的麦当劳消费」「跑个 demo 看看」即可触发：无 Token 自动走合成数据演示，有 `MCD_MCP_TOKEN` 走真实账号审计，产物（账本页 / CSV / 方案卡 / trace）用 `present_files` 直接呈现。详见 `skill/mcd-ledger/SKILL.md`。
+
 ---
 
 ## 输出长什么样
